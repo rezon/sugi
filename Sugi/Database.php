@@ -215,6 +215,7 @@ abstract class Database
 	 * @param mixed $callback - callable function or method name
 	 */
 	public function hook($event, $callback) {
+		// FIXME: this doesn't work with closures
 		if (is_array($callback)) $inx = get_class($callback[0]).'::'.$callback[1];
 		else $inx = $callback;
 				

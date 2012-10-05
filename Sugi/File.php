@@ -4,7 +4,7 @@
  * Wrapper functions to ease file specific operations
  *
  * @package Sugi
- * @version 20121003
+ * @version 20121005
  */
 namespace Sugi;
 
@@ -12,9 +12,9 @@ class File
 {
 
 	/**
-	 * Determine if a file exists.
+	 * Determine if the file exists.
 	 *
-	 * @param str $file - filename with optional path
+	 * @param string $file - filename with optional path
 	 * @return bool
 	 */
 	public static function exists($file) {
@@ -24,7 +24,7 @@ class File
 	/**
 	 * Determine if the file can be opened for reading
 	 *
-	 * @param str $file - filename with optional path
+	 * @param string $file - filename with optional path
 	 * @return bool
 	 */
 	public static function readable($file) {
@@ -34,7 +34,7 @@ class File
 	/**
 	 * Determine if the file is writable.
 	 *
-	 * @param str $file - filename with optional path
+	 * @param string $file - filename with optional path
 	 * @return bool
 	 */
 	public static function writable($file) {
@@ -42,7 +42,7 @@ class File
 	}
 
 	/**
-	 * Try to get the contents of a file.
+	 * Trying to get the contents of the file.
 	 * The file sholud exists and should be readable. If not default value will be returned.
 	 *
 	 * <code>
@@ -53,11 +53,21 @@ class File
 	 *		$contents = File::get('foo/bar.txt', 'Default Value');
 	 * </code>
 	 *
-	 * @param str $file
-	 * @param str $default
-	 * @return str
+	 * @param string $file
+	 * @param string $default
+	 * @return string
 	 */
 	public static function get($file, $default = null) {
 		return (static::readable($file)) ? file_get_contents($file) : $default;
+	}
+
+	/**
+	 * Gets last modification time of the file
+	 *
+	 * @param string $file
+	 * @return int
+	 */
+	public static function modified($file) {
+		return filemtime($file);
 	}
 }
