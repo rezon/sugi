@@ -12,6 +12,7 @@
         "php": ">=5.3"
     },
     "autoload": {
+        "psr-0": {"Sugi": ""},
         "files": ["Sugi/register.php"]
     }
 }
