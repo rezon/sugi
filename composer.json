@@ -1,0 +1,17 @@
+{
+    "name": "tzappa/sugi",
+    "type": "library",
+    "description": "PHP5 Framework",
+    "authors": [
+        {
+            "name": "Plamen Popov",
+            "email": "tzappa@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.3"
+    },
+    "autoload": {
+        "files": ["Sugi/register.php"]
+    }
+}
