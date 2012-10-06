@@ -215,7 +215,7 @@ class Csspacker
 				// if one .less file is added as a single file
 				// we will compress it immediately
 				if ($level1) {
-					$lessc = new lessc();
+					$lessc = new \lessc();
 					$buffer .= $lessc->compileFile($file);
 					continue;
 				}
@@ -225,7 +225,7 @@ class Csspacker
 		}
 
 		if ($less) {
-			$lessc = new lessc();
+			$lessc = new \lessc();
 			$buffer = $lessc->compile($buffer) . "\n";
 		}
 
