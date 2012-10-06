@@ -11,6 +11,9 @@
     "require": {
         "php": ">=5.3"
     },
+    "suggest": {
+        "leafo/lessphp": "Include this LESS compiler to enable .less files to be added to the CSSPacker."
+    },
     "autoload": {
         "psr-0": {"Sugi": ""},
         "files": ["Sugi/register.php"]

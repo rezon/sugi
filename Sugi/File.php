@@ -4,7 +4,7 @@
  * Wrapper functions to ease file specific operations
  *
  * @package Sugi
- * @version 20121005
+ * @version 20121006
  */
 namespace Sugi;
 
@@ -58,16 +58,16 @@ class File
 	 * @return string
 	 */
 	public static function get($file, $default = null) {
-		return (static::readable($file)) ? file_get_contents($file) : $default;
+		return static::readable($file) ? file_get_contents($file) : $default;
 	}
 
 	/**
 	 * Gets last modification time of the file
 	 *
 	 * @param string $file
-	 * @return int
+	 * @return int, or false on failure (eg. file does not exists)
 	 */
 	public static function modified($file) {
-		return filemtime($file);
+		return @filemtime($file);
 	}
 }
