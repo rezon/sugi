@@ -46,6 +46,7 @@
  * @package sugi
  * @version 20121006
  */
+namespace Sugi;
 use Sugi\File;
 
 /**
