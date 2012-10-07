@@ -13,6 +13,7 @@
     },
     "suggest": {
         "leafo/lessphp": "Include this LESS compiler to enable .less files to be added to the CSSPacker."
+        "tedivm/jshrink": "Include JShrink to use compression in JSPacker"
     },
     "autoload": {
         "psr-0": {"Sugi": ""},
