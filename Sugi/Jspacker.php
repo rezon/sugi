@@ -178,6 +178,6 @@ class Jspacker
 	}
 
 	private function _compress($buffer) {
-		return JShrink\Minifier::minify($buffer, array('flaggedComments' => false));
+		return \Minifier::minify($buffer, array('flaggedComments' => false));
 	}
 }
