@@ -10,7 +10,7 @@
  * after (post_{method_name}) each hookable methods.
  * 
  * @package Sugi
- * @version 20121005
+ * @version 20121007
  */
 namespace Sugi;
 
@@ -340,36 +340,18 @@ abstract class Database
 
 	public static function __callStatic($name, $arguments) {
 		$name = ucfirst(strtolower($name));
-		$class_file = dirname(__FILE__)."/database/{$name}.php";
-		if (file_exists($class_file)) {
-			$db = static::factory($name, $arguments[0]);
-			return $db;
+		$class_name = "\Sugi\Database\\$name";
+		$class_file = dirname(__FILE__)."/Database/{$name}.php";
+		if (!class_exists($class_name)) {
+			if (!file_exists($class_file)) {
+				throw new \Exception("Call to undefined method Sugi\Database::{$name}()");
+			}
+			include $class_file;
 		}
 
-		throw new DatabaseException("Call to undefined method Sugi\Database::{$name}()");
+		return new $class_name($name, $arguments[0]);
 	}
 	
-	/**
-	 * Static method to create a specific database class
-	 * @param string $dbtype can be 'sqlite', 'mysqli', 'mysql'...
-	 * @return instance of that class
-	 */
-	protected static function factory($dbtype, $params) {
-		// If the class is not loaded we will try to include the file
-		$class = "\Sugi\Database\\$dbtype";
-		if (!class_exists($class, FALSE)) {
-			$class_file = dirname(__FILE__)."/database/{$dbtype}.php";
-			include_once $class_file;
-		}
-
-		// If the class exists we will create instance
-		if (class_exists($class, FALSE)) {
-			return new $class($dbtype, $params);
-		}
-
-		throw new DatabaseException("Invalid Database Type $dbtype");
-	}
-
 	/**
 	 * Class destructor
 	 */

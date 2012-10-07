@@ -34,9 +34,13 @@ abstract class Logger
 	public static function __callStatic($name, $arguments) {
 		// check requested logger type exists
 		$name = ucfirst(strtolower($name));
-		$class_file = dirname(__FILE__)."/logger/{$name}.php";
-		if (!file_exists($class_file)) {
-			throw new \Exception("Call to undefined method Sugi\Logger::{$name}()");
+		$class_name = "\Sugi\Logger\\$name";
+		$class_file = dirname(__FILE__)."/Logger/{$name}.php";
+		if (!class_exists($class_name)) {
+			if (!file_exists($class_file)) {
+				throw new \Exception("Call to undefined method Sugi\Logger::{$name}()");
+			}
+			include $class_file;
 		}
 
 		// checking configurations
@@ -46,8 +50,7 @@ abstract class Logger
 		}
 
 		// create logger child
-		$child = "\Sugi\Logger\\$name";
-		$log = new $child($config);
+		$log = new $class_name($config);
 		static::$_loggers[] = $log;
 
 		return $log;

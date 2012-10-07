@@ -5,10 +5,6 @@ ini_set('display_errors', 1);
 use \Sugi\Logger;
 
 include '../Sugi/Logger.php';
-include '../Sugi/logger/Stdout.php';
-include '../Sugi/logger/File.php';
-include '../Sugi/logger/Loggly.php';
-include '../Sugi/logger/Console.php';
 
 Logger::stdout();
 Logger::stdout(array('format' => '[{level}] [{Y}.{m}.{d} {H}:{i}:{s}] {message}<br />'));

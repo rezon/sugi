@@ -3,9 +3,12 @@
  * SQLite3 Database test
  *
  * @package Sugi
- * @version 20121005
+ * @version 20121007
  */
 namespace Sugi;
+
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 include_once "../Sugi/Database.php";
 

@@ -22,6 +22,7 @@
 	<input type="button" value="Database::sqlite3" onclick="document.location='sqlite3.php'" />
 	<input type="button" value="Database::mysqli" onclick="document.location='mysqli.php'" />
 	<input type="button" value="Database::pgsql" onclick="document.location='pgsql.php'" />
+	<input type="button" value="Logger" onclick="document.location='logger.php'" />
 </form>
 </body>
 </html>
