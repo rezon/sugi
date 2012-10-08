@@ -4,7 +4,7 @@
  * Wrapper functions to ease file specific operations
  *
  * @package Sugi
- * @version 20121006
+ * @version 20121008
  */
 namespace Sugi;
 
@@ -69,5 +69,15 @@ class File
 	 */
 	public static function modified($file) {
 		return @filemtime($file);
+	}
+
+	/** 
+	 * Extracts file extension from a file
+	 *
+	 * @param string $file
+	 * @return string
+	 */
+	public static function ext($file) {
+		return pathinfo($file, PATHINFO_EXTENSION);
 	}
 }
