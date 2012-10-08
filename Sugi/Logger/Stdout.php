@@ -5,7 +5,7 @@
  * 		Use this logger only for reference.
  * 
  * @package Sugi
- * @version 20121007
+ * @version 20121008
  */
 namespace Sugi\Logger;
 
@@ -13,7 +13,7 @@ class Stdout extends \Sugi\Logger
 {
 	protected function __construct($config = array()) {
 		// override default format if no formating is given
-		$this->_format = '<div class="{level}">[{level}]: {message}</div>';
+		$this->_format = '<div class="{level}">[{level}] {message}</div>';
 
 		// create it
 		parent::__construct($config);

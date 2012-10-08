@@ -23,6 +23,7 @@
 	<input type="button" value="Database::mysqli" onclick="document.location='mysqli.php'" />
 	<input type="button" value="Database::pgsql" onclick="document.location='pgsql.php'" />
 	<input type="button" value="Logger" onclick="document.location='logger.php'" />
+	<input type="button" value="Cron" onclick="document.location='cron.php'" />
 </form>
 </body>
 </html>
