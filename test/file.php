@@ -3,7 +3,7 @@
  * File Testcases
  *
  * @package Sugi
- * @version 20121004
+ * @version 20121008
  */
 namespace Sugi;
 
@@ -48,7 +48,8 @@ ass("\Sugi\File::get('readonlyfile.txt') === 'R'");
 ass("\Sugi\File::get('privatefile.txt') === null");
 ass("\Sugi\File::get('privatefile.txt', 'file is not readable') === 'file is not readable'");
 ass("\Sugi\File::get('path') === null");
-
+ass("\Sugi\File::ext('privatefile.txt') === 'txt'");
+ass("\Sugi\File::ext('path') === ''");
 
 ?>
 </body>

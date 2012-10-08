@@ -13,11 +13,48 @@ namespace Sugi;
 class Ste
 {
 	/**
+	 * Regular Expression for blocks
+	 * <code>
+	 * 		<!-- BEGIN blockname -->
+	 *   	...
+	 *    	<!-- END blockname -->
+	 * </code>
+	 */
+	protected $blockRegEx = '/<!--\s+BEGIN\s+([0-9A-Za-z._-]+)\s+-->(.*)<!--\s+END\s+\1\s+-->/sm';
+
+	/**
+	 * Regular Expression for file inclusion
+	 * <code>
+	 * 		<!-- INLUDE filename.html -->
+	 * </code>
+	 */
+	protected $includeRegEx = '|<!--\s+INCLUDE\s+([_a-zA-Z0-9\-\.\/]+)\s+-->|sm';
+	// include with {@include filename.html}
+	// protected $includeRegEx = '|{@include\s+([_a-zA-Z0-9\-\.\/]+)\s+}|sm';
+
+
+	/**
+	 * Regular Expression Pattern for variables
+	 * <code>
+	 * 		{varname}
+	 * </code>
+	 */
+	protected $varRegEx = '|{([_a-zA-Z][_a-zA-Z0-9]*)}|sm';
+
+	/**
+	 * Regular Expression Pattern for array keys
+	 * <code>
+	 * 		{array.key.subkey}
+	 * </code>
+	 */
+	protected $arrRegEx = '|{([_a-zA-Z][_a-zA-Z0-9]*\.[_a-zA-Z][_a-zA-Z0-9\.]*)}|sm';
+
+	/**
 	 * Template extensions that are allowed. 
 	 * 
 	 * @var array
 	 */
-	private $allowed_ext = array('html', 'tpl', 'txt');
+	private $allowedExt = array('html', 'tpl', 'txt');
 
 	/**
 	 * Loaded template
@@ -33,6 +70,8 @@ class Ste
 	 */
 	private $vars = array();
 
+	private $include_path;
+
 
 
 	/**
@@ -41,24 +80,25 @@ class Ste
 	 * @param string filename
 	 */
 	public function load($template_file) {
-		// check file exists and is readable
-		if (!File::readable($template_file)) {
-			throw new SteException("Could not read template file $template_file");
-		}
-
-		// check file extension
-		$ext = File::ext($template_file);
-		if (!in_array($ext, $this->allowed_ext)) {
-			throw new SteException("File $template_file has extension that is not allowed template extension");
-		}
-
-		// try to load a file
-		$template = File::get($template_file, FALSE);
-		if ($template === FALSE) {
-			throw new SteException("Could not load template file $template_file");
-		}
+		$template = $this->_load($template_file);
 
 		return $this->template($template);
+	}
+
+	/**
+	 * Sets raw template. If used with no parameter only returns raw template
+	 * 
+	 * @param string $template
+	 * @return string
+	 */
+	public function template($template = null) {
+		$this->vars = array();
+
+		if (!is_null($template)) {
+			$this->tpl = $template;
+		}
+
+		return $this->tpl;
 	}
 
 	/**
@@ -86,39 +126,54 @@ class Ste
 		}
 	}
 
-	/**
-	 * Sets raw template. If used with no parameter only returns raw template
-	 * 
-	 * @param string $template
-	 * @return string
-	 */
-	public function template($template = null) {
-		$this->vars = array();
-
-		if (!is_null($template)) {
-			$this->tpl = $template;
+	protected function _load($template_file) {
+		// check file exists and is readable
+		if (!File::readable($template_file)) {
+			throw new SteException("Could not read template file $template_file");
 		}
 
-		return $this->tpl;
+		// check file extension
+		$ext = File::ext($template_file);
+		if (!in_array($ext, $this->allowedExt)) {
+			throw new SteException("File $template_file has extension that is not allowed template extension");
+		}
+
+		// try to load a file
+		$template = File::get($template_file, false);
+		if ($template === false) {
+			throw new SteException("Could not load template file $template_file");
+		}
+
+		$this->include_path = realpath(dirname($template_file) . DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+
+		// check for included files
+		$template = preg_replace_callback($this->includeRegEx, array(&$this, 'replaceIncludesCallback'), $template);
+
+		return $template;
 	}
 
+	protected function replaceIncludesCallback($matches) {
+		return $this->_load($this->include_path.$matches[1]);
+	}
 
 	public function parse() {
 		$subject = $this->tpl;
+
+		$subject = preg_replace_callback($this->blockRegEx, array(&$this, 'replaceBlockCallback'), $subject);
 		
 		// replace variables
-		$subject = preg_replace_callback('/{([_a-zA-Z][_a-zA-Z0-9]*)}/sm', array(&$this, 'replaceVarsCallback'), $subject);
+		$subject = preg_replace_callback($this->varRegEx, array(&$this, 'replaceVarCallback'), $subject);
 		// replace arrays
-		$subject = preg_replace_callback('/{([_a-zA-Z][_a-zA-Z0-9]*\.[_a-zA-Z][_a-zA-Z0-9\.]*)}/sm', array(&$this, 'replaceArraysCallback'), $subject);
+		$subject = preg_replace_callback($this->arrRegEx, array(&$this, 'replaceArrCallback'), $subject);
 
 		return $subject;
 	}
 
-	protected function replaceVarsCallback($matches) {
+	protected function replaceVarCallback($matches) {
 		return isset($this->vars[$matches[1]]) ? $this->vars[$matches[1]] : false;
 	}
 
-	protected function replaceArraysCallback($matches) {
+	protected function replaceArrCallback($matches) {
 		$keys = explode('.', $matches[1]);
 		$vars = $this->vars;
 		foreach ($keys as $k) {
@@ -128,6 +183,12 @@ class Ste
         	$vars = $vars[$k];
         }
         return $vars;
+	}
+
+	protected function replaceBlockCallback($matches) {
+		//var_dump($matches);
+		//exit;
+		return false;
 	}
 }
 
