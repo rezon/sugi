@@ -1,5 +1,10 @@
-<ul style="display: inline-block">
-<!-- BEGIN mainmenu -->
-	<li>{item}</li>
-<!-- END mainmenu -->
+<ul>
+	<!-- BEGIN topmenu -->
+	User: {topmenu.user}
+		<!-- BEGIN mainmenu --><li{mainmenu.current}>{title} {mainmenu.item} ({topmenu.user})</li><!-- END mainmenu -->
+	<!-- END topmenu -->
 </ul>
+
+<!-- BEGIN hideme -->
+<li>opa - {item}</li>
+<!-- END hideme -->

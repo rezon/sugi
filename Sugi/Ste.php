@@ -1,6 +1,19 @@
 <?php 
 /**
  * Sugi Template Engine
+ * <code>
+ * 		$tpl = new Ste();
+ * 		$tpl->load(path/to/template);
+ * 		
+ * 		$tpl->set('varname', 'value');
+ * 		$tpl->set('varname', array('subvar1'=> 'value', 'subvar2' => 'onothervalue'));
+ * 		$tpl->set(array('varname1' => 'value1', 'varname2' => 'value2'));
+ * 		$tpl->loop('blockname', array( array('var1' => 'val1', 'var2' => 'val2'), array('var1' => 'otherval') ));
+ * 		$tpl->hide('unwantendblock');
+ * 		$tpl->unhide('someblockthatwashidden');
+ *
+ * 		echo $tpl->parse();
+ * </code>
  * 
  * @package Sugi
  * @version 20121010
@@ -20,7 +33,7 @@ class Ste
 	 *    	<!-- END blockname -->
 	 * </code>
 	 */
-	protected $blockRegEx = '/<!--\s+BEGIN\s+([0-9A-Za-z._-]+)\s+-->(.*)<!--\s+END\s+\1\s+-->/sm';
+	protected $blockRegEx = '/<!--\s+BEGIN\s+([0-9A-Za-z._-]+)\s+-->(.*)<!--\s+END\s+\1\s+-->/s';
 
 	/**
 	 * Regular Expression for file inclusion
@@ -28,9 +41,8 @@ class Ste
 	 * 		<!-- INLUDE filename.html -->
 	 * </code>
 	 */
-	protected $includeRegEx = '|<!--\s+INCLUDE\s+([_a-zA-Z0-9\-\.\/]+)\s+-->|sm';
-	// include with {@include filename.html}
-	// protected $includeRegEx = '|{@include\s+([_a-zA-Z0-9\-\.\/]+)\s+}|sm';
+	protected $includeRegEx = '#<!--\s+INCLUDE\s+([_a-zA-Z0-9\-\.\/]+)\s+-->#sm';
+	// protected $includeRegEx = '#{@include\s+([_a-zA-Z0-9\-\.\/]+)\s+}#sm'; // include with {@include filename.html}
 
 
 	/**
@@ -39,7 +51,7 @@ class Ste
 	 * 		{varname}
 	 * </code>
 	 */
-	protected $varRegEx = '|{([_a-zA-Z][_a-zA-Z0-9]*)}|sm';
+	protected $varRegEx = '#{([_a-zA-Z][_a-zA-Z0-9]*)}#sm';
 
 	/**
 	 * Regular Expression Pattern for array keys
@@ -47,30 +59,39 @@ class Ste
 	 * 		{array.key.subkey}
 	 * </code>
 	 */
-	protected $arrRegEx = '|{([_a-zA-Z][_a-zA-Z0-9]*\.[_a-zA-Z][_a-zA-Z0-9\.]*)}|sm';
+	protected $arrRegEx = '#{([_a-zA-Z][_a-zA-Z0-9]*\.[_a-zA-Z][_a-zA-Z0-9\.]*)}#sm';
 
 	/**
 	 * Template extensions that are allowed. 
 	 * 
 	 * @var array
 	 */
-	private $allowedExt = array('html', 'tpl', 'txt');
+	protected $allowedExt = array('html', 'tpl', 'txt');
 
 	/**
 	 * Loaded template
 	 * 
 	 * @var string
 	 */
-	private $tpl;
+	protected $tpl;
 
 	/**
 	 * Variables set with set() method
 	 * 
 	 * @var array
 	 */
-	private $vars = array();
+	protected $vars = array();
 
-	private $include_path;
+	/**
+	 * Variables for loops
+	 * 
+	 * @var array
+	 */
+	protected $loops = array();
+
+	protected $hide = array();
+
+	protected $include_path;
 
 
 
@@ -92,8 +113,6 @@ class Ste
 	 * @return string
 	 */
 	public function template($template = null) {
-		$this->vars = array();
-
 		if (!is_null($template)) {
 			$this->tpl = $template;
 		}
@@ -126,6 +145,45 @@ class Ste
 		}
 	}
 
+	/**
+	 * Loops a block (copies) several times replacing all nested variables with $values
+	 * 
+	 * @param  string $blockname name of the block
+	 * @param  array  $values  array of array of values
+	 */
+	public function loop($blockname, $values = array()) {
+		$this->loops[$blockname] = $values;
+	}
+
+	/**
+	 * Hides (removes) a block
+	 * 
+	 * @param  string $blockname
+	 */
+	public function hide($blockname) {
+		$this->hide[$blockname] = true;
+	}
+
+	/**
+	 * Unhides a block
+	 * @param string $blockname
+	 */
+	public function unhide($blockname) {
+		unset($this->hide[$blockname]);	
+	}
+
+	/**
+	 * Parses and returns prepared template
+	 * 
+	 * @return string
+	 */
+	public function parse() {
+		return $this->_parse($this->tpl);
+	}
+
+
+
+
 	protected function _load($template_file) {
 		// check file exists and is readable
 		if (!File::readable($template_file)) {
@@ -147,33 +205,31 @@ class Ste
 		$this->include_path = realpath(dirname($template_file) . DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
 
 		// check for included files
-		$template = preg_replace_callback($this->includeRegEx, array(&$this, 'replaceIncludesCallback'), $template);
+		$template = preg_replace_callback($this->includeRegEx, array(&$this, '_replaceIncludesCallback'), $template);
 
 		return $template;
 	}
 
-	protected function replaceIncludesCallback($matches) {
-		return $this->_load($this->include_path.$matches[1]);
-	}
-
-	public function parse() {
-		$subject = $this->tpl;
-
-		$subject = preg_replace_callback($this->blockRegEx, array(&$this, 'replaceBlockCallback'), $subject);
-		
+	protected function _parse($subject) {
+		// blocks
+		$subject = preg_replace_callback($this->blockRegEx, array(&$this, '_replaceBlockCallback'), $subject);
 		// replace variables
-		$subject = preg_replace_callback($this->varRegEx, array(&$this, 'replaceVarCallback'), $subject);
+		$subject = preg_replace_callback($this->varRegEx, array(&$this, '_replaceVarCallback'), $subject);
 		// replace arrays
-		$subject = preg_replace_callback($this->arrRegEx, array(&$this, 'replaceArrCallback'), $subject);
+		$subject = preg_replace_callback($this->arrRegEx, array(&$this, '_replaceArrCallback'), $subject);
 
 		return $subject;
 	}
 
-	protected function replaceVarCallback($matches) {
+	protected function _replaceIncludesCallback($matches) {
+		return $this->_load($this->include_path.$matches[1]);
+	}
+
+	protected function _replaceVarCallback($matches) {
 		return isset($this->vars[$matches[1]]) ? $this->vars[$matches[1]] : false;
 	}
 
-	protected function replaceArrCallback($matches) {
+	protected function _replaceArrCallback($matches) {
 		$keys = explode('.', $matches[1]);
 		$vars = $this->vars;
 		foreach ($keys as $k) {
@@ -185,10 +241,22 @@ class Ste
 		return $vars;
 	}
 
-	protected function replaceBlockCallback($matches) {
-		//var_dump($matches);
-		//exit;
-		return false;
+	protected function _replaceBlockCallback($matches) {
+		// check the block is hidden;
+		if (!empty($this->hide[$matches[1]])) return false;
+
+		// loop
+		if (isset($this->loops[$matches[1]])) {
+			$return = '';
+			foreach ($this->loops[$matches[1]] as $key => $match) {
+				$this->vars[$matches[1]] = $match;
+				$return .= $this->_parse($matches[2], $this->loops[$matches[1]]);
+			}
+			return $return;
+		}
+
+		// parse inside
+		return $this->_parse($matches[2]);
 	}
 }
 
