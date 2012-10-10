@@ -9,7 +9,7 @@
 	<meta charset="utf-8" />
 </head>
 <body>
-<form method="post" action="filter.php?gs=alabala&gi=1">
+<form method="post" action="filter.php?gs=alabala&amp;gi=1">
 	<input name="ps" value="postalabala" readonly="readonly" hidden="hidden" />
 	<input name="pi" value="1" readonly="readonly" hidden="hidden" />
 	<input type="submit" value="Filter tests" />
@@ -24,6 +24,7 @@
 	<input type="button" value="Database::pgsql" onclick="document.location='pgsql.php'" />
 	<input type="button" value="Logger" onclick="document.location='logger.php'" />
 	<input type="button" value="Cron" onclick="document.location='cron.php'" />
+	<input type="button" value="STE" onclick="document.location='ste.php'" />
 </form>
 </body>
 </html>
