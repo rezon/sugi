@@ -153,6 +153,7 @@ class Ste
 	 */
 	public function loop($blockname, $values = array()) {
 		$this->loops[$blockname] = $values;
+		//$this->vars[$blockname] = $values;
 	}
 
 	/**
@@ -232,25 +233,30 @@ class Ste
 	protected function _replaceArrCallback($matches) {
 		$keys = explode('.', $matches[1]);
 		$vars = $this->vars;
-		foreach ($keys as $k) {
-			if (!isset($vars[$k])) {
+		foreach ($keys as $key => $val) {
+			if (!isset($vars[$val])) {
 				return false;
 			}
-			$vars = $vars[$k];
+			$vars = $vars[$val];
 		}
 		return $vars;
 	}
 
 	protected function _replaceBlockCallback($matches) {
-		// check the block is hidden;
+		// check the block is hidden
 		if (!empty($this->hide[$matches[1]])) return false;
 
 		// loop
 		if (isset($this->loops[$matches[1]])) {
 			$return = '';
 			foreach ($this->loops[$matches[1]] as $key => $match) {
+				foreach ($match as $k=>$m) {
+					if (is_array($m)) {
+						$this->loops[$k] = $m;
+					}
+				}
 				$this->vars[$matches[1]] = $match;
-				$return .= $this->_parse($matches[2], $this->loops[$matches[1]]);
+				$return .= $this->_parse($matches[2]);
 			}
 			return $return;
 		}

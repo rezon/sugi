@@ -14,9 +14,14 @@ $tpl->set('title', 'STE');
 $tpl->set(array('description' => 'Simple Template Engine', 'keywords' => 'php, template, engine, sugi'));
 $tpl->set('home', array('link' => array('href' => 'index.php', 'title' => 'back')));
 $tpl->loop('mainmenu', array(array('item' => 'one'), array('item' => 'two', 'current' => ' class="current"'), array('item' => 'three')));
-$tpl->set('topmenu', array('user' => 'tzappa')); // this will never happen
-$tpl->loop('topmenu', array(array('user' => 'ivan'), array('user' => 'dragan')));
 $tpl->hide('hideme');
-$tpl->hide('topmenu');
-$tpl->unhide('topmenu');
+
+$tpl->loop('block', array(
+		array('li'=>'1', 'nested'=>array(array('li'=>'1.1'), array('li'=>'1.2'))), 
+		array('li'=>'2'), // FIXME: there should be no output for nested (currently it has)
+		array('li'=>'3', 'nested'=>array()),
+		array('li'=>'4', 'nested'=>array(array('li'=>'4.1')))
+	)
+);
+
 echo $tpl->parse();

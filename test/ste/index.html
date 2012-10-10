@@ -1,4 +1,16 @@
 <!--   INCLUDE    header.html -->
 	<a href="{home.link.href}">{home.link.title}</a>
 	<h1>{title} - {description}</h1>
+	<ul>
+		<!-- BEGIN block -->
+		<li>
+			{block.li}
+			<ul>
+				<!-- BEGIN nested -->
+				<li>{block.li} => {nested.li}</li>
+				<!-- END nested -->
+			</ul>
+		</li>
+		<!-- END block -->
+	</ul>
 <!--  INCLUDE footer.html -->
