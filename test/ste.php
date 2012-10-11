@@ -17,10 +17,12 @@ $tpl->loop('mainmenu', array(array('item' => 'one'), array('item' => 'two', 'cur
 $tpl->hide('hideme');
 
 $tpl->loop('block', array(
-		array('li'=>'1', 'nested'=>array(array('li'=>'1.1'), array('li'=>'1.2'))), 
-		array('li'=>'2'), // FIXME: there should be no output for nested (currently it has)
-		array('li'=>'3', 'nested'=>array()),
-		array('li'=>'4', 'nested'=>array(array('li'=>'4.1')))
+		array('li'=>'1', 'nested'=>array(array('li'=>'1.1'), array('li'=>'1.2',
+			'nested2' => array(array('li'=>'1.2.1'), array('li'=>'1.2.2')),
+		), array('li'=>'1.3'))), 
+		array('li'=>'2', 'nested'=>array(array('li'=>'2.1'), array('li'=>'2.2'))),
+		array('li'=>'3'), // FIXME: there should be no output for nested (currently it has)
+		array('li'=>'4', 'nested'=>array()),
 	)
 );
 

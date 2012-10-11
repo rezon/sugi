@@ -16,7 +16,7 @@
  * </code>
  * 
  * @package Sugi
- * @version 20121010
+ * @version 20121011
  */
 namespace Sugi;
 
@@ -244,25 +244,33 @@ class Ste
 
 	protected function _replaceBlockCallback($matches) {
 		// check the block is hidden
-		if (!empty($this->hide[$matches[1]])) return false;
-
-		// loop
-		if (isset($this->loops[$matches[1]])) {
-			$return = '';
-			foreach ($this->loops[$matches[1]] as $key => $match) {
-				foreach ($match as $k=>$m) {
-					if (is_array($m)) {
-						$this->loops[$k] = $m;
-					}
-				}
-				$this->vars[$matches[1]] = $match;
-				$return .= $this->_parse($matches[2]);
-			}
-			return $return;
+		if (!empty($this->hide[$matches[1]])) {
+			return false;
 		}
 
-		// parse inside
-		return $this->_parse($matches[2]);
+		// if we have no registred loop
+		if (!isset($this->loops[$matches[1]])) {
+			return false;
+			// or parse inside
+			// return $this->_parse($matches[2]);
+		}
+
+		// loop
+		$return = '';
+		foreach ($this->loops[$matches[1]] as $key => $match) {
+			foreach ($match as $k=>$m) {
+				if (is_array($m)) {
+					$this->loops[$k] = $m;
+				}
+			}
+			$this->vars[$matches[1]] = $match;
+			$return .= $this->_parse($matches[2]);
+
+			// cleanup
+			unset($this->loops[$k]);
+			unset($this->vars[$matches[1]]);
+		}
+		return $return;
 	}
 }
 

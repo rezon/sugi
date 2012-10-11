@@ -7,10 +7,19 @@
 			{block.li}
 			<ul>
 				<!-- BEGIN nested -->
-				<li>{block.li} => {nested.li}</li>
+				<li>
+					{block.li} => {nested.li}
+					<ul>
+						<!-- BEGIN nested2 -->
+						<li>{block.li} => {nested.li} => {nested2.li}</li>
+						<!-- END nested2 -->
+					</ul>
+				</li>
 				<!-- END nested -->
 			</ul>
 		</li>
 		<!-- END block -->
 	</ul>
+
+	{block.li} -> {nested.li} -> {nested2.li}
 <!--  INCLUDE footer.html -->
