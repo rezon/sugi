@@ -1,8 +1,8 @@
-<!--   INCLUDE    header.html -->
+<!--   INCLUDE    header.html  -->
 	<a href="{home.link.href}">{home.link.title}</a>
 	<h1>{title} - {description}</h1>
 	<ul>
-		<!-- BEGIN block -->
+		<!-- BEGIN block  -->
 		<li>
 			{block.li}
 			<ul>
@@ -20,6 +20,7 @@
 		</li>
 		<!-- END block -->
 	</ul>
+	{block.li} {nested.li} {nested2.li}
 
-	{block.li} -> {nested.li} -> {nested2.li}
+
 <!--  INCLUDE footer.html -->

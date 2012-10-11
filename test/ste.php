@@ -22,7 +22,7 @@ $tpl->loop('block', array(
 		), array('li'=>'1.3'))), 
 		array('li'=>'2', 'nested'=>array(array('li'=>'2.1'), array('li'=>'2.2'))),
 		array('li'=>'3'), // FIXME: there should be no output for nested (currently it has)
-		array('li'=>'4', 'nested'=>array()),
+		array('li'=>'4', 'nested'=>false),
 	)
 );
 

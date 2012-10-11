@@ -29,7 +29,7 @@
  * )
  * 
  * @package Sugi
- * @version 20121008
+ * @version 20121011
  */
 namespace Sugi;
 use Sugi\File;
@@ -101,11 +101,6 @@ class Cron
 			static::$current_job = $file;
 
 			Logger::log("Cron job {$file} start", 'debug');
-			
-			if (!File::exists($file)) {
-				Logger::log("Cron could not start '{$file}'", 'error');
-				continue;
-			}
 			
 			// each job will be in try/except block. If one job fails others will run (hopefully).
 			try {
