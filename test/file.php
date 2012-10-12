@@ -3,7 +3,7 @@
  * File Testcases
  *
  * @package Sugi
- * @version 20121008
+ * @version 20121013
  */
 namespace Sugi;
 
@@ -50,6 +50,15 @@ ass("\Sugi\File::get('privatefile.txt', 'file is not readable') === 'file is not
 ass("\Sugi\File::get('path') === null");
 ass("\Sugi\File::ext('privatefile.txt') === 'txt'");
 ass("\Sugi\File::ext('path') === ''");
+ass("\Sugi\File::put('writable.txt', 'RW') === 2");
+ass("\Sugi\File::put('readonlyfile.txt', 'R') === false");
+ass("\Sugi\File::put('emptyfile.txt', '') === 0");
+ass("\Sugi\File::put('path', 'hi there') === false");
+ass("\Sugi\File::append('readonlyfile.txt', 'R') === false");
+ass("\Sugi\File::append('emptyfile.txt', 'foo') === 3");
+ass("\Sugi\File::append('emptyfile.txt', 'bar') === 3");
+ass("\Sugi\File::get('emptyfile.txt') === 'foobar'");
+ass("\Sugi\File::append('path', 'hi there') === false");
 
 ?>
 </body>
