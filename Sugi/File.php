@@ -1,49 +1,51 @@
-<?php
+<?php namespace Sugi;
 /**
  * File
- * Wrapper functions to ease file specific operations
+ * Wrapper functions to ease file specific operations.
+ * Directory operations are intensionally avoided.
  *
  * @package Sugi
  * @version 20121013
  */
-namespace Sugi;
 
 class File
 {
-
 	/**
 	 * Determine if the file exists.
 	 *
-	 * @param string $file - filename with optional path
+	 * @param string $filename - filename with optional path
 	 * @return boolean
 	 */
-	public static function exists($file) {
-		return is_file($file);
+	public static function exists($filename)
+	{
+		return is_file($filename);
 	}
 
 	/**
 	 * Determine if the file can be opened for reading
 	 *
-	 * @param string $file - filename with optional path
+	 * @param string $filename - filename with optional path
 	 * @return boolean
 	 */
-	public static function readable($file) {
-		return static::exists($file) && is_readable($file);
+	public static function readable($filename)
+	{
+		return static::exists($filename) && is_readable($filename);
 	}
 
 	/**
 	 * Determine if the file is writable.
 	 *
-	 * @param string $file - filename with optional path
+	 * @param string $filename - filename with optional path
 	 * @return boolean
 	 */
-	public static function writable($file) {
-		return static::exists($file) && is_writable($file);
+	public static function writable($filename)
+	{
+		return static::exists($filename) && is_writable($filename);
 	}
 
 	/**
 	 * Trying to get the contents of the file.
-	 * The file sholud exists and should be readable. If not default value will be returned.
+	 * The file should exists and should be readable. If not default value will be returned.
 	 *
 	 * <code>
 	 * 		// Get the contents of a file
@@ -53,56 +55,71 @@ class File
 	 *		$contents = File::get('foo/bar.txt', 'Default Value');
 	 * </code>
 	 *
-	 * @param string $file
+	 * @param string $filename
 	 * @param string $default
 	 * @return string
 	 */
-	public static function get($file, $default = null) {
-		return static::readable($file) ? file_get_contents($file) : $default;
+	public static function get($filename, $default = null)
+	{
+		return static::readable($filename) ? file_get_contents($filename) : $default;
 	}
 
 	/**
 	 * Writes data in the file
 	 *
-	 * @param string $file
+	 * @param string $filename
 	 * @param string $data
 	 * @return integer - the number of bytes that were written to the file, or FALSE on failure.
 	 */
-	public static function put($file, $data)
+	public static function put($filename, $data)
 	{
-		return file_put_contents($file, $data, LOCK_EX);
+		return file_put_contents($filename, $data, LOCK_EX);
 	}
 
 	/**
 	 * Append given data to the file
 	 *
-	 * @param string $file
+	 * @param string $filename
 	 * @param string $data
 	 * @return integer - the number of bytes that were written to the file, or FALSE on failure.
 	 */
-	public static function append($file, $data)
+	public static function append($filename, $data)
 	{
-		return file_put_contents($file, $data, LOCK_EX | FILE_APPEND);
+		return file_put_contents($filename, $data, LOCK_EX | FILE_APPEND);
 	}
 
+	/**
+	 * Changes file mode
+	 *
+	 * @param string $filename
+	 * @param octal $mode
+	 * @return boolean - TRUE on success or FALSE on failure. 
+	 */
+	public static function chmod($filename, $mode)
+	{
+		// intentionally check $filename is a file not a path since chmod works also on paths
+		return /*preg_match('@^0[0-7]{3}$@', $mode) and*/ static::exists($filename) and chmod($filename, $mode);
+	}
 
 	/**
 	 * Gets last modification time of the file
 	 *
-	 * @param string $file
-	 * @return integer, or false on failure (eg. file does not exists)
+	 * @param string $filename
+	 * @return integer, or FALSE on failure (e.g. file does not exists)
 	 */
-	public static function modified($file) {
-		return @filemtime($file);
+	public static function modified($filename)
+	{
+		return @filemtime($filename);
 	}
 
 	/** 
 	 * Extracts file extension from the name of the file
 	 *
-	 * @param string $file
+	 * @param string $filename
 	 * @return string
 	 */
-	public static function ext($file) {
-		return pathinfo($file, PATHINFO_EXTENSION);
+	public static function ext($filename)
+	{
+		return pathinfo($filename, PATHINFO_EXTENSION);
 	}
 }

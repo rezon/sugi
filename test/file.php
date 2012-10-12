@@ -1,11 +1,10 @@
-<?php
+<?php namespace Sugi;
 /**
  * File Testcases
  *
  * @package Sugi
  * @version 20121013
  */
-namespace Sugi;
 
 include_once "../Sugi/File.php";
 
@@ -59,6 +58,9 @@ ass("\Sugi\File::append('emptyfile.txt', 'foo') === 3");
 ass("\Sugi\File::append('emptyfile.txt', 'bar') === 3");
 ass("\Sugi\File::get('emptyfile.txt') === 'foobar'");
 ass("\Sugi\File::append('path', 'hi there') === false");
+ass("\Sugi\File::chmod('nonexistsingfile.txt', 0666) === false");
+ass("\Sugi\File::chmod('path', 0775) === false");
+ass("\Sugi\File::chmod('emptyfile.txt', 0666) === true");
 
 ?>
 </body>
