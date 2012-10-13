@@ -1,4 +1,4 @@
-<?php
+<?php namespace Sugi;
 /**
  * How to safely store passwords in the DB.
  * Generates unique hash even for same passwords. The hash is 60 chars.
@@ -19,14 +19,14 @@
  * </code>
  * 
  * @package Sugi
- * @version 20121007
+ * @version 20121013
  */
-namespace Sugi;
 
 /**
  * Hash class
  */
-class Hash {
+class Hash
+{
 	/**
 	 * Algorithm we use: blowfish
 	 */
@@ -37,23 +37,39 @@ class Hash {
 	 */
 	private static $cost = '$10';
 
+
 	/**
-	 * Generating unique salt each time we use 
-	 * for internal use 
+	 * Generates a hash
+	 * 
+	 * @param string $password
+	 * @return string
 	 */
-	protected static function unique_salt() {
-		return substr(sha1(mt_rand()), 0, 22);
+	public static function make($password)
+	{
+		return crypt($password, static::$algo . static::$cost . '$' . static::unique_salt());
 	}
 
-	// this will be used to generate a hash
-	public static function make($password) {
-		return crypt($password, self::$algo . self::$cost . '$' . self::unique_salt());
-	}
-
-	// this will be used to compare a password against a hash
-	public static function check($hash, $password) {
+	/**
+	 * Compares a password against a hash
+	 * 
+	 * @param string $hash - password hash made with make() method
+	 * @param string $password - password provided on login
+	 * @return boolean
+	 */
+	public static function check($hash, $password)
+	{
 		$salt = substr($hash, 0, 29);
 		$new_hash = crypt($password, $salt);
 		return ($hash === $new_hash);
+	}
+
+	/**
+	 * Generates unique salt each time we use it
+	 *
+	 * @return string
+	 */
+	protected static function unique_salt()
+	{
+		return substr(sha1(mt_rand()), 0, 22);
 	}
 }

@@ -1,9 +1,9 @@
-<?php
+<?php namespace Sugi;
 /**
  * Cron jobs.
  * 
  * Cronjobs are configured via crontab files similar to *NIX style
- * for example one config file can look like this:
+ * for example one configuration file can look like this:
  * @example (
  * 		# min		hour		day		month		dayofweek		command
  *		*	*	*	*	*	foo.php
@@ -16,7 +16,7 @@
  * Lines starting with # are considered comments and are not started
  * 
  * Cron entry file can be started via CLI or via web request (lynx, wget etc.)
- * It should be started every minute! Local cronjob is prefered
+ * It should be started every minute! Local cronjob is preferred
  * 
  * @example (
  *  * 		*	*	*	*	*	/usr/bin/php /var/www/example.com/app/files/cron.php >/dev/null 2>&1
@@ -29,9 +29,8 @@
  * )
  * 
  * @package Sugi
- * @version 20121011
+ * @version 20121013
  */
-namespace Sugi;
 use Sugi\File;
 use Sugi\Logger;
 
@@ -46,7 +45,13 @@ class Cron
 	protected $jobs = array();
 	protected static $current_job;
 
-	public static function start($config = array()) {
+	/**
+	 * Creates an instance of Cron and executes it immediately
+	 * 
+	 * @param array $config
+	 */
+	public static function start($config = array())
+	{
 		$cron = new self($config);
 		$cron->proceed();
 	}
@@ -54,9 +59,10 @@ class Cron
 	/**
 	 * Constructor
 	 * 
-	 * @param arr $config
+	 * @param array $config
 	 */
-	public function __construct($config = array()) {
+	public function __construct($config = array())
+	{
 		// current time
 		$this->timestamp = time();
 
@@ -88,7 +94,8 @@ class Cron
 	/**
 	 * Start each cron task which has to start in that moment
 	 */
-	public function proceed() {
+	public function proceed()
+	{
 		// catch errors
 		set_error_handler(array("\Sugi\Cron", 'error_handler'));
 		
@@ -126,9 +133,10 @@ class Cron
 	/**
 	 * Returns cron tasks that should start now
 	 * 
-	 * @return arr
+	 * @return array
 	 */
-	public function get_jobs() {
+	public function get_jobs()
+	{
 		$return = array();
 		foreach ($this->jobs as $job) {
 			if ($job['start']) $return[] = $job;
@@ -139,25 +147,25 @@ class Cron
 	/**
 	 * Returns all cron tasks
 	 * 
-	 * @return arr
+	 * @return array
 	 */
-	public function get_all_jobs() {
+	public function get_all_jobs()
+	{
 		return $this->jobs;
 	}
 	
 	/**
 	 * Parses configuration file - cron jobs
 	 * 
-	 * @return bool - false on empty job list OR when no crontab file available
+	 * @return boolean - false on empty job list OR when no crontab file available
 	 */
-	protected function parse() {
+	protected function parse()
+	{
 		// clear all jobs
 		$this->jobs = array();
 		
 		// is the file loaded
-		if (!$this->file) {
-			return false;
-		}
+		if (!$this->file) return false;
 		
 		// create regular exp
 		$re = $this->build_regexp();
@@ -168,11 +176,13 @@ class Cron
 				continue;
 			}
 			if ($res = preg_match($re, $row, $matches) !== 0) {
-				$matches['start'] = ($this->check_dow($matches['dow'])
-										AND $this->check_month($matches['month'])
-										AND $this->check_day($matches['day'])
-										AND $this->check_hour($matches['hour'])
-										AND $this->check_min($matches['min']));
+				$matches['start'] = (
+					    $this->check_dow($matches['dow'])
+					and $this->check_month($matches['month'])
+					and $this->check_day($matches['day'])
+					and $this->check_hour($matches['hour'])
+					and $this->check_min($matches['min'])
+				);
 				$this->jobs[] = array(
 					'min'		=> $matches['min'],
 					'hour'		=> $matches['hour'],
@@ -193,8 +203,8 @@ class Cron
 		$values = explode(',', $value);
 		foreach($values as $val) {
 			if ($val == '*') return true;
-			if ((Filter::int($val, $min, $max, false) !== false) AND ($time == $val)) return true;
-			if (($val = $this->check_recursive($val)) AND ($times % $val === 0)) return true;
+			if ((Filter::int($val, $min, $max, false) !== false) and ($time == $val)) return true;
+			if (($val = $this->check_recursive($val)) and ($times % $val === 0)) return true;
 		}
 		return false;
 	}
@@ -219,7 +229,7 @@ class Cron
 		$values = explode(',', $value);
 		foreach($values as $val) {
 			if ($val == '*') return true;
-			if ((Filter::int($val, 0, 7, false) !== false) AND ($this->time['dow'] == $val)) return true;
+			if ((Filter::int($val, 0, 7, false) !== false) and ($this->time['dow'] == $val)) return true;
 		}
 		return false;
 	}
@@ -275,7 +285,8 @@ class Cron
 	/**
 	 * Destructor
 	 */
-	public function __destruct() {
+	public function __destruct()
+	{
 		if ($this->file) {
 			fclose($this->file);
 		}

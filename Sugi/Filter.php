@@ -1,12 +1,11 @@
-<?php
+<?php namespace Sugi;
 /**
  * Filters
  * Wrapper functions for filter_var() in PHP >= 5.2
  *
  * @package Sugi
- * @version 20121003
+ * @version 20121013
  */
-namespace Sugi;
 
 class Filter
 {
@@ -19,7 +18,8 @@ class Filter
 	 * @param mixed $default_value - this is what will be returned if the filter fails 
 	 * @return mixed
 	 */
-	public static function int($value, $min_range = false, $max_range = false, $default_value = false) {
+	public static function int($value, $min_range = false, $max_range = false, $default_value = false)
+	{
 		$options = array('options' => array());
 		if (isset($default_value)) $options['options']['default'] = $default_value;
 		if (!is_null($min_range) AND ($min_range !== false)) $options['options']['min_range'] = $min_range;
@@ -36,13 +36,14 @@ class Filter
 	/**
 	 * Validates string value
 	 * 
-	 * @param str $value
-	 * @param int $min_length
+	 * @param string $value
+	 * @param integer $min_length
 	 * @param mixed $max_length
 	 * @param mixed $default_value
 	 * @return mixed
 	 */
-	static function str($value, $min_length = 0, $max_length = false, $default_value = false) {
+	static function str($value, $min_length = 0, $max_length = false, $default_value = false)
+	{
 		$value = trim($value);
 		if (!empty($min_length) AND (mb_strlen($value, 'UTF-8') < $min_length)) return $default_value;
 		if (!empty($max_length) AND (mb_strlen($value, 'UTF-8') > $max_length)) return $default_value;
@@ -52,13 +53,14 @@ class Filter
 	/**
 	 * Validates string and is removing tags from it
 	 * 
-	 * @param str $value
-	 * @param int $min_length
+	 * @param string $value
+	 * @param integer $min_length
 	 * @param mixed $max_length
 	 * @param mixed $default_value
 	 * @return mixed
 	 */
-	static function plain($value, $min_length = 0, $max_length = false, $default_value = false) {
+	static function plain($value, $min_length = 0, $max_length = false, $default_value = false)
+	{
 		$value = strip_tags($value);
 		return static::str($value, $min_length, $max_length, $default_value);
 	}
@@ -69,11 +71,12 @@ class Filter
 	 * http://localhost is also not valid since we want some user's url, not localhost
 	 * http://8.8.8.8 is not accepted, it's IP, not URL
 	 *  
-	 * @param str $value - URL to filter
+	 * @param string $value - URL to filter
 	 * @param mixed $default_value - return value if filter fails 
 	 * @return mixed
 	 */
-	static function url($value, $default_value = false) {
+	static function url($value, $default_value = false)
+	{
 		$protocol = 'http(s)?://'; // starting with http:// or https:// no more protocols are accepted
 		$userpass = "([a-z0-9+!*(),;?&=\$_.-]+(\:[a-z0-9+!*(),;?&=\$_.-]+)?@)?";
 		$domain = '([\w_-]+\.)+[\w_-]{2,}'; // at least x.xx
@@ -87,12 +90,13 @@ class Filter
 	/**
 	 * Validates email
 	 * 
-	 * @param str $value
+	 * @param string $value
 	 * @param mixed $default_value - default value to return on validation failure
 	 * @param bool $check_mx_record - check existance of MX record. If check fails default value will be returned
 	 * @return mixed
 	 */
-	static function email($value, $default_value = false, $check_mx_record = false) {
+	static function email($value, $default_value = false, $check_mx_record = false)
+	{
 		if (!$value = filter_var($value, FILTER_VALIDATE_EMAIL)) {
 			return $default_value;
 		}
@@ -106,18 +110,19 @@ class Filter
 	 * Validates skype names
 	 * Skype Name must be between 6 and 32 characters. It must start with a letter and can contain only letters, numbers, full stop (.), comma (,), dash (-), underscore (_)
 	 *  
-	 * @param str $value - skype name to validate
+	 * @param string $value - skype name to validate
 	 * @param mixed $default_value - return value if filter fails
 	 * @return mixed - string on success (value) or $default_value on failure
 	 */
-	static function skype($value, $default_value = false) {
+	static function skype($value, $default_value = false)
+	{
 		return (preg_match('~^[a-z]([a-z0-9-_,\.]){5,31}$~i', $value)) ? $value : $default_value;
 	}
 
 	/**
 	 * Validates $_GET[$key] value
 	 * 
-	 * @param str $key - key parameter of $_GET
+	 * @param string $key - key parameter of $_GET
 	 * @param mixed $default_value - return value if filter fails
 	 * @return mixed - string on success ($_GET[$key] value) or $default_value on failure
 	 */
@@ -129,7 +134,7 @@ class Filter
 	/**
 	 * Validates $_POST[$key] value
 	 * 
-	 * @param str $key - key parameter of $_POST
+	 * @param string $key - key parameter of $_POST
 	 * @param mixed $default_value - return value if filter fails
 	 * @return mixed - string on success ($_POST[$key] value) or $default_value on failure
 	 */
@@ -141,7 +146,7 @@ class Filter
 	/**
 	 * Validates $_COOKIE[$key] value
 	 * 
-	 * @param str $key - key parameter of $_COOKIE
+	 * @param string $key - key parameter of $_COOKIE
 	 * @param mixed $default_value - return value if filter fails
 	 * @return mixed - string on success ($_COOKIE[$key] value) or $default_value on failure
 	 */
@@ -153,118 +158,126 @@ class Filter
 	/**
 	 * Validate string from GET paramether - $_GET['key']
 	 * 
-	 * @param str $key
-	 * @param int $min_length
+	 * @param string $key
+	 * @param integer $min_length
 	 * @param mixed $max_length - integer or false when there is no limit
 	 * @param mixed $default_value - default value will be returned when validation fails
 	 * @return mixed
 	 */
-	static function get_str($key, $min_length = 0, $max_length = false, $default_value = false) {
+	static function get_str($key, $min_length = 0, $max_length = false, $default_value = false)
+	{
 		return static::str(static::get($key), $min_length, $max_length, $default_value);
 	}
 	
 	/**
 	 * Validate string from POST paramether - $_POST['key']
 	 * 
-	 * @param str $key
-	 * @param int $min_length
+	 * @param string $key
+	 * @param integer $min_length
 	 * @param mixed $max_length - integer or false when there is no limit
 	 * @param mixed $default_value - default value will be returned when validation fails
 	 * @return mixed
 	 */
-	static function post_str($key, $min_length = 0, $max_length = false, $default_value = false) {
+	static function post_str($key, $min_length = 0, $max_length = false, $default_value = false)
+	{
 		return static::str(static::post($key), $min_length, $max_length, $default_value);
 	}
 	
 	/**
 	 * Validate string from COOKIE - $_COOKIE['key']
 	 * 
-	 * @param str $key
-	 * @param int $min_length
+	 * @param string $key
+	 * @param integer $min_length
 	 * @param mixed $max_length - integer or false when there is no limit
 	 * @param mixed $default_value - default value will be returned when validation fails
 	 * @return mixed
 	 */
-	static function cookie_str($key, $min_length = 0, $max_length = false, $default_value = false) {
+	static function cookie_str($key, $min_length = 0, $max_length = false, $default_value = false)
+	{
 		return static::str(static::cookie($key), $min_length, $max_length, $default_value);
 	}
 	
 	/**
 	 * Validates plain text from GET paramether - $_GET['key']
 	 * 
-	 * @param str $key
+	 * @param string $key
 	 * @param integer $min_length
 	 * @param mixed $max_length - integer or false when there is no limit
 	 * @param mixed $default_value - default value will be returned when validation fails
 	 * @return mixed
 	 */
-	static function get_plain($key, $min_length = 0, $max_length = false, $default_value = false) {
+	static function get_plain($key, $min_length = 0, $max_length = false, $default_value = false)
+	{
 		return static::plain(static::get($key), $min_length, $max_length, $default_value);
 	}
 	
 	/**
 	 * Validates plain text from POST paramether - $_POST['key']
 	 * 
-	 * @param str $key
-	 * @param int $min_length
+	 * @param string $key
+	 * @param integer $min_length
 	 * @param mixed $max_length - integer or false when there is no limit
 	 * @param mixed $default_value - default value will be returned when validation fails
 	 * @return mixed
 	 */
-	static function post_plain($key, $min_length = 0, $max_length = false, $default_value = false) {
+	static function post_plain($key, $min_length = 0, $max_length = false, $default_value = false)
+	{
 		return static::plain(static::post($key), $min_length, $max_length, $default_value);
 	}
 	
 	/**
 	 * Validates plain text from COOKIE - $_COOKIE['key']
 	 * 
-	 * @param str $key
-	 * @param int $min_length
+	 * @param string $key
+	 * @param integer $min_length
 	 * @param mixed $max_length - integer or false when there is no limit
 	 * @param mixed $default_value - default value will be returned when validation fails
 	 * @return mixed
 	 */
-	static function cookie_plain($key, $min_length = 0, $max_length = false, $default_value = false) {
+	static function cookie_plain($key, $min_length = 0, $max_length = false, $default_value = false)
+	{
 		return static::plain(static::cookie($key), $min_length, $max_length, $default_value);
 	}
 	
 	/**
 	 * Validate integer from GET parameter - $_GET['key']
 	 * 
-	 * @param str $key
+	 * @param string $key
 	 * @param mixed $min_range - integer or false not to check
 	 * @param mixed $max_range - integer or false when there is no limit
 	 * @param mixed $default_value - integer will be returned when validation succeeds, or default value of failure
 	 * @return mixed
 	 */
-	static function get_int($key, $min_range = false, $max_range = false, $default_value = false) {
+	static function get_int($key, $min_range = false, $max_range = false, $default_value = false)
+	{
 		return static::int(static::get($key), $min_range, $max_range, $default_value);
 	}
 
 	/**
 	 * Validate integer from POST parameter - $_POST['key']
 	 * 
-	 * @param str $key
+	 * @param string $key
 	 * @param mixed $min_range - integer or false not to check
 	 * @param mixed $max_range - integer or false when there is no limit
 	 * @param mixed $default_value - integer will be returned when validation succeeds, or default value of failure
 	 * @return mixed
 	 */
-	static function post_int($key, $min_range = false, $max_range = false, $default_value = false) {
+	static function post_int($key, $min_range = false, $max_range = false, $default_value = false)
+	{
 		return static::int(static::post($key), $min_range, $max_range, $default_value);
 	}
 	
 	/**
 	 * Validate integer from COOKIE - $_COOKIE['key']
 	 * 
-	 * @param str $key
+	 * @param string $key
 	 * @param mixed $min_range - integer or false not to check
 	 * @param mixed $max_range - integer or false when there is no limit
 	 * @param mixed $default_value - integer will be returned when validation succeeds, or default value of failure
 	 * @return mixed
 	 */
-	static function cookie_int($key, $min_range = false, $max_range = false, $default_value = false) {
+	static function cookie_int($key, $min_range = false, $max_range = false, $default_value = false)
+	{
 		return static::int(static::cookie($key), $min_range, $max_range, $default_value);
 	}
-
 }

@@ -1,12 +1,11 @@
-<?php
+<?php namespace Sugi;
 /**
  * Application base class
  * Autoloads and executes application specific classes
  *
  * @package Sugi
- * @version 20121004
+ * @version 20121013
  */
-namespace Sugi;
 
 defined('APPLICATION_START') or define('APPLICATION_START', microtime(true));
 
@@ -21,9 +20,9 @@ class App
 	 * Autoload function - loads var classes
 	 *
 	 * @param string $class_name
-	 * @return void
 	 */
-	public static function autoload($class_name) {
+	public static function autoload($class_name)
+	{
 		if (!class_exists($class_name)) {
 			if ($file = static::search_file(str_replace('_', DIRECTORY_SEPARATOR, strtolower($class_name)).'.php')) {
 				require_once $file;
@@ -33,20 +32,18 @@ class App
 
 	/**
 	 * Registers application autoload function
-	 *
-	 * @return void
 	 */
-	public static function register() {
+	public static function register()
+	{
 		static::$registered = true;
-		spl_autoload_register(array('\Sugi\App', 'autoload'), TRUE, FALSE);
+		spl_autoload_register(array('\Sugi\App', 'autoload'), true, false);
 	}
 
 	/**
 	 * Unregisters application autoload function
-	 * 
-	 * @return void
 	 */
-	public static function unregister() {
+	public static function unregister()
+	{
 		static::$registered = false;
 		spl_autoload_unregister(array('\Sugi\App', 'autoload'));
 	}
@@ -54,10 +51,10 @@ class App
 	/**
 	 * Convinient way to configure application
 	 *
-	 * @param arr $config
-	 * @return void
+	 * @param array $config
 	 */
-	public static function configure($config = array()) {
+	public static function configure($config = array())
+	{
 		/**
 		 * Define DEBUG flag
 		 * Debug depends of is it on development or production, 
@@ -117,50 +114,52 @@ class App
 	 * @param string $file
 	 * @return mixed - string if we have located the file, false if there is no such file in the search path
 	 */
-	public static function search_file($file) {
+	public static function search_file($file)
+	{
 		$where = explode(PATH_SEPARATOR, get_include_path());
 		if (static::$path) $where = array_merge(static::$path, $where);
 		foreach ($where as $path) {
 			$path = rtrim($path, '/') . DS;
 			if (File::exists($path.$file)) return $path.$file;
 		}
-		return FALSE;
+		return false;
 	}
 
 	/**
 	 * Check method from a class can be called 
 	 *
-	 * @param $class
-	 * @param $method
+	 * @param mixed $class
+	 * @param string $method
 	 */
-	public static function class_method_exists($class, $method) {
+	public static function class_method_exists($class, $method)
+	{
 		try {
 			// Load the controller using reflection
 			$class = new \ReflectionClass($class);
 
 			// Check we can create an instance of the class
 			if ($class->isAbstract()) {
-				return FALSE;
+				return false;
 			}
 			
 			// Check the class has needed method
 			if (!$class->hasMethod($method)) {
-				return FALSE;
+				return false;
 			}
 			
 			// Is the method callable?
 			if (!$class->getMethod($method)->isPublic()) {
-				return FALSE;
+				return false;
 			}
 	
-			return TRUE; 
+			return true;
 		}
 		catch (\Exception $e) {
 			if ($e instanceof \ReflectionException) {
 				// Reflection will throw exceptions for missing classes or actions
-				return FALSE;
+				return false;
 			}
-		} 
+		}
 	}
 	
 	/**
@@ -171,7 +170,8 @@ class App
 	 * @param array $params
 	 * @return mixed
 	 */
-	public static function execute($class, $method, $params) {
+	public static function execute($class, $method, $params)
+	{
 		try {
 			// Load the controller using reflection
 			$class = new \ReflectionClass($class);
@@ -193,7 +193,7 @@ class App
 		catch (\Exception $e) {
 			if ($e instanceof \ReflectionException) {
 				// Reflection will throw exceptions for missing classes or actions
-				return FALSE;
+				return false;
 			}
 	
 			// All other exceptions are PHP/server errors (status 500)
