@@ -12,6 +12,8 @@
  *		0	17	*	*	*	bar.php
  *		*	16	*	*	*	bar.php
  *		15,45	*	*	*	*	foobar.php
+ *		*	9-17	*	*	*	work-hours.php
+ *		0	20-8,12	*	*	*	at-night-and-at-noon.php
  * ) 
  * Lines starting with # are considered comments and are not started
  * 
@@ -33,6 +35,7 @@
  */
 use Sugi\File;
 use Sugi\Logger;
+use Sugi\Filter;
 
 /**
  * Cron class
@@ -172,7 +175,7 @@ class Cron
 		
 		while (($row = fgets($this->file)) !== false) {
 			// check for commented rows
-			if (!$row = trim($row) OR strpos($row, '#') === 0) {
+			if (!$row = trim($row) or strpos($row, '#') === 0) {
 				continue;
 			}
 			if ($res = preg_match($re, $row, $matches) !== 0) {
@@ -199,33 +202,52 @@ class Cron
 		}
 	}
 	
-	protected function check_($value, $min, $max, $time, $times) {
+	protected function check_($value, $min, $max, $time, $times)
+	{
+		// if we have lists
 		$values = explode(',', $value);
+		// for each instance of the list
 		foreach($values as $val) {
+			// start always
 			if ($val == '*') return true;
+			// start at some interval
+			if (strpos($val, '-') > 0) {
+				list($from, $to) = explode('-', $val);
+				// like 8-20
+				if (($from <= $to) and ($time >= $from) and ($time <= $to)) return true;
+				// like 21-7
+				if (($from > $to) and (($time >= $from) or ($time <= $to))) return true;
+			}
+			// exact match
 			if ((Filter::int($val, $min, $max, false) !== false) and ($time == $val)) return true;
+			// recursive
 			if (($val = $this->check_recursive($val)) and ($times % $val === 0)) return true;
 		}
 		return false;
 	}
 	
-	protected function check_month($value) {
+	protected function check_month($value)
+	{
 		return $this->check_($value, 1, 12, $this->time['month'], $this->time['months']);
 	}
 	
-	protected function check_day($value) {
+	protected function check_day($value)
+	{
 		return $this->check_($value, 0, 31, $this->time['day'], $this->time['days']);
 	}
 	
-	protected function check_hour($value) {
+	protected function check_hour($value)
+	{
 		return $this->check_($value, 0, 23, $this->time['hour'], $this->time['hours']);
 	}
 	
-	protected function check_min($value) {
+	protected function check_min($value)
+	{
 		return $this->check_($value, 0, 59, $this->time['min'], $this->time['mins']);
 	}
 	
-	protected function check_dow($value) {
+	protected function check_dow($value)
+	{
 		$values = explode(',', $value);
 		foreach($values as $val) {
 			if ($val == '*') return true;
@@ -234,13 +256,15 @@ class Cron
 		return false;
 	}
 	
-	protected function check_recursive($value) {
+	protected function check_recursive($value)
+	{
 		if (strpos($value, '/') === 0) return substr($value, 1);
 		if (strpos($value, '*/') === 0) return substr($value, 2);
 		return false;
 	}
 	
-	protected function build_regexp() {
+	protected function build_regexp()
+	{
 		$cols = array(
 			'min' 		=> '[0-5]?\d',
 			'hour' 		=> '[01]?\d|2[0-3]',
@@ -251,7 +275,8 @@ class Cron
 
 		$regex = '';
 		foreach ($cols as $field => $value) {
-			$regex .= "(?<$field>($value)(\,($value))*|\*|\*?\/($value))\s+";
+			$interval = "($value)(\-($value))?";
+			$regex .= "(?<$field>($interval)(\,($interval))*|\*|\*?\/($value))\s+";
 		}
 		$regex .= '(?<command>.*)';
 		
@@ -259,7 +284,8 @@ class Cron
 	}
 
 	// error handler function
-	public static function error_handler($errno, $errstr, $errfile, $errline) {
+	public static function error_handler($errno, $errstr, $errfile, $errline)
+	{
 		$errortype = array(
 			E_ERROR           => 'Error',
 			E_WARNING         => 'Warning',

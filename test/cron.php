@@ -12,6 +12,7 @@ ini_set('display_errors', 1);
 
 include_once "../Sugi/Cron.php";
 include_once "../Sugi/File.php";
+include_once "../Sugi/Filter.php";
 include_once "../Sugi/Logger.php";
 
 // initialize stdout logger
