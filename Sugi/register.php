@@ -1,12 +1,11 @@
-<?php
+<?php namespace Sugi;
 /**
  * Register file will application autoload function
  * This file will be invoked with composer autoload file directive
  *
  * @package Sugi
- * @version 20121004
+ * @version 20121013
  */
-namespace Sugi;
 
 include_once 'App.php';
 

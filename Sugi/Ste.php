@@ -1,4 +1,4 @@
-<?php 
+<?php namespace Sugi; 
 /**
  * Sugi Template Engine
  * <code>
@@ -16,9 +16,8 @@
  * </code>
  * 
  * @package Sugi
- * @version 20121011
+ * @version 20121013
  */
-namespace Sugi;
 
 /**
  * Sugi Template Engine
@@ -89,18 +88,29 @@ class Ste
 	 */
 	protected $loops = array();
 
+	/**
+	 * Which blocks are set not to be rendered
+	 * 
+	 * @var array
+	 */
 	protected $hide = array();
 
+	/**
+	 * Current include path based on last proceeded file
+	 * 
+	 * @var string
+	 */
 	protected $include_path;
-
 
 
 	/**
 	 * Loads a template file
 	 * 
 	 * @param string filename
+	 * @return string
 	 */
-	public function load($template_file) {
+	public function load($template_file)
+	{
 		$template = $this->_load($template_file);
 
 		return $this->template($template);
@@ -112,7 +122,8 @@ class Ste
 	 * @param string $template
 	 * @return string
 	 */
-	public function template($template = null) {
+	public function template($template = null)
+	{
 		if (!is_null($template)) {
 			$this->tpl = $template;
 		}
@@ -133,7 +144,8 @@ class Ste
 	 * @param mixed $var
 	 * @param mixed $value
 	 */
-	public function set($var, $value = null) {
+	public function set($var, $value = null)
+	{
 		if (is_array($var)) {
 			$this->vars = array_merge($this->vars, $var);
 		}
@@ -151,7 +163,8 @@ class Ste
 	 * @param  string $blockname name of the block
 	 * @param  array  $values  array of array of values
 	 */
-	public function loop($blockname, $values = array()) {
+	public function loop($blockname, $values = array())
+	{
 		$this->loops[$blockname] = $values;
 		//$this->vars[$blockname] = $values;
 	}
@@ -161,7 +174,8 @@ class Ste
 	 * 
 	 * @param  string $blockname
 	 */
-	public function hide($blockname) {
+	public function hide($blockname)
+	{
 		$this->hide[$blockname] = true;
 	}
 
@@ -169,7 +183,8 @@ class Ste
 	 * Unhides a block
 	 * @param string $blockname
 	 */
-	public function unhide($blockname) {
+	public function unhide($blockname)
+	{
 		unset($this->hide[$blockname]);	
 	}
 
@@ -178,14 +193,16 @@ class Ste
 	 * 
 	 * @return string
 	 */
-	public function parse() {
+	public function parse()
+	{
 		return $this->_parse($this->tpl);
 	}
 
 
 
 
-	protected function _load($template_file) {
+	protected function _load($template_file)
+	{
 		// check file exists and is readable
 		if (!File::readable($template_file)) {
 			throw new SteException("Could not read template file $template_file");
@@ -211,7 +228,8 @@ class Ste
 		return $template;
 	}
 
-	protected function _parse($subject) {
+	protected function _parse($subject)
+	{
 		// blocks
 		$subject = preg_replace_callback($this->blockRegEx, array(&$this, '_replaceBlockCallback'), $subject);
 		// replace variables
@@ -222,15 +240,18 @@ class Ste
 		return $subject;
 	}
 
-	protected function _replaceIncludesCallback($matches) {
+	protected function _replaceIncludesCallback($matches)
+	{
 		return $this->_load($this->include_path.$matches[1]);
 	}
 
-	protected function _replaceVarCallback($matches) {
+	protected function _replaceVarCallback($matches)
+	{
 		return isset($this->vars[$matches[1]]) ? $this->vars[$matches[1]] : false;
 	}
 
-	protected function _replaceArrCallback($matches) {
+	protected function _replaceArrCallback($matches)
+	{
 		$keys = explode('.', $matches[1]);
 		$vars = $this->vars;
 		foreach ($keys as $key => $val) {
@@ -242,7 +263,8 @@ class Ste
 		return $vars;
 	}
 
-	protected function _replaceBlockCallback($matches) {
+	protected function _replaceBlockCallback($matches)
+	{
 		// check the block is hidden
 		if (!empty($this->hide[$matches[1]])) {
 			return false;

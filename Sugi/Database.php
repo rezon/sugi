@@ -1,4 +1,4 @@
-<?php
+<?php namespace Sugi;
 /**
  * Database class - common database abstract class.
  * DatabaseException class
@@ -12,7 +12,6 @@
  * @package Sugi
  * @version 20121007
  */
-namespace Sugi;
 
 /**
  * Database class
@@ -22,9 +21,10 @@ abstract class Database
 	/**
 	 * Opens connection to the database
 	 * 
-	 * @return db connection object
+	 * @return mixed - database connection object
 	 */
-	public function open() {
+	public function open()
+	{
 		$this->h_open();
 		return $this->_conn;
 	}
@@ -32,7 +32,8 @@ abstract class Database
 	/**
 	 * Closes connection to the database
 	 */
-	public function close() {
+	public function close()
+	{
 		if ($this->_conn and $this->h_close()) {
 			$this->_conn = null;
 		}
@@ -44,7 +45,8 @@ abstract class Database
 	 * @param string $item
 	 * @return string
 	 */
-	public function escape($item) {
+	public function escape($item)
+	{
 		// For delayed opens
 		if (!$this->_conn) {
 			$this->open();
@@ -57,8 +59,10 @@ abstract class Database
 	 * Query could be any valid SQL statement.
 	 * 
 	 * @param string $sql
+	 * @throws DatabaseException If the query fails
 	 */
-	public function query($sql) {
+	public function query($sql)
+	{
 		// For delayed opens
 		if (!$this->_conn) {
 			$this->open($this->_params);
@@ -76,7 +80,8 @@ abstract class Database
 	 * @param handle $res result returned from query()
 	 * @return array
 	 */
-	public function fetch($res) {
+	public function fetch($res)
+	{
 		return $this->h_fetch($res);
 	}
 
@@ -86,7 +91,8 @@ abstract class Database
 	 * @param handle $res result returned from query()
 	 * @return array
 	 */
-	public function fetch_all($res) {
+	public function fetch_all($res)
+	{
 		$return = array();
 		while ($row = $this->fetch($res)) {
 			$return[] = $row;
@@ -100,7 +106,8 @@ abstract class Database
 	 * @param string $sql SQL statement
 	 * @return array
 	 */
-	public function all($sql) {
+	public function all($sql)
+	{
 		return $this->fetch_all($this->query($sql));
 	}
 	
@@ -110,7 +117,8 @@ abstract class Database
 	 * @param string $sql SQL statement
 	 * @return array
 	 */
-	public function single($sql) {
+	public function single($sql)
+	{
 		// For delayed opens
 		if (!$this->_conn) {
 			$this->open($this->_params);
@@ -121,10 +129,11 @@ abstract class Database
 	/**
 	 * Returns first field of the first row
 	 * 
-	 * @param str $sql SQL statment
+	 * @param string $sql - SQL statment
 	 * @return string
 	 */
-	public function single_field($sql) {
+	public function single_field($sql)
+	{
 		// For delayed opens
 		if (!$this->_conn) {
 			$this->open($this->_params);
@@ -138,16 +147,18 @@ abstract class Database
 	 * @param handle $res handle returned by query()
 	 * @return integer
 	 */
-	public function affected($res = null) {
+	public function affected($res = null)
+	{
 		return $this->h_affected($res);
 	}
 	
 	/**
 	 * Returns last ID returned after successfull INSERT statement
 	 * 
-	 * @return int
+	 * @return mixed
 	 */
-	public function last_id() {
+	public function last_id()
+	{
 		return $this->h_last_id();
 	}
 	
@@ -156,7 +167,8 @@ abstract class Database
 	 * 
 	 * @param handle $res handle returned by query()
 	 */
-	public function free($res) {
+	public function free($res)
+	{
 		$this->h_free($res);
 	}
 
@@ -165,7 +177,8 @@ abstract class Database
 	 * 
 	 * @return boolean
 	 */
-	public function begin() {
+	public function begin()
+	{
 		// For delayed opens
 		if (!$this->_conn) {
 			$this->open($this->_params);
@@ -178,7 +191,8 @@ abstract class Database
 	 *
 	 * @return boolean
 	 */
-	public function commit() {
+	public function commit()
+	{
 		return $this->h_commit();
 	}
 	
@@ -187,7 +201,8 @@ abstract class Database
 	 *
 	 * @return boolean
 	 */
-	public function rollback() {
+	public function rollback()
+	{
 		return $this->h_rollback();
 	}
 	
@@ -196,7 +211,8 @@ abstract class Database
 	 * 
 	 * @return handle
 	 */
-	public function get_connection() {
+	public function get_connection()
+	{
 		return $this->_conn;
 	}
 	
@@ -211,10 +227,11 @@ abstract class Database
 	 *  Database::hook('post_query', 'function_name')
 	 * </code>
 	 * 
-	 * @param str $event - pre or post method name
+	 * @param string $event - pre or post method name
 	 * @param mixed $callback - callable function or method name
 	 */
-	public function hook($event, $callback) {
+	public function hook($event, $callback)
+	{
 		// FIXME: this doesn't work with closures
 		if (is_array($callback)) $inx = get_class($callback[0]).'::'.$callback[1];
 		else $inx = $callback;
@@ -235,10 +252,11 @@ abstract class Database
 	 *  Database::unhook(false, 'test'); // This will unhook callback function test from any (pre and post) events
 	 * </code>
 	 * 
-	 * @param str $event
+	 * @param string $event
 	 * @param mixed $callback - callback function to unhook.
 	 */
-	public function unhook($event = null, $callback = null) {
+	public function unhook($event = null, $callback = null)
+	{
 		if (is_array($callback)) $inx = get_class($callback[0]).'::'.$callback[1];
 		else $inx = $callback;
 						
@@ -263,6 +281,7 @@ abstract class Database
 
 	/**
 	 * Database type - can be mysql, mysqli, sqlite, postgres...
+	 * 
 	 * @var string
 	 */
 	private $_dbtype = false;
@@ -288,7 +307,8 @@ abstract class Database
 	/**
 	 * Class constructor
 	 */
-	protected function __construct($dbtype, $params) {
+	protected function __construct($dbtype, $params)
+	{
 		$this->_dbtype = $dbtype;
 		$this->_params = $params;
 	}
@@ -297,10 +317,13 @@ abstract class Database
 	 * Some methods are prefixed with h_. Those methods should be started without using h_ (hook) prefix.
 	 * In this way those methods will get here and all hooks will be invoked
 	 * 
-	 * @param str $name - method name, that is invoked
-	 * @param arr $args - arguments that are passed
+	 * @param string $name - method name, that is invoked
+	 * @param array $args - arguments that are passed
+	 * @return mixed
+	 * @throws DatabaseException If method is not marked as hookable
 	 */
-	public function __call($name, $args) {
+	public function __call($name, $args)
+	{
 		// calling hookable method?
 		if (strpos($name, 'h_') !== 0) {
 			throw new DatabaseException("Call to undefined method Database::{$name}()");
@@ -338,13 +361,27 @@ abstract class Database
 		return $result;
 	}
 
-	public static function __callStatic($name, $arguments) {
+	/**
+	 * Creates the Database instance of the $name type
+	 * 
+	 * @example
+	 * <code>
+	 * 		$db = \Sugi\Database::sqlite3($config);
+	 * 		$db->open();
+	 * </code>
+	 * 
+	 * @param  string $name
+	 * @param  mixed $arguments
+	 * @return handle to created database class
+	 */
+	public static function __callStatic($name, $arguments)
+	{
 		$name = ucfirst(strtolower($name));
 		$class_name = "\Sugi\Database\\$name";
 		$class_file = dirname(__FILE__)."/Database/{$name}.php";
 		if (!class_exists($class_name)) {
 			if (!file_exists($class_file)) {
-				throw new \Exception("Call to undefined method Sugi\Database::{$name}()");
+				throw new DatabaseException("Call to undefined method Sugi\Database::{$name}()");
 			}
 			include $class_file;
 		}
@@ -355,7 +392,8 @@ abstract class Database
 	/**
 	 * Class destructor
 	 */
-	public function __destruct() {
+	public function __destruct()
+	{
 		$this->close();
 	}
 
@@ -364,18 +402,21 @@ abstract class Database
 
 	/**
 	 * Connects to the database
+	 * 
 	 * @return resource handle to connection
 	 */
 	abstract protected function _open();
 	
 	/**
 	 * Closes connection to the database
+	 * 
 	 * @return boolean - true on success
 	 */
 	abstract protected function _close();
 	
 	/**
 	 * Escapes a string for use as a query parameter
+	 * 
 	 * @param string
 	 * @return string
 	 */
@@ -383,6 +424,7 @@ abstract class Database
 	
 	/**
 	 * Executes query
+	 * 
 	 * @param string SQL statement
 	 * @return resource id
 	 */
@@ -390,6 +432,7 @@ abstract class Database
 	
 	/**
 	 * Fetches row
+	 * 
 	 * @param resource id
 	 * @return array if the query returns rows
 	 */
@@ -397,6 +440,7 @@ abstract class Database
 	
 	/**
 	 * Returns one (first) row
+	 * 
 	 * @param string SQL statement
 	 * @return array
 	 */
@@ -404,6 +448,7 @@ abstract class Database
 	
 	/**
 	 * Returns first field in a first returned row
+	 * 
 	 * @param string SQL statement
 	 * @return string
 	 */
@@ -411,43 +456,49 @@ abstract class Database
 	
 	/**
 	 * Returns the number of rows that were changed by the most recent SQL statement (INSERT, UPDATE, REPLACE, DELETE)
+	 * 
 	 * @return integer
 	 */
 	abstract protected function _affected($res);
 	
 	/**
 	 * Returns the auto generated id used in the last query
-	 * @return int
+	 * 
+	 * @return mixed
 	 */
 	abstract protected function _last_id();
 	
 	/**
 	 * Frees the memory associated with a result
+	 * 
 	 * @param A result set identifier returned by query()
-	 * @return void
 	 */
 	abstract protected function _free($res);
 	
 	/**
 	 * Begin Transaction
-	 * @return bool
+	 * 
+	 * @return boolean
 	 */
 	abstract protected function _begin();
 	
 	/**
 	 * Commit Transaction
-	 * @return bool
+	 * 
+	 * @return boolean
 	 */
 	abstract protected function _commit();
 	
 	/**
 	 * Rollback Transaction
-	 * @return bool
+	 * 
+	 * @return boolean
 	 */
 	abstract protected function _rollback();
 	
 	/**
 	 * Returns last error for given resource
+	 * 
 	 * @param resource id
 	 * @return string
 	 */
@@ -459,11 +510,13 @@ abstract class Database
  */
 class DatabaseException extends \Exception
 {
-	public function __construct($message, $code = 0, Exception $previous = null) {
+	public function __construct($message, $code = 0, Exception $previous = null)
+	{
 		parent::__construct($message, $code, $previous);
 	}
 
-	public function __toString() {
+	public function __toString()
+	{
 		$code = $this->code;
 		switch($this->code) {
 			case E_USER_ERROR: 

@@ -1,5 +1,5 @@
-<?php
-/**
+<?php namespace Sugi;
+/** 
  * CSS packer and compressor
  * Packs and compresses several .css files in one .css file with unique name 
  * If .less file is given it will be processed with PHP less compiler
@@ -43,10 +43,9 @@
  * 		No error will be triggered if @imported file does not exists. This is not a bug,
  *   	since we might want to import files in a default manner
  *
- * @package sugi
+ * @package Sugi
  * @version 20121006
  */
-namespace Sugi;
 use Sugi\File;
 
 /**
@@ -62,10 +61,10 @@ class Csspacker
 	/**
 	 * CSSpacker constructor
 	 * 
-	 * @access public
 	 * @param array $config - 'output_path' the directory where cached files will be created. This should be within your DOCUMENT ROOT and be visible from web. The server must have write permissions for this path.; 'input_path' - the directory where actual uncompressed files are. This can be anywhere in the server.
 	 */
-	public function __construct($config = array()) {
+	public function __construct($config = array())
+	{
 		if (isset($config['output_path'])) $this->_output_path = $config['output_path'];
 		if (isset($config['input_path'])) $this->_input_path = $config['input_path'];
 	}
@@ -74,11 +73,11 @@ class Csspacker
 	/**
 	 * Add another css file(s)
 	 * 
-	 * @access public
 	 * @param mixed array of files or a single file. The file can be absolute path or relative to the input_path
-	 * @return bool
+	 * @return boolean
 	 */
-	public function add($file) {
+	public function add($file)
+	{
 		if (is_array($file)) {
 			return $this->append_files($file);
 		}
@@ -90,12 +89,12 @@ class Csspacker
 	 * Packing all css files in one
 	 * if $_compression is true the pack will be compressed
 	 * 
-	 * @access public
-	 * @param bool $save - if true we will return filename, otherwise we will return compressed string 
-	 * @param bool $compress - if false no compression will be made
+	 * @param boolean $save - if true we will return filename, otherwise we will return compressed string 
+	 * @param boolean $compress - if false no compression will be made
 	 * @return string if $save is true result will be the css filename otherwise string
 	 */
-	public function pack($save = true, $compress = true) {
+	public function pack($save = true, $compress = true)
+	{
 		// Generates a hash of all the files
 		$hash = $this->_hash(array($this->_files, $this->_lastmtime));
 
@@ -124,11 +123,11 @@ class Csspacker
 	/**
 	 * Add one file in the pack
 	 *
-	 * @access public
 	 * @param  string $file
-	 * @return bool   false - if the file is not found
+	 * @return boolean - FALSE if the file is not found
 	 */
-	public function append_file($file) {
+	public function append_file($file)
+	{
 		// Check the file is within default input path
 		if ($mtime = File::modified($this->_input_path.$file)) {
 			$file = $this->_input_path.$file; 
@@ -149,11 +148,11 @@ class Csspacker
 	/**
 	 * Add some files in the pack (as a separate pack)
 	 *
-	 * @access public
 	 * @param  array  $files
-	 * @return bool - false if any file is missing
+	 * @return boolean - FALSE if any file is missing
 	 */
-	public function append_files($files = array()) {
+	public function append_files($files = array())
+	{
 		$pack = array();
 		foreach ($files as $file) {
 			// Check the file is within default input path
@@ -179,11 +178,11 @@ class Csspacker
 	/**
 	 * Makes a hash from an array
 	 *
-	 * @access protected
 	 * @param  array $array
 	 * @return string
 	 */
-	protected function _hash($array) {
+	protected function _hash($array)
+	{
 		$hash = '';
 		foreach ($array as $value) {
 			if (is_array($value)) {
@@ -203,7 +202,8 @@ class Csspacker
 	 * @param  boolean $level1
 	 * @return string
 	 */
-	protected function _combine($files, $level1 = true) {
+	protected function _combine($files, $level1 = true)
+	{
 		$buffer = '';
 		$less = false;
 		foreach ($files as $file) {
@@ -235,11 +235,11 @@ class Csspacker
 	/**
 	 * Compressor
 	 * 
-	 * @access protected
 	 * @var string $buffer - input (uncompressed string)
 	 * @return string - compressed version of the input
 	 */
-	protected function _compress($buffer) {
+	protected function _compress($buffer)
+	{
 		// Remove all comments
 		$pattern = '!/\*[^*]*\*+([^/][^*]*\*+)*/!';
 		$buffer = preg_replace($pattern, '', $buffer);

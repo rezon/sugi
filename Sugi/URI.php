@@ -1,17 +1,18 @@
-<?php
+<?php namespace Sugi;
 /**
  * URI
+ * Functions that helps to determine some of the request information
  *
  * @package Sugi
- * @version 20121004
+ * @version 20121013
  */
-namespace Sugi;
 
 class URI 
 {
 	protected static $uri;
 
-	public static function current() {
+	public static function current()
+	{
 		if (static::$uri) return static::$uri;
 
 		// determine URI from Request
@@ -39,12 +40,14 @@ class URI
 		return static::$uri = $uri;
 	}
 
-	public static function segments($uri = null) {
+	public static function segments($uri = null)
+	{
 		if (is_null($uri)) $uri = static::current();
 		return explode('/', trim($uri, '/'));
 	}
 
-	public static function segment($index, $default = null) {
+	public static function segment($index, $default = null)
+	{
 		static::current();
 		$segments = static::segments(static::$uri);
 		return empty($segments[$index - 1]) ? $default : $segments[$index - 1];

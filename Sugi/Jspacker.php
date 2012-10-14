@@ -1,4 +1,4 @@
-<?php
+<?php namespace Sugi;
 /**
  * JS packer and compressor
  * Packs and compresses several .js files into a single .js file with unique name
@@ -23,9 +23,8 @@
  * 		$css->add(array('common.css', 'index.css'));
  * 
  * @package Sugi
- * @version 20121007
+ * @version 20121014
  */
-namespace Sugi;
 use Sugi\File;
 
 /**
@@ -41,11 +40,12 @@ class Jspacker
 	/**
 	 * Jspacker constructor
 	 * 
-	 * @param arr $config 
+	 * @param array $config 
 	 *        'output_path' - the directory where cached files will be created. This should be within your DOCUMENT ROOT and be visible from web. The server must have write permissions for this path. 
 	 *        'input_path' the directory where actual uncompressed files are. This can be anywhere in the server.
 	 */
-	public function __construct($config = array()) {
+	public function __construct($config = array())
+	{
 		if (isset($config['output_path'])) $this->_output_path = $config['output_path'];
 		if (isset($config['input_path'])) $this->_input_path = $config['input_path'];
 	}
@@ -53,11 +53,11 @@ class Jspacker
 	/**
 	 * Add another js file(s)
 	 * 
-	 * @access public
-	 * @param mixed array of files or a single file. The file can be absolute path or relative to the input_path
-	 * @return bool
+	 * @param mixed - array of files or a single file. The file can be absolute path or relative to the input_path
+	 * @return boolean
 	 */
-	public function add($file) {
+	public function add($file)
+	{
 		if (is_array($file)) {
 			return $this->append_files($file);
 		}
@@ -67,11 +67,13 @@ class Jspacker
 	/**
 	 * Packing all js files in one
 	 * if $_compression is true the pack will be compressed
-	 * @param bool $save
-	 * @param bool $compress - if this is set to FALSE it will not compress the file even if we had added file with compress option (good for debuging)
+	 * 
+	 * @param boolean $save
+	 * @param boolean $compress - if this is set to FALSE it will not compress the file even if we had added file with compress option (good for debuging)
 	 * @return string if $save is TRUE result will be the js filename otherwise js string
 	 */
-	public function pack($save = true, $compress = true) {
+	public function pack($save = true, $compress = true)
+	{
 		// Generates a hash of all the files
 		$hash = $this->_hash(array($this->_files, $this->_lastmtime));
 
@@ -106,11 +108,11 @@ class Jspacker
 	/**
 	 * Add one file in the pack
 	 *
-	 * @access public
 	 * @param  string $file
-	 * @return bool   false - if the file is not found
+	 * @return boolean - FALSE if the file is not found
 	 */
-	public function append_file($file) {
+	public function append_file($file)
+	{
 		// Check the file is within default input path
 		if ($mtime = File::modified($this->_input_path.$file)) {
 			$file = $this->_input_path.$file; 
@@ -131,11 +133,11 @@ class Jspacker
 	/**
 	 * Add some files in the pack (as a separate pack)
 	 *
-	 * @access public
 	 * @param  array  $files
-	 * @return bool - false if any file is missing
+	 * @return boolean - FALSE if any file is missing
 	 */
-	public function append_files($files = array()) {
+	public function append_files($files = array())
+	{
 		$pack = array();
 		foreach ($files as $file) {
 			// Check the file is within default input path
@@ -160,11 +162,11 @@ class Jspacker
 	/**
 	 * Makes a hash from an array
 	 *
-	 * @access protected
 	 * @param  array $array
 	 * @return string
 	 */
-	protected function _hash($array) {
+	protected function _hash($array)
+	{
 		$hash = '';
 		foreach ($array as $value) {
 			if (is_array($value)) {
@@ -177,7 +179,13 @@ class Jspacker
 		return md5($hash);
 	}
 
-	private function _compress($buffer) {
+	/**
+	 * Shrinks javascript
+	 * @param  string $buffer
+	 * @return string
+	 */
+	private function _compress($buffer)
+	{
 		return \JShrink\Minifier::minify($buffer, array('flaggedComments' => false));
 	}
 }

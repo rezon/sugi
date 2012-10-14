@@ -1,12 +1,11 @@
-<?php
+<?php namespace Sugi;
 /**
  * Request
  * function to determine request parameters mainly from $_SERVER array
  *
  * @package Sugi
- * @version 20121004
+ * @version 20121014
  */
-namespace Sugi;
 
 class Request
 {
@@ -14,18 +13,20 @@ class Request
 	/**
 	 * Returns protocol: "http" or "https"
 	 *
-	 * @return str
+	 * @return string
 	 */
-	public static function protocol() {
+	public static function protocol()
+	{
 		return (!empty($_SERVER['HTTPS']) AND filter_var($_SERVER['HTTPS'], FILTER_VALIDATE_BOOLEAN)) ? 'https' : 'http';
 	}
 
 	/**
 	 * Returns host name like "subdomain.example.com"
 	 *
-	 * @return str
+	 * @return string
 	 */
-	public static function host() {
+	public static function host()
+	{
 		return $_SERVER['HTTP_HOST'];
 	}
 
@@ -34,7 +35,8 @@ class Request
 	 * 
 	 * @return string
 	 */
-	public static function base() {
+	public static function base()
+	{
 		return static::protocol() . '://' .  static::host();
 	}
 
@@ -43,7 +45,8 @@ class Request
 	 *
 	 * @return string
 	 */
-	public static function uri() {
+	public static function uri()
+	{
 		return URI::current();
 	}
 
@@ -53,16 +56,18 @@ class Request
 	 * @return string
 	 * @todo: maybe shold place user/pass and/or get params
 	 */
-	public static function full() {
+	public static function full()
+	{
 		return static::protocol() . '://' .  static::host() . '/' . static::uri();
 	}
 
 	/**
 	 * Client IP
 	 *
-	 * @return str
+	 * @return string
 	 */
-	public static function ip() {
+	public static function ip()
+	{
 		if (PHP_SAPI == 'cli') return 'command line';// The request was started from the command line
 		if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) return $_SERVER['HTTP_X_FORWARDED_FOR']; // If the server is behind proxy
 		if (isset($_SERVER['HTTP_CLIENT_IP'])) return $_SERVER['HTTP_CLIENT_IP'];
@@ -73,18 +78,20 @@ class Request
 	/**
 	 * Request from CLI
 	 *
-	 * @return bool
+	 * @return boolean
 	 */
-	public static function cli() {
+	public static function cli()
+	{
 		return (PHP_SAPI == 'cli');
 	}
 
 	/**
 	 * Is the request AJAX or not
 	 *
-	 * @return bool
+	 * @return boolean
 	 */
-	public static function ajax() {
+	public static function ajax()
+	{
 		return (isset($_SERVER['HTTP_X_REQUESTED_WITH']) AND (strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest'));
 	}
 }

@@ -1,4 +1,4 @@
-<?php
+<?php namespace Sugi;
 /**
  * Logger class
  *
@@ -14,10 +14,10 @@
  * To modify it you should add 'none' in the begining of the filter.
  *
  * @package Sugi
- * @version 20121007
+ * @version 20121014
  */
-namespace Sugi;
 use Sugi\Request;
+
 include_once('Request.php');
 
 abstract class Logger 
@@ -31,7 +31,8 @@ abstract class Logger
 	/**
 	 * Create loggers with Logger specific files
 	 */
-	public static function __callStatic($name, $arguments) {
+	public static function __callStatic($name, $arguments)
+	{
 		// check requested logger type exists
 		$name = ucfirst(strtolower($name));
 		$class_name = "\Sugi\Logger\\$name";
@@ -62,7 +63,8 @@ abstract class Logger
 	 * @param  string $filter 
 	 * @return string - returns the current filter
 	 */
-	public function filter($filter = null) {
+	public function filter($filter = null)
+	{
 		// set filter
 		if (!is_null($filter)) {
 			$arr = explode(' ', $filter);
@@ -105,7 +107,8 @@ abstract class Logger
 	 * @param  string $format
 	 * @return string
 	 */
-	public function format($format = null) {
+	public function format($format = null)
+	{
 		if (!is_null($format)) {
 			$this->_format = $format;
 		}
@@ -118,9 +121,9 @@ abstract class Logger
 	 * 
 	 * @param  string $message - the message to be logged
 	 * @param  string $level - the level (which may be filtered)
-	 * @return void
 	 */
-	public static function log($message, $level) {
+	public static function log($message, $level)
+	{
 		// for each registered logger
 		foreach (static::$_loggers as $log) {
 			$log->message($message, $level);
@@ -132,10 +135,11 @@ abstract class Logger
 	 * 
 	 * @param  string $current level received from Logger::log
 	 * @param  array $levels  child accepted levels
-	 * @param  bool $all does child accepts all levels by default
-	 * @return bool
+	 * @param  boolean $all does child accepts all levels by default
+	 * @return boolean
 	 */
-	protected static function _check_level($current, $levels, $all) {
+	protected static function _check_level($current, $levels, $all)
+	{
 		if (isset($levels[$current])) return $levels[$current];
 		if (!$all) return false;
 
@@ -150,7 +154,8 @@ abstract class Logger
 	 * @param string $level
 	 * @return string - formated message
 	 */
-	protected static function _fmt($format, $message, $level) {
+	protected static function _fmt($format, $message, $level)
+	{
 		$format = str_replace('{message}', $message, $format);
 		$format = str_replace('{level}', $level, $format);
 		$format = str_replace('{ip}', Request::ip(), $format);
@@ -173,7 +178,8 @@ abstract class Logger
 	 * Constructor
 	 * @param array $config
 	 */
-	protected function __construct($config = array()) {
+	protected function __construct($config = array())
+	{
 		if (isset($config['filter'])) $this->filter($config['filter']);
 		if (isset($config['format'])) $this->format($config['format']);
 	}
@@ -185,11 +191,13 @@ abstract class Logger
 	 * @param  string $message original message
 	 * @return string  escaped (formated) message
 	 */
-	protected function _escape($message) {
+	protected function _escape($message)
+	{
 		return $message;
 	}
 
-	public function message($message, $level) {
+	public function message($message, $level)
+	{
 		// check if the level is within accepted ones
 		if (static::_check_level($level, $this->_levels, $this->_receive_all)) {
 			$msg = $message;
