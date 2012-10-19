@@ -4,7 +4,7 @@
  * Simple Routing - currently not much functionality
  *
  * @package Sugi
- * @version 20121014
+ * @version 20121019
  */
 
 class Route
@@ -16,7 +16,7 @@ class Route
 	const REGEX_SEGMENT = '[^/.,;?\n<>]++';
 
 	// Those should be escaped
-	const REGEX_ESCAPE  = '[.\\+?[^\\]${}=!|]';
+	const REGEX_ESCAPE  = '[.\\+?[^\\]${}=!]';
 
 	/**
 	 * Executing callback function if current uri matches given one
