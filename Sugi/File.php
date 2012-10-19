@@ -5,7 +5,7 @@
  * Directory operations are intensionally avoided.
  *
  * @package Sugi
- * @version 20121013
+ * @version 20121019
  */
 
 class File
@@ -65,15 +65,22 @@ class File
 	}
 
 	/**
-	 * Writes data in the file
-	 *
+	 * Writes data in the file.
+	 * If the $mode parameter is set chmod will be made ONLY if 
+	 * the file did not exists before the operation
+	 * 
 	 * @param string $filename
 	 * @param string $data
+	 * @param octal $mode default null
 	 * @return integer - the number of bytes that were written to the file, or FALSE on failure.
 	 */
-	public static function put($filename, $data)
+	public static function put($filename, $data, $mode = null)
 	{
-		return file_put_contents($filename, $data, LOCK_EX);
+		$chmod = !is_null($mode) && !static::exists($filename);
+		$res = @file_put_contents($filename, $data, LOCK_EX);
+		$chmod && static::chmod($filename, $mode);
+
+		return $res;
 	}
 
 	/**
@@ -85,7 +92,7 @@ class File
 	 */
 	public static function append($filename, $data)
 	{
-		return file_put_contents($filename, $data, LOCK_EX | FILE_APPEND);
+		return @file_put_contents($filename, $data, LOCK_EX | FILE_APPEND);
 	}
 
 	/**
@@ -121,5 +128,16 @@ class File
 	public static function ext($filename)
 	{
 		return pathinfo($filename, PATHINFO_EXTENSION);
+	}
+
+	/**
+	 * Deletes a file.
+	 * If the file does not exists returns true
+	 * 
+	 * @param string $filename
+	 * @return boolean
+	 */
+	public static function delete($filename) {
+		return static::exists($filename) ? @unlink($filename) : true;
 	}
 }

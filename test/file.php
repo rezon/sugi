@@ -3,8 +3,11 @@
  * File Testcases
  *
  * @package Sugi
- * @version 20121013
+ * @version 20121019
  */
+
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 include_once "../Sugi/File.php";
 
@@ -49,6 +52,11 @@ ass("\Sugi\File::get('privatefile.txt', 'file is not readable') === 'file is not
 ass("\Sugi\File::get('path') === null");
 ass("\Sugi\File::ext('privatefile.txt') === 'txt'");
 ass("\Sugi\File::ext('path') === ''");
+ass("\Sugi\File::get('emptyfile.txt') === 'foobar'");
+ass("\Sugi\File::append('path', 'hi there') === false");
+ass("\Sugi\File::chmod('nonexistsingfile.txt', 0666) === false");
+ass("\Sugi\File::chmod('path', 0775) === false");
+ass("\Sugi\File::chmod('emptyfile.txt', 0666) === true");
 ass("\Sugi\File::put('writable.txt', 'RW') === 2");
 ass("\Sugi\File::put('readonlyfile.txt', 'R') === false");
 ass("\Sugi\File::put('emptyfile.txt', '') === 0");
@@ -56,11 +64,11 @@ ass("\Sugi\File::put('path', 'hi there') === false");
 ass("\Sugi\File::append('readonlyfile.txt', 'R') === false");
 ass("\Sugi\File::append('emptyfile.txt', 'foo') === 3");
 ass("\Sugi\File::append('emptyfile.txt', 'bar') === 3");
-ass("\Sugi\File::get('emptyfile.txt') === 'foobar'");
-ass("\Sugi\File::append('path', 'hi there') === false");
-ass("\Sugi\File::chmod('nonexistsingfile.txt', 0666) === false");
-ass("\Sugi\File::chmod('path', 0775) === false");
-ass("\Sugi\File::chmod('emptyfile.txt', 0666) === true");
+ass("\Sugi\File::delete('newfile.txt') === true");
+ass("\Sugi\File::put('newfile.txt', 'foo', 0666) === 3");
+ass("\Sugi\File::put('newfile.txt', 'bar', 0400) === 3");
+ass("\Sugi\File::put('newfile.txt', 'foobar') === 6");
+ass("\Sugi\File::delete('newfile.txt') === true");
 
 ?>
 </body>
