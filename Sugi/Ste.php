@@ -222,9 +222,6 @@ class Ste
 
 		$this->include_path = realpath(dirname($template_file) . DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
 
-		// check for included files
-		$template = preg_replace_callback($this->includeRegEx, array(&$this, '_replaceIncludesCallback'), $template);
-
 		return $template;
 	}
 
@@ -237,16 +234,14 @@ class Ste
 		// replace arrays
 		$subject = preg_replace_callback($this->arrRegEx, array(&$this, '_replaceArrCallback'), $subject);
 		// check for dynamically included files
-		while (($s = preg_replace_callback($this->includeRegEx, array(&$this, '_replaceIncludesCallback'), $subject)) !== $subject) {
-			$subject = $this->_parse($s);
-		};
+		$subject = preg_replace_callback($this->includeRegEx, array(&$this, '_replaceIncludesCallback'), $subject);
 
 		return $subject;
 	}
 
 	protected function _replaceIncludesCallback($matches)
 	{
-		return $this->_load($this->include_path.$matches[1]);
+		return $this->_parse($this->_load($this->include_path.$matches[1]));
 	}
 
 	protected function _replaceVarCallback($matches)
@@ -276,7 +271,7 @@ class Ste
 			return false;
 		}
 
-		// if we have no registred loop
+		// if we have no registered loop
 		if (!isset($this->loops[$matches[1]])) {
 			// return false;
 			if ($inloop) {
@@ -302,6 +297,7 @@ class Ste
 			// cleanup
 			unset($this->loops[$k]);
 			unset($this->vars[$matches[1]]);
+			$inloop = false;
 		}
 		return $return;
 	}
