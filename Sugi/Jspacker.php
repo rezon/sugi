@@ -18,12 +18,12 @@
  * 		$js = new Jspacker($config);
  * 
  * 		// one file
- * 		$js->add('jquery.css');
+ * 		$js->add('jquery-1.5.2.js');
  * 		// several files at once
- * 		$css->add(array('common.css', 'index.css'));
+ * 		$css->add(array('jquery-1.8.2.min.js', 'common.js'));
  * 
  * @package Sugi
- * @version 20121014
+ * @version 20121019
  */
 use Sugi\File;
 
@@ -181,6 +181,7 @@ class Jspacker
 
 	/**
 	 * Shrinks javascript
+	 * 
 	 * @param  string $buffer
 	 * @return string
 	 */
