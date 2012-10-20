@@ -59,7 +59,11 @@ class Jspacker
 	public function add($file)
 	{
 		if (is_array($file)) {
-			return $this->append_files($file);
+			$res = true;
+			foreach ($file as $f) {
+				if (!$this->append_file($f)) $res = false;
+			}
+			return $res;
 		}
 		return $this->append_file($file);
 	}
@@ -127,35 +131,6 @@ class Jspacker
 		// last modified time of the pack will be the latest time
 		$this->_lastmtime = max($mtime, $this->_lastmtime);
 		
-		return true;
-	}
-
-	/**
-	 * Add some files in the pack (as a separate pack)
-	 *
-	 * @param  array  $files
-	 * @return boolean - FALSE if any file is missing
-	 */
-	public function append_files($files = array())
-	{
-		$pack = array();
-		foreach ($files as $file) {
-			// Check the file is within default input path
-			if ($mtime = File::modified($this->_input_path.$file)) {
-				$pack[] = $this->_input_path.$file; 
-			}
-			elseif (!$mtime = File::exists($file)) {
-				trigger_error("file $file does not exists");
-				return false;
-			}
-			else {
-				$pack[] = $file;
-			}
-			$this->_lastmtime = max($mtime, $this->_lastmtime);
-		}
-
-		$this->_files[] = $pack;
-
 		return true;
 	}
 
