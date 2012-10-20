@@ -16,7 +16,7 @@
  * </code>
  * 
  * @package Sugi
- * @version 20121013
+ * @version 20121019
  */
 
 /**
@@ -236,6 +236,10 @@ class Ste
 		$subject = preg_replace_callback($this->varRegEx, array(&$this, '_replaceVarCallback'), $subject);
 		// replace arrays
 		$subject = preg_replace_callback($this->arrRegEx, array(&$this, '_replaceArrCallback'), $subject);
+		// check for dynamically included files
+		while (($s = preg_replace_callback($this->includeRegEx, array(&$this, '_replaceIncludesCallback'), $subject)) !== $subject) {
+			$subject = $this->_parse($s);
+		};
 
 		return $subject;
 	}
@@ -265,6 +269,8 @@ class Ste
 
 	protected function _replaceBlockCallback($matches)
 	{
+		static $inloop = false;
+
 		// check the block is hidden
 		if (!empty($this->hide[$matches[1]])) {
 			return false;
@@ -272,14 +278,19 @@ class Ste
 
 		// if we have no registred loop
 		if (!isset($this->loops[$matches[1]])) {
-			return false;
-			// or parse inside
-			// return $this->_parse($matches[2]);
+			// return false;
+			if ($inloop) {
+				$inloop = false;
+				return false;
+			}
+			// parse inside
+			return $this->_parse($matches[2]);
 		}
 
 		// loop
 		$return = '';
 		foreach ($this->loops[$matches[1]] as $key => $match) {
+			$inloop = true;
 			foreach ($match as $k=>$m) {
 				if (is_array($m)) {
 					$this->loops[$k] = $m;
