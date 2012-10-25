@@ -18,5 +18,13 @@
     "autoload": {
         "psr-0": {"Sugi": ""},
         "files": ["Sugi/register.php"]
+    },
+    "scripts": {
+        "pre-install-cmd":      "Sugi\\ComposerScripts::preInstall",
+        "post-install-cmd":     "Sugi\\ComposerScripts::postInsall",
+        "pre-update-cmd":       "Sugi\\ComposerScripts::preUpdate",
+        "post-update-cmd":      "Sugi\\ComposerScripts::postUpdate",
+        "post-package-install": "Sugi\\ComposerScripts::postPackageInstall",
+        "post-package-update":  "Sugi\\ComposerScripts::postPackageUpdate"
     }
 }
