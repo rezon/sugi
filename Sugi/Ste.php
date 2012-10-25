@@ -11,12 +11,13 @@
  * 		$tpl->loop('blockname', array( array('var1' => 'val1', 'var2' => 'val2'), array('var1' => 'otherval') ));
  * 		$tpl->hide('unwantendblock');
  * 		$tpl->unhide('someblockthatwashidden');
+ * 		$tpl->register_function('__', '__'); // for translations
  *
  * 		echo $tpl->parse();
  * </code>
  * 
  * @package Sugi
- * @version 20121019
+ * @version 20121024
  */
 
 /**
@@ -61,6 +62,14 @@ class Ste
 	protected $arrRegEx = '#{([_a-zA-Z][_a-zA-Z0-9]*\.[_a-zA-Z][_a-zA-Z0-9\.]*)}#sm';
 
 	/**
+	 * Regular Expression Pattern for functions
+	 * <code>
+	 * 		{trans('Hello world')}
+	 * </code>
+	 */
+	protected $funcRegEx = '#{([_a-zA-Z][_a-zA-Z0-9]*)\(([^\)]*)\)}#sm';
+
+	/**
 	 * Template extensions that are allowed. 
 	 * 
 	 * @var array
@@ -96,12 +105,18 @@ class Ste
 	protected $hide = array();
 
 	/**
+	 * Registered functions
+	 * 
+	 * @var array
+	 */
+	protected $functions = array();
+
+	/**
 	 * Current include path based on last proceeded file
 	 * 
 	 * @var string
 	 */
 	protected $include_path;
-
 
 	/**
 	 * Loads a template file
@@ -189,6 +204,19 @@ class Ste
 	}
 
 	/**
+	 * Sets a callback function. 
+	 * The callback function is invoked each time the template engine
+	 * finds a call to it. In template it should be like {functionname(functionparamethers)}
+	 * 
+	 * @param string function name
+	 * @param callback
+	 */
+	public function register_function($name, $callback) {
+		$this->functions[$name] = $callback;
+    }
+
+
+	/**
 	 * Parses and returns prepared template
 	 * 
 	 * @return string
@@ -233,10 +261,24 @@ class Ste
 		$subject = preg_replace_callback($this->varRegEx, array(&$this, '_replaceVarCallback'), $subject);
 		// replace arrays
 		$subject = preg_replace_callback($this->arrRegEx, array(&$this, '_replaceArrCallback'), $subject);
+		// invoke functions
+		$subject = preg_replace_callback($this->funcRegEx, array(&$this, '_replaceFuncCallback'), $subject);
 		// check for dynamically included files
 		$subject = preg_replace_callback($this->includeRegEx, array(&$this, '_replaceIncludesCallback'), $subject);
 
 		return $subject;
+	}
+
+	protected function _replaceFuncCallback($matches)
+	{
+		$callback = $matches[1];
+		if (!isset($this->functions[$callback])) {
+			return false;
+		}
+		if ($args = json_decode("[" . $matches[2] ."]", true)) {
+			return call_user_func_array($this->functions[$callback], $args);
+		}
+		return call_user_func($this->functions[$callback]);
 	}
 
 	protected function _replaceIncludesCallback($matches)
