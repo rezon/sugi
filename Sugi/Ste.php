@@ -17,7 +17,7 @@
  * </code>
  * 
  * @package Sugi
- * @version 20121024
+ * @version 20121030
  */
 
 /**
@@ -167,6 +167,9 @@ class Ste
 		elseif (is_null($value)) {
 			if (isset($this->vars[$var])) unset($this->vars[$var]);
 		}
+		elseif (is_array($value) and isset($this->vars[$var]) and is_array($this->vars[$var])) {
+			$this->vars[$var] = array_merge($this->vars[$var], $value);
+		}		
 		else {
 			$this->vars[$var] = $value;
 		}
