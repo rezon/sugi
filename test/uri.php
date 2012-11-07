@@ -1,11 +1,7 @@
-<?php
-/**
- * URI
- *
- * @package Sugi
- * @version 20121004
- */
-namespace Sugi;
+<?php namespace Sugi;
+
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 include_once "../Sugi/URI.php";
 
