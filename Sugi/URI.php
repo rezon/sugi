@@ -4,7 +4,7 @@
  * Functions that helps to determine some of the request information
  *
  * @package Sugi
- * @version 20121013
+ * @version 12.11.07
  */
 
 class URI 
@@ -21,14 +21,12 @@ class URI
 				(isset($_SERVER['PHP_SELF']) ? $_SERVER['PHP_SELF'] : 
 					(isset($_SERVER['REDIRECT_URL']) ? $_SERVER['REDIRECT_URL'] : '')));
 		
-		// remove double //
+		// remove unnecessarily slashes, like doubles and leading
 		$uri = preg_replace('|//+|', '/', $uri);
-		// trim /
-		$uri = trim($uri, '/');
+		$uri = ltrim($uri, '/');
 		// remove get params
 		if (strpos($uri, '?') !== false) $uri = substr($uri, 0, strpos($uri, '?'));
-		// trim /
-		$uri = trim($uri, '/');
+		// $uri = trim($uri, '/');
 		// add / only on emptry URI - not good, because this will not work: 
 		// 		Route::uri('(<controller>(/<action>(/<param>*)))', function ($params) {
 		// since we have no "/", this is OK, but it's more complicated:
