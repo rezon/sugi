@@ -1,7 +1,7 @@
 <?php namespace Sugi;
 /**
  * Request
- * function to determine request parameters mainly from $_SERVER array
+ * methods witch determines request parameters from $_SERVER superglobal
  *
  * @package Sugi
  * @version 12.11.07
