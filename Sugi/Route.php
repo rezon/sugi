@@ -1,12 +1,14 @@
 <?php namespace Sugi;
 /**
  * Route
- * Simple Routing - currently not much functionality
  *
  * @package Sugi
- * @version 20121019
+ * @version 12.11.07
  */
 
+/**
+ * /Sugi/Route
+ */
 class Route
 {
 	// <segment> RegExt
@@ -18,45 +20,84 @@ class Route
 	// Those should be escaped
 	const REGEX_ESCAPE  = '[.\\+?[^\\]${}=!]';
 
+	public static $registry = array();
+
+	public static $uri = false;
+
 	/**
-	 * Executing callback function if current uri matches given one
+	 * Regular Expression based routing
+	 * Executing callback function if current URI matches given pattern
 	 * 
-	 * @param  string $uri
-	 * @param  function $callback
+	 * @example
+	 * <code>
+	 * Route::match('#^(?<lang>en|bg)?/?(?<controller>[^/]*)/?(?<method>[^/]*)/?(?<arguments>.*)$#uD', function ($params)
+	 * {
+	 * 		define('LANG', !empty($params['lang']) ? $params['lang'] : 'bg');
+	 *   	$controller = !empty($params['controller']) ? $params['controller'] : 'home';
+	 *    	$method = !empty($params['method']) ? $params['method'] : 'index';
+	 *     	$arguments = !empty($params['arguments']) ? $params['agruments'] : array();
+	 *      App::execute("Controller_$controller", "action_$method", $arguments) and exit;
+	 * });
+	 * </code>
+	 * 
+	 * @param string $pattern regex pattern
+	 * @param Closure $callback
+	 * @return boolean
 	 */
-	public static function uri($uri, $callback)
+	public static function match($pattern, $callback)
 	{
-		$pattern = (is_array($uri)) ? static::compile($uri[0], isset($uri[1]) ? $uri[1] : null) : static::compile($uri);
-		//echo '<pre>'.htmlspecialchars($pattern).'</pre>';
-		if (preg_match($pattern, URI::current(), $matches)) {
-			$params = array();
-			if (preg_match_all('#<('.static::REGEX_SEGMENT.')?#uD', $uri, $segments)) {
-				//echo '<pre>'.htmlspecialchars(var_export($segments, true)).'</pre>';
-
-				$params = array_fill_keys($segments[1], '');
-				//echo '<pre>'.htmlspecialchars(var_export($params, true)).'</pre>';
-			}
-
+		if (static::$uri === false) static::$uri = URI::current();
+		$segments = array();
+		$match = false;
+		if (preg_match_all('#<('.static::REGEX_SEGMENT.')?#uD', $pattern, $segs)) {
+			$segments = array_fill_keys($segs[1], '');
+		}
+		if (preg_match($pattern, static::$uri, $matches)) {
 			foreach ($matches as $key => $value) {
 				// We need only named params
 				if (!is_int($key)) {
-					$params[$key] = $value;
+					$segments[$key] = $value;
 				}
 			}
-
-			/*if (empty($params)) call_user_func($callback, null);
-			else*/ call_user_func_array($callback, array($params));
+			$match = true;
 		}
+		$registry[] = compact('pattern', 'callback', 'segments', 'match');
+
+		if ($match) call_user_func_array($callback, array($segments));
+		return $match;
+	}
+
+	/**
+	 * Simplified based routing
+	 * Executing callback function if current URI matches given pattern
+	 * 
+	 * @example
+	 * <code>
+	 * Route::uri('(en(/))(<controller>(/<action>(/<param>*)))', function ($params) {
+	 * {
+	 * 		extract($params);
+	 * 		define('LANG', !empty($lang) ? $lang : 'bg');
+	 * 		App::execute("Controller_" . ($controller ? $controller : 'home'), "action_" . ($action ? $action : 'index'), array($param)) and exit;
+	 * });
+	 * </code>
+	 * 
+	 * @param string $pattern - simplified pattern
+	 * @param function $callback
+	 * @return boolean
+	 */
+	public static function uri($pattern, $callback)
+	{
+		$pattern = static::compile($pattern);
+		return static::match($pattern, $callback);
 	}
 	
 	/**
 	 * Compile regular expression for the route
 	 *
 	 * @param string $uri
-	 * @param array $segment_pattern
 	 * @return string - regex pattern
 	 */
-	private static function compile($uri, $segment_pattern = array())
+	private static function compile($uri)
 	{
 		// The URI should be considered literal except for keys and optional parts
 		// Escape everything preg_quote would escape except for: ( ) < >
