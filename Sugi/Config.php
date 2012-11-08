@@ -105,7 +105,7 @@ class Config
 		$parts = explode('.', $key);
 		foreach ($parts as $part) {
 			if (!$part) return $values;
-			if (!array_key_exists($part, $values)) return $default;
+			if (!is_array($values) or !array_key_exists($part, $values)) return $default;
 			$values = $values[$part];
 		}
 
