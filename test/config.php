@@ -25,9 +25,24 @@ function ass($what) {
 
 ass("Sugi\Config::get('test') === NULL");
 ass("Sugi\Config::get('test', 'foo') === 'foo'");
-ass("Sugi\Config::get('test.test') === NULL");
-ass("Sugi\Config::get('test.test', 'foo') === 'foo'");
-ass("Sugi\Config::get('configfile.key1', 'foo') === 'value1'");
-ass("Sugi\Config::get('configfile.key1a') === NULL");
-ass("is_array(Sugi\Config::get('configfile.key2')) === true");
-//ass("Sugi\Config::get('configfile.key2.subkey1') === 'subvalue1'");
+ass("Sugi\Config::get('key1.subkey1') === NULL");
+ass("Sugi\Config::get('key1.subkey1', 'foo') === 'foo'");
+Config::set('test', 'bar');
+Config::set('key1', array('subkey1' => 'bar', 'subkey2' => 'foobar'));
+ass("is_array(Sugi\Config::get()) === true");
+ass("is_array(Sugi\Config::get('key1.')) === true");
+ass("Sugi\Config::get('key1.subkey1') === 'bar'");
+ass("Sugi\Config::get('key1.subkey1', 'foo') === 'bar'");
+ass("is_array(Sugi\Config::get('key1')) === true");
+ass("Sugi\Config::get('key1.subkey99') === NULL");
+ass("Sugi\Config::get('key1.subkey99', 'foo') === 'foo'");
+
+ass("Sugi\Config::configfile('key99') === NULL");
+ass("Sugi\Config::configfile('key99', 'foo') === 'foo'");
+ass("Sugi\Config::configfile('key1') === 'value1'");
+ass("Sugi\Config::configfile('key1', 'foo') === 'value1'");
+ass("is_array(Sugi\Config::configfile('key2')) === true");
+ass("Sugi\Config::configfile('key2.subkey1') === 'subvalue1'");
+
+ass("Sugi\Config::configfile99() === NULL");
+//var_dump(Config::configfile());
