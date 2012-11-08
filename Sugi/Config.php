@@ -5,6 +5,18 @@
  *
  * To get a values from database config file use:
  * <code>
+ * 		// simple (no file auto-loading) config
+ * 		Config::set('debug', TRUE);
+ * 		Config::get('debug'); 							// returns TRUE;
+ * 		Config::set('test', array('foo' => 'bar'));
+ * 		Config::get('test'); 							// returns an array
+ * 		Config::get('test.foo'); 						// returns 'bar'
+ * 		Config::get('test.bar'); 						// returns NULL
+ * 		Config::get('test.bar', 'foobar'); 				// returns 'foobar'
+ *
+ * 		// before using Config with auto-loading functions it is good to set special config item, which will resolve the search path
+ * 		Config::set('_path', '/your/full/path/to/config');
+ * 		
  * 		$dbconf = Config::database(); 					// returns an array if the file 'database.php' exists in the search path
  * 		$dbname = Config::database('name');				// returns an item from the config file 'database.php'
  * 		$host = Config::database('host', 'localhost'); 	// returns an item, and if the item does not exists will return your default value - 'localhost'
@@ -15,14 +27,6 @@
  *   	Config::unexistingconfig('foo'); 				// returns NULL
  *   	Config::unexistingconfig('foo', 'bar'); 		// returns 'bar'
  *
- * 		// simple (no file auto-loading) config
- * 		Config::set('debug', TRUE);
- * 		Config::get('debug'); 							// returns TRUE;
- * 		Config::set('test', array('foo' => 'bar'));
- * 		Config::get('test'); 							// returns an array
- * 		Config::get('test.foo'); 						// returns 'bar'
- * 		Config::get('test.bar'); 						// returns NULL
- * 		Config::get('test.bar', 'foobar'); 				// returns 'foobar'
  * </code>
  *
  * The name of the config file can be anything, but 'set' and 'get' - which are used as a simple registry (without file auto-loading).
@@ -48,7 +52,6 @@ class Config
 	// cache of loaded files
 	protected static $files_registry = array();
 
-
 	/**
 	 * Magic method, which is responsible for auto-loading configuration files
 	 * and returning configuration items from it.
@@ -62,8 +65,9 @@ class Config
 		if (array_key_exists($name, static::$files_registry)) $values = static::$files_registry[$name];
 		else {
 			$values = null;
-			if (File::exists("$name.php")) {
-				$values = include("$name.php");
+			$path = rtrim(static::get('_path', '.'), '/\\') . DIRECTORY_SEPARATOR;
+			if (File::exists("$path$name.php")) {
+				$values = include("$path$name.php");
 			}
 			static::$files_registry[$name] = $values;
 		}
