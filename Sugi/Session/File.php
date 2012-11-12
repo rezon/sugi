@@ -14,10 +14,6 @@ class File extends \Sugi\Session
 	private $_path; // FALSE if the default path is supposed to be where the php.ini points
 	
 	protected function __construct($params) {
-<<<<<<< HEAD
-=======
-		var_dump($params);
->>>>>>> 0b17c6cc89af173385048db4b4a7e318fbdade1c
 		// If the path is not set, it will be set on session_open();
 		$this->_path = (isset($params['path'])) ? (rtrim($params['path'], '/\\') . DIRECTORY_SEPARATOR) : false; 
 	}
