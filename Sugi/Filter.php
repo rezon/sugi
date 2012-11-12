@@ -4,7 +4,7 @@
  * Wrapper functions for filter_var() in PHP >= 5.2
  *
  * @package Sugi
- * @version 20121013
+ * @version 12.11.12
  */
 
 class Filter
@@ -120,6 +120,19 @@ class Filter
 	}
 
 	/**
+	 * Validates key existence in the given array
+	 * 
+	 * @param mixed $key
+	 * @param array $array
+	 * @param mixed $default_value
+	 * @return mixed
+	 */
+	public static function key($key, $array, $default_value = null)
+	{
+		return (isset($array) and is_array($array) and array_key_exists($key, $array)) ? $array[$key] : $default_value;
+	}
+
+	/**
 	 * Validates $_GET[$key] value
 	 * 
 	 * @param string $key - key parameter of $_GET
@@ -128,7 +141,7 @@ class Filter
 	 */
 	public static function get($key, $default_value = null)
 	{
-		return isset($_GET[$key]) ? $_GET[$key] : $default_value;
+		return Filter::key($key, $_GET, $default_value);
 	}
 
 	/**
@@ -140,7 +153,7 @@ class Filter
 	 */
 	public static function post($key, $default_value = null)
 	{
-		return isset($_POST[$key]) ? $_POST[$key] : $default_value;
+		return Filter::key($key, $_POST, $default_value);
 	}
 
 	/**
@@ -152,11 +165,24 @@ class Filter
 	 */
 	public static function cookie($key, $default_value = null)
 	{
-		return isset($_COOKIE[$key]) ? $_COOKIE[$key] : $default_value;
+		return Filter::key($key, $_COOKIE, $default_value);
+	}
+
+	
+	/**
+	 * Validates $_SESSION[$key] value
+	 * 
+	 * @param string $key - key parameter of $_SESSION
+	 * @param mixed $default_value - return value if key is not found
+	 * @return mixed - string on success ($_SESSION[$key] value) or $default_value on failure
+	 */
+	public static function session($key, $default_value = null)
+	{
+		return Filter::key($key, $_SESSION, $default_value);
 	}
 	
 	/**
-	 * Validate string from GET paramether - $_GET['key']
+	 * Validate string from GET parameter - $_GET['key']
 	 * 
 	 * @param string $key
 	 * @param integer $min_length
