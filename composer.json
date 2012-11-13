@@ -16,8 +16,7 @@
         "tedivm/jshrink": "Include JShrink to use compression in JSPacker"
     },
     "autoload": {
-        "psr-0": {"Sugi": ""},
-        "files": ["Sugi/register.php"]
+        "psr-0": {"Sugi": ""}
     },
     "scripts": {
         "pre-install-cmd":      "Sugi\\ComposerScripts::preInstall",
