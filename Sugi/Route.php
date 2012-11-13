@@ -81,7 +81,7 @@ class Route
 	 ****************/
 	protected $pattern;
 	protected $callback;
-	protected $segments;
+	public $segments;
 	protected $regex;
 
 	/**
@@ -147,14 +147,14 @@ class Route
 		$regex = str_replace(array('(', ')'), array('(?:', ')?'), $regex);
 
 		// Transform segments and segment patterns
-		$regex = preg_replace_callback(
-			'#'.static::REGEX_KEY.'#uD', 
-			function($match) {
-				return "(?P<{$match[1]}>" . Filter::key($match[1], $this->segments, static::REGEX_SEGMENT) . ')';
-			},
-			$regex
-		);
+		// $this is not available in Closures before PHP 5.4, so we'll use function instead of Closure
+		$regex = preg_replace_callback('#'.static::REGEX_KEY.'#uD', array($this, 'regex_key_prc'), $regex); 
 
 		$this->regex = '#^'.$regex.'$#siuD';
+	}
+
+	protected function regex_key_prc($match)
+	{
+		return "(?P<{$match[1]}>" . Filter::key($match[1], $this->segments, static::REGEX_SEGMENT) . ')';
 	}
 }
