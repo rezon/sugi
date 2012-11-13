@@ -1,19 +1,20 @@
 <?php
-/**
- * Route
- *
- * @package Sugi
- * @version 20121004
- */
 namespace Sugi;
+
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 include_once "../Sugi/Route.php";
 include_once "../Sugi/URI.php";
 
-Route::uri('(*)test/route', function() {
+Route::add('<path>/test/route', function() {
 	echo 'route';
 });
 
-Route::uri('(*)test/route.php', function() {
+Route::add('<path>/test/route.php', function() {
 	echo 'route.php is OK';
 });
+
+if (!Route::process_request()) {
+	echo '404';
+};
