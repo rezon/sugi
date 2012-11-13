@@ -75,6 +75,40 @@ class Route
 		return $match;
 	}
 
+	/**
+	 * Makes a URL based on the pattern provided by the named route
+	 *
+	 * @todo Make it work
+	 * 
+	 * @param string $name
+	 * @param array $segments
+	 * @return string
+	 */
+	public static function make($name, $segments = array())
+	{
+		if (!$route = static::find($name)) return '/';
+		
+		$uri = $route->pattern;
+		foreach ($segments as $key => $value) {
+			$uri = str_replace("(<{$key}>)", $value, $uri);
+		}
+		return $uri;
+	}
+
+	/**
+	 * Finds a named route
+	 * 
+	 * @param string $name
+	 * @return \Sugi\Route
+	 */
+	public static function find($name)
+	{
+		foreach (static::$routes as $route) {
+			if ($route->name == $name) return $route;
+		}
+
+		return false;
+	}
 
 	/****************
 	 *     Route    *
@@ -83,6 +117,7 @@ class Route
 	protected $callback;
 	public $segments;
 	protected $regex;
+	protected $name;
 
 	/**
 	 * Sets custom pattern for the segment
@@ -93,6 +128,13 @@ class Route
 	public function segment($segment, $pattern)
 	{
 		$this->segments[$segment] = $pattern;
+
+		return $this;
+	}
+
+	public function name($value)
+	{
+		$this->name = $value;
 
 		return $this;
 	}
