@@ -3,7 +3,7 @@
  * Route
  *
  * @package Sugi
- * @version 12.11.13
+ * @version 12.11.14
  */
 
 use \Sugi\Filter;
@@ -34,7 +34,7 @@ class Route
 	 * 
 	 * @example
 	 * <code>
-	 * Route::add('(<lang>(/))(<controller>(/)(<method>(/)(<param>)))', function ($segments) {
+	 * Route::add('(<lang>/)(<controller>(/<method>(/<param>)))', function ($segments) {
 	 * {
 	 * 		define('LANG', ($lang = Filter::key('lang', $segments, 'en')) ? $lang : 'en');
 	 * 		$controller = Filter::key('controller', $segments, 'home');
@@ -42,7 +42,7 @@ class Route
 	 * 		$arguments = Filter::key('arguments', $segments, array());
 	 * 		
 	 * 		App::execute("Controller_$controller", "action_$method", $arguments) and exit;
-	 * })->segment('lang', 'en|bg')->segment('param', '.*');
+	 * })->name('mvc')->segment('lang', 'en|bg')->segment('param', '.*');
 	 * </code>
 	 * 
 	 * @param string $pattern - simplified pattern
@@ -76,26 +76,6 @@ class Route
 	}
 
 	/**
-	 * Makes a URL based on the pattern provided by the named route
-	 *
-	 * @todo Make it work
-	 * 
-	 * @param string $name
-	 * @param array $segments
-	 * @return string
-	 */
-	public static function make($name, $segments = array())
-	{
-		if (!$route = static::find($name)) return '/';
-		
-		$uri = $route->pattern;
-		foreach ($segments as $key => $value) {
-			$uri = str_replace("(<{$key}>)", $value, $uri);
-		}
-		return $uri;
-	}
-
-	/**
 	 * Finds a named route
 	 * 
 	 * @param string $name
@@ -110,14 +90,66 @@ class Route
 		return false;
 	}
 
+	/**
+	 * Makes a URL based on the pattern provided by the named route
+	 *
+	 * @param string $name
+	 * @param array $segments
+	 * @return string
+	 */
+	public static function make($name, $segments = array())
+	{
+		if (!$route = static::find($name)) return '/';
+
+		$uri = static::replace_segments($route->pattern, $segments);
+
+		// add leading '/'
+		$uri = '/' . ltrim($uri, '/');
+
+		return $uri;
+	}
+
+	/**
+	 * Replaces segments in the route pattern with the given values
+	 * 
+	 * @param string $pattern
+	 * @param array $segments
+	 * @return string
+	 */
+	protected static function replace_segments($pattern, $segments)
+	{
+		if (preg_match('#\(([^()]+)\)#uD', $pattern, $match)) {
+			//echo "<pre>" . htmlspecialchars(var_export($match, true)) . "</pre>";
+			$found = false;
+			$replace = $match[1];
+			if (preg_match_all('#'.static::REGEX_KEY.'#uD', $replace, $segmatch)) {
+				//echo "<pre>" . htmlspecialchars(var_export($segmatch, true)) . "</pre>";
+				foreach ($segmatch[1] as $key => $seg) {
+					if ($value = Filter::key($seg, $segments)) {
+						$replace = str_replace("<$seg>", $value, $replace);
+						$found = true;
+					}
+					else {
+						$replace = str_replace("<$seg>", $seg, $replace);
+					}
+				}
+			}
+			if (!$found) $replace = '';
+			$pattern = str_replace($match[0], $replace, $pattern);
+			return static::replace_segments($pattern, $segments);
+		}
+
+		return $pattern;
+	}
+
 	/****************
 	 *     Route    *
 	 ****************/
 	protected $pattern;
 	protected $callback;
-	public $segments;
 	protected $regex;
 	protected $name;
+	public $segments;
 
 	/**
 	 * Sets custom pattern for the segment
