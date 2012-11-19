@@ -17,10 +17,10 @@
  * 		// before using Config with auto-loading functions it is good to set special config item, which will resolve the search path
  * 		Config::set('_path', '/your/full/path/to/config');
  * 		
- * 		$dbconf = Config::database(); 					// returns an array if the file 'database.php' exists in the search path
- * 		$dbname = Config::database('name');				// returns an item from the config file 'database.php'
+ * 		$dbconf = Config::database(); 					// returns an array if the file 'database.conf.php' exists in the search path
+ * 		$dbname = Config::database('name');				// returns an item from the config file 'database.conf.php'
  * 		$host = Config::database('host', 'localhost'); 	// returns an item, and if the item does not exists will return your default value - 'localhost'
- * 		$tz = Config::application('default.timezone'); 	// returns an item timezone from the array returned from the config file 'application.php'
+ * 		$tz = Config::application('default.timezone'); 	// returns an item timezone from the array returned from the config file 'application.conf.php'
  *   	
  *   	// return value when trying to get an item from some file that does not exist will be null, or your default value
  *   	Config::unexistingconfig(); 					// returns NULL
@@ -32,14 +32,13 @@
  * The name of the config file can be anything, but 'set' and 'get' - which are used as a simple registry (without file auto-loading).
  * 
  * The values can be invoked with dot notation like Config::get('key.subkey').
+ * 
+ * Configuration files are PHP with (.conf.php extensions) and JSON (with .json extension)
  *
  * Note: Items could not be set with dot donation. Use arrays!
- *
- *
- * @todo Except JSON as configuration files (with .json extension)
  * 
  * @package Sugi
- * @version 12.11.08
+ * @version 12.11.19
  */
 
 include_once __DIR__."/File.php";
@@ -51,6 +50,9 @@ class Config
 
 	// cache of loaded files
 	protected static $files_registry = array();
+
+	// accepted extensions and search file order
+	protected static $extorder = array('.conf.php', '.json');
 
 	/**
 	 * Magic method, which is responsible for auto-loading configuration files
@@ -64,11 +66,8 @@ class Config
 	{
 		if (array_key_exists($name, static::$files_registry)) $values = static::$files_registry[$name];
 		else {
-			$values = null;
 			$path = rtrim(static::get('_path', '.'), '/\\') . DIRECTORY_SEPARATOR;
-			if (File::exists("$path$name.php")) {
-				$values = include("$path$name.php");
-			}
+			$values = static::_load("{$path}{$name}");
 			static::$files_registry[$name] = $values;
 		}
 
@@ -104,6 +103,31 @@ class Config
 	}
 
 
+	/**
+	 * Search and load configuration file
+	 * 
+	 * @param string $filebase
+	 * @return mixed
+	 */
+	protected static function _load($filebase)
+	{
+		foreach (static::$extorder as $ext) {
+			if (File::exists("{$filebase}{$ext}")) {
+				if ($ext == '.json') return json_decode(File::get("{$filebase}{$ext}"), true);
+				return include("{$filebase}{$ext}");
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Search for a key with dot notation in the array. If the key is not found default value is returned
+	 * 
+	 * @param array $values
+	 * @param string $key
+	 * @param mixed $default
+	 * @return mixed
+	 */
 	protected static function _extract($values, $key, $default)
 	{
 		$parts = explode('.', $key);
