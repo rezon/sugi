@@ -1,5 +1,12 @@
 <?php namespace Sugi;
 /**
+ * @package Sugi
+ * @version 12.11.20
+ */
+
+include_once __DIR__."/File.php";
+
+/**
  * Simplifies configurations via automatic loading and caching configuration files.
  * Unlike Registry Config if trying to load configuration files on demand.
  *
@@ -36,13 +43,7 @@
  * Configuration files are PHP with (.conf.php extensions) and JSON (with .json extension)
  *
  * Note: Items could not be set with dot donation. Use arrays!
- * 
- * @package Sugi
- * @version 12.11.19
  */
-
-include_once __DIR__."/File.php";
-
 class Config
 {
 	// cache of configuration items
@@ -52,7 +53,7 @@ class Config
 	protected static $files_registry = array();
 
 	// accepted extensions and search file order
-	protected static $extorder = array('.conf.php', '.json');
+	protected static $ext_order = array('.conf.php', '.json');
 
 	/**
 	 * Magic method, which is responsible for auto-loading configuration files
@@ -77,21 +78,6 @@ class Config
 	}
 
 	/**
-	 * Gets an item.
-	 * If the item does not exists it will return default value.
-	 * 
-	 * @param string $key
-	 * @param mixed $default
-	 * @return mixed
-	 */
-	public static function get($key = null, $default = null)
-	{
-		$values = static::$registry;
-
-		return static::_extract($values, $key, $default);
-	}
-
-	/**
 	 * Sets an item for further use.
 	 * 
 	 * @param string $key
@@ -102,6 +88,35 @@ class Config
 		static::$registry[$key] = $value;
 	}
 
+	/**
+	 * Check a key has been registered
+	 * 
+	 * @param string $key
+	 * @return boolean
+	 */
+	public static function has($key)
+	{
+		return !is_null(static::_extract(static::$registry, $key, null));
+	}
+
+	/**
+	 * Gets an item.
+	 * If the item does not exists it will return default value.
+	 * 
+	 * @param string $key
+	 * @param mixed $default
+	 * @return mixed
+	 */
+	public static function get($key = null, $default = null)
+	{
+		return static::_extract(static::$registry, $key, $default);
+	}
+
+	// the following functions are reserved for further use
+	public static function path() { throw new \Exception("This function is reserved for further use"); }
+	public static function register() { throw new \Exception("This function is reserved for further use"); }
+	public static function unregister() { throw new \Exception("This function is reserved for further use"); }
+	public static function isRegistered() { throw new \Exception("This function is reserved for further use"); }
 
 	/**
 	 * Search and load configuration file
@@ -111,7 +126,7 @@ class Config
 	 */
 	protected static function _load($filebase)
 	{
-		foreach (static::$extorder as $ext) {
+		foreach (static::$ext_order as $ext) {
 			if (File::exists("{$filebase}{$ext}")) {
 				if ($ext == '.json') return json_decode(File::get("{$filebase}{$ext}"), true);
 				return include("{$filebase}{$ext}");
@@ -132,7 +147,7 @@ class Config
 	{
 		$parts = explode('.', $key);
 		foreach ($parts as $part) {
-			if (!$part) return $values;
+			if ($part === '') return $values;
 			if (!is_array($values) or !array_key_exists($part, $values)) return $default;
 			$values = $values[$part];
 		}
