@@ -25,6 +25,8 @@ function ass($what) {
 
 ass("Sugi\Config::get('test') === NULL");
 ass("Sugi\Config::get('test', 'foo') === 'foo'");
+ass("Sugi\Config::set('test', 'bar') === NULL");
+ass("Sugi\Config::get('test', 'foo') === 'bar'");
 ass("Sugi\Config::get('key1.subkey1') === NULL");
 ass("Sugi\Config::get('key1.subkey1', 'foo') === 'foo'");
 Config::set('test', 'bar');

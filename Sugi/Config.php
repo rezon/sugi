@@ -12,29 +12,37 @@ include_once __DIR__."/File.php";
  *
  * To get a values from database config file use:
  * <code>
- * 		// simple (no file auto-loading) config
- * 		Config::set('debug', TRUE);
- * 		Config::get('debug'); 							// returns TRUE;
- * 		Config::set('test', array('foo' => 'bar'));
- * 		Config::get('test'); 							// returns an array
- * 		Config::get('test.foo'); 						// returns 'bar'
- * 		Config::get('test.bar'); 						// returns NULL
- * 		Config::get('test.bar', 'foobar'); 				// returns 'foobar'
+ * // simple (no file auto-loading) config
+ * Config::set('debug', TRUE);
+ * Config::get('debug'); 
+ * 	// returns TRUE;
+ * 
+ * Config::set('test', array('foo' => 'bar'));
+ * Config::get('test'); // returns an array
+ * Config::get('test.foo'); // returns 'bar'
+ * Config::get('test.bar'); // returns NULL
+ * 
+ * Config::get('test.bar', 'foobar'); // returns 'foobar'
  *
- * 		// before using Config with auto-loading functions it is good to set special config item, which will resolve the search path
- * 		Config::set('_path', '/your/full/path/to/config');
+ * // before using Config with auto-loading functions it is good to set 
+ * // special config item, which will resolve the search path
+ * Config::set('_path', '/your/full/path/to/config');
  * 		
- * 		$dbconf = Config::database(); 					// returns an array if the file 'database.conf.php' exists in the search path
- * 		$dbname = Config::database('name');				// returns an item from the config file 'database.conf.php'
- * 		$host = Config::database('host', 'localhost'); 	// returns an item, and if the item does not exists will return your default value - 'localhost'
- * 		$tz = Config::application('default.timezone'); 	// returns an item timezone from the array returned from the config file 'application.conf.php'
+ * $dbconf = Config::database(); 
+ * 	// returns an array if the file 'database.conf.php' exists in the search path
+ * $dbname = Config::database('name'); 
+ * 	// returns an item from the config file 'database.conf.php'
+ * $host = Config::database('host', 'localhost'); 
+ * 	// returns an item, and if the item does not exists will return your default value - 'localhost'
+ * $tz = Config::application('default.timezone'); 
+ * 	// returns an item timezone from the array returned from the config file 'application.conf.php'
  *   	
- *   	// return value when trying to get an item from some file that does not exist will be null, or your default value
- *   	Config::unexistingconfig(); 					// returns NULL
- *   	Config::unexistingconfig('foo'); 				// returns NULL
- *   	Config::unexistingconfig('foo', 'bar'); 		// returns 'bar'
- *
- * </code>
+ * // return value when trying to get an item from some file that does 
+ * // not exist will be null or your default value
+ * Config::unexistingconfig(); // returns NULL
+ * Config::unexistingconfig('foo'); // returns NULL
+ * Config::unexistingconfig('foo', 'bar'); // returns 'bar'
+ *</code>
  *
  * The name of the config file can be anything, but 'set' and 'get' - which are used as a simple registry (without file auto-loading).
  * 
@@ -112,11 +120,25 @@ class Config
 		return static::_extract(static::$registry, $key, $default);
 	}
 
-	// the following functions are reserved for further use
-	public static function path() { throw new \Exception("This function is reserved for further use"); }
-	public static function register() { throw new \Exception("This function is reserved for further use"); }
-	public static function unregister() { throw new \Exception("This function is reserved for further use"); }
-	public static function isRegistered() { throw new \Exception("This function is reserved for further use"); }
+	/**
+	 * This function is reserved for further use
+	 */
+	public static function path() { }
+
+	/**
+	 * This function is reserved for further use
+	 */
+
+	public static function register() { }
+	/**
+	 * This function is reserved for further use
+	 */
+
+	public static function unregister() { }
+	/**
+	 * This function is reserved for further use
+	 */
+	public static function isRegistered() { }
 
 	/**
 	 * Search and load configuration file
