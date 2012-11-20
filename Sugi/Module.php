@@ -1,16 +1,17 @@
 <?php namespace Sugi;
 /**
- * Module - registry of class, methods, objects with ability to instantiate them
- * 
  * @package Sugi
- * @version 12.11.04
+ * @version 12.11.21
  */
 
 /**
- * \Sugi\Module
+ * Module - registry of class, methods, objects with ability to instantiate them
  */
 class Module
 {
+	/**
+	 * Cache for all registered modules
+	 */
 	public static $registry = array();
 
 	/**
@@ -19,17 +20,9 @@ class Module
 	 * @param string $key
 	 * @param mixed $obj
 	 */
-	public static function register($key, $obj)
-	{
-		static::$registry[$key] = $obj;
-	}
-
-	/**
-	 * An alias to register() method
-	 */
 	public static function set($key, $obj)
 	{
-		static::register($key, $obj);
+		static::$registry[$key] = $obj;
 	}
 
 	/**
@@ -38,7 +31,7 @@ class Module
 	 * @param string $key
 	 * @return boolean
 	 */
-	public static function isRegistered($key)
+	public static function has($key)
 	{
 		return array_key_exists($key, static::$registry);
 	}
@@ -56,7 +49,7 @@ class Module
 		$args = array_slice(func_get_args(), 1);
 
 		// check we have it registered
-		if (static::isRegistered($key)) {
+		if (static::has($key)) {
 			$obj = static::$registry[$key];
 
 			// if it is callable function (closure)
@@ -74,7 +67,7 @@ class Module
 			$key = $obj;
 		}
 
-		$obj = static::reflect($key, $args);
+		$obj = static::_reflect($key, $args);
 
 		// reigster it for further use
 		static::register($key, $obj);
@@ -93,20 +86,27 @@ class Module
 	}
 
 	/**
-	 * An alias to unregister() metdhod
+	 * Reserved for further use
 	 */
-	public static function remove($key)
-	{
-		static::unregister($key);
-	}
+	protected static function config() { }
 	
+	/**
+	 * Reserved for further use
+	 */
+	protected static function register() { }
+	
+	/**
+	 * Reserved for further use
+	 */
+	protected static function isRegistered() { }
+
 	/**
 	 * Check we can create an instance of a given class
 	 * 
 	 * @param string $key - class name
 	 * @param array $args - arguments to be passed to the constructor
 	 */
-	protected static function reflect($key, $args) {
+	protected static function _reflect($key, $args) {
 		$ref = new \ReflectionClass($key);
 
 		// Check we can create an instance of the class
