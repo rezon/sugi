@@ -25,6 +25,10 @@ $tpl->loop('block', array(
 	)
 );
 
+$tpl->register_function('test', function ($id, $html, $else = '') {
+	if ($id >= 3) return $html;
+	return $else;
+});
 $tpl->hide('hidden');
 
 $tpl->set('inc', 'one.html'); // dynamic file inclusion
