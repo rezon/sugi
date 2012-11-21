@@ -47,6 +47,7 @@ ass("Sugi\Config::test('key1') === 'value1'");
 ass("Sugi\Config::test('key1', 'foo') === 'value1'");
 ass("is_array(Sugi\Config::test('key2')) === true");
 ass("Sugi\Config::test('key2.subkey1') === 'subvalue1'");
+ass("Sugi\Config::file('test', 'key2.subkey1') === 'subvalue1'");
 ass("Sugi\Config::test('key2.subkey1.subsubkey') === NULL");
 
 ass("Sugi\Config::test2('key99') === NULL");

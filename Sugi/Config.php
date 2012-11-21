@@ -1,7 +1,7 @@
 <?php namespace Sugi;
 /**
  * @package Sugi
- * @version 12.11.20
+ * @version 12.11.21
  */
 
 include_once __DIR__."/File.php";
@@ -68,8 +68,15 @@ class Config
 	public static $ext_order = array('.conf.php', '.json');
 
 	/**
-	 * Magic method, which is responsible for auto-loading configuration files
-	 * and returning configuration items from it.
+	 * Magic method which is used to fetch items from configuration files. Shorthand for Config::file('filename', 'key', 'default');
+	 *
+	 * @example
+	 * <code>
+	 * // the code:
+	 * Config::test('foo', 'bar');
+	 * // is the same as:
+	 * Config::file('test', 'foo', 'bar');
+	 * </code>
 	 * 
 	 * @param string $name - filename
 	 * @param array $arguments
@@ -77,14 +84,26 @@ class Config
 	 */
 	public static function __callStatic($name, $arguments)
 	{
+		list($key, $default) = array_merge($arguments, array(null, null));
+		return static::file($name, $key, $default);
+	}
+
+	/**
+	 * Auto-loading configuration files and returning configuration items from it
+	 * 
+	 * @param string $name - filename without extension
+	 * @param string $key
+	 * @param mixed $default - default value to return if the key does not exists
+	 * @return mixed
+	 */
+	public static function file($name, $key = null, $default = null)
+	{
 		if (array_key_exists($name, static::$files_registry)) $values = static::$files_registry[$name];
 		else {
 			$path = rtrim(static::get('_path', '.'), '/\\') . DIRECTORY_SEPARATOR;
 			$values = static::_load("{$path}{$name}");
 			static::$files_registry[$name] = $values;
 		}
-
-		list($key, $default) = array_merge($arguments, array(null, null));
 
 		return static::_extract($values, $key, $default);
 	}

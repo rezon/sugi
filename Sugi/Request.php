@@ -1,12 +1,13 @@
 <?php namespace Sugi;
 /**
- * Request
- * methods witch determines request parameters from $_SERVER superglobal
- *
  * @package Sugi
- * @version 12.11.07
+ * @version 12.11.21
  */
 
+/**
+ * Request - helper functions which determines request parameters from $_SERVER super global
+ * All method are static since there could not be more than on Request at a time
+ */
 class Request
 {
 	protected static $uri 	= false;

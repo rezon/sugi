@@ -1,36 +1,36 @@
 <?php namespace Sugi; 
 /**
- * Sugi Template Engine
- * <code>
- * 		$tpl = new Ste();
- * 		$tpl->load(path/to/template);
- * 		
- * 		$tpl->set('varname', 'value');
- * 		$tpl->set('varname', array('subvar1'=> 'value', 'subvar2' => 'onothervalue'));
- * 		$tpl->set(array('varname1' => 'value1', 'varname2' => 'value2'));
- * 		$tpl->loop('blockname', array( array('var1' => 'val1', 'var2' => 'val2'), array('var1' => 'otherval') ));
- * 		$tpl->hide('unwantendblock');
- * 		$tpl->unhide('someblockthatwashidden');
- * 		$tpl->register_function('__', '__'); // for translations
- *
- * 		echo $tpl->parse();
- * </code>
- * 
  * @package Sugi
- * @version 20121030
+ * @version 12.11.21
  */
 
 /**
  * Sugi Template Engine
+ *
+ * @example
+ * <code>
+ * $tpl = new Ste();
+ * $tpl->load(path/to/template);
+ * 		
+ * $tpl->set('varname', 'value');
+ * $tpl->set('varname', array('subvar1'=> 'value', 'subvar2' => 'onothervalue'));
+ * $tpl->set(array('varname1' => 'value1', 'varname2' => 'value2'));
+ * $tpl->loop('blockname', array( array('var1' => 'val1', 'var2' => 'val2'), array('var1' => 'otherval') ));
+ * $tpl->hide('unwantendblock');
+ * $tpl->unhide('someblockthatwashidden');
+ * $tpl->register_function('__', '__'); // for translations
+ *
+ * echo $tpl->parse();
+ * </code>
  */
 class Ste
 {
 	/**
 	 * Regular Expression for blocks
 	 * <code>
-	 * 		<!-- BEGIN blockname -->
-	 *   	...
-	 *    	<!-- END blockname -->
+	 * <!-- BEGIN blockname -->
+	 * ...
+	 * <!-- END blockname -->
 	 * </code>
 	 */
 	protected $blockRegEx = '/<!--\s+BEGIN\s+([0-9A-Za-z._-]+)\s+-->(.*)<!--\s+END\s+\1\s+-->/s';
@@ -38,7 +38,7 @@ class Ste
 	/**
 	 * Regular Expression for file inclusion
 	 * <code>
-	 * 		<!-- INLUDE filename.html -->
+	 * <!-- INLUDE filename.html -->
 	 * </code>
 	 */
 	protected $includeRegEx = '#<!--\s+INCLUDE\s+([_a-zA-Z0-9\-\.\/]+)\s+-->#sm';
@@ -48,7 +48,7 @@ class Ste
 	/**
 	 * Regular Expression Pattern for variables
 	 * <code>
-	 * 		{varname}
+	 * {varname}
 	 * </code>
 	 */
 	protected $varRegEx = '#{([_a-zA-Z][_a-zA-Z0-9]*)}#sm';
@@ -56,7 +56,7 @@ class Ste
 	/**
 	 * Regular Expression Pattern for array keys
 	 * <code>
-	 * 		{array.key.subkey}
+	 * {array.key.subkey}
 	 * </code>
 	 */
 	protected $arrRegEx = '#{([_a-zA-Z][_a-zA-Z0-9]*\.[_a-zA-Z][_a-zA-Z0-9\.]*)}#sm';
@@ -64,7 +64,7 @@ class Ste
 	/**
 	 * Regular Expression Pattern for functions
 	 * <code>
-	 * 		{trans('Hello world')}
+	 * {trans('Hello world')}
 	 * </code>
 	 */
 	protected $funcRegEx = '#{([_a-zA-Z][_a-zA-Z0-9]*)\(([^\)]*)\)}#sm';
@@ -150,10 +150,10 @@ class Ste
 	 * Sets a parameter, or key=>value list
 	 * examples:
 	 * <code>
-	 * 		set('title', 'My Title'); // sets the title key
-	 * 		set('title'); // unsets the title key
-	 * 		set(array('title' => 'My Title', 'description' => 'My Description')); // sets 2 keys: title and description
-	 *   	set('home', array('link' => '/', 'title' => 'Home')); // sets a key 'home' witch is an array and can be accessed with {home.link} and {home.title}
+	 * set('title', 'My Title'); // sets the title key
+	 * set('title'); // unsets the title key
+	 * set(array('title' => 'My Title', 'description' => 'My Description')); // sets 2 keys: title and description
+	 * set('home', array('link' => '/', 'title' => 'Home')); // sets a key 'home' which is an array and can be accessed with {home.link} and {home.title}
 	 * </code>
 	 * 
 	 * @param mixed $var

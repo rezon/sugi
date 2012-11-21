@@ -1,44 +1,46 @@
 <?php namespace Sugi;
 /**
- * Cron jobs.
+ * Cron jobs
+ * 
+ * @package Sugi
+ * @version 12.11.21 
+ */
+use Sugi\Logger;
+use Sugi\Filter;
+
+/**
+ * Cron jobs
  * 
  * Cronjobs are configured via crontab files similar to *NIX style
  * for example one configuration file can look like this:
- * @example (
- * 		# min		hour		day		month		dayofweek		command
- *		*	*	*	*	*	foo.php
- *		/2	*	*	*	*	bar.php
- *		#30	*	*	*	*	bar.php
- *		0	17	*	*	*	bar.php
- *		*	16	*	*	*	bar.php
- *		15,45	*	*	*	*	foobar.php
- *		*	9-17	*	*	*	work-hours.php
- *		0	20-8,12	*	*	*	at-night-and-at-noon.php
- * ) 
+ * @example
+ * <code>
+ * # min 	hour 	day 	month 	dayofweek 	command
+ * *	*	*	*	*	foo.php
+ * /2	*	*	*	*	bar.php
+ * #30	*	*	*	*	bar.php
+ * 0	17	*	*	*	bar.php
+ * *	16	*	*	*	bar.php
+ * 15,45	*	*	*	*	foobar.php
+ * *	9-17	*	*	*	work-hours.php
+ * 0	20-8,12	*	*	*	at-night-and-at-noon.php
+ * </code>
+ * 
  * Lines starting with # are considered comments and are not started
  * 
  * Cron entry file can be started via CLI or via web request (lynx, wget etc.)
  * It should be started every minute! Local cronjob is preferred
  * 
- * @example (
- *  * 		*	*	*	*	*	/usr/bin/php /var/www/example.com/app/files/cron.php >/dev/null 2>&1
+ * @example
+ * <code>
+ * * 	*	*	*	*	/usr/bin/php /var/www/example.com/app/files/cron.php >/dev/null 2>&1
+ * #or
+ * *	*	*	*	*	wget -O /dev/null http://example.com/cron
  * or
- *   	*	*	*	*	*	wget -O /dev/null http://example.com/cron
- * or
- * 		*	*	*	*	*	lynx -source http://example.com/cron
+ * *	*	*	*	*	lynx -source http://example.com/cron
  * or	
- * 		*	*	*	*	*	curl --silent --compressed http://example.com/cron
- * )
- * 
- * @package Sugi
- * @version 20121013
- */
-use Sugi\File;
-use Sugi\Logger;
-use Sugi\Filter;
-
-/**
- * Cron class
+ * *	*	*	*	*	curl --silent --compressed http://example.com/cron
+ * </code>
  */
 class Cron
 {
@@ -71,22 +73,19 @@ class Cron
 
 		// extracting time
 		// mins, hours, days, months are for recursive tasks
-		$this->time['min'] = (int) date('i', $this->timestamp);
-		$this->time['mins'] = (int) floor($this->timestamp / 60);
-		$this->time['hour'] = (int) date('H', $this->timestamp);
-		$this->time['hours'] = (int) floor($this->timestamp / 3600);
-		$this->time['day'] = (int) date('d', $this->timestamp);
-		$this->time['days'] = (int) floor($this->timestamp / 86400);
-		$this->time['month'] = (int) date('m', $this->timestamp);
-		$this->time['months'] = (int) floor($this->timestamp / 2592000);
-		$this->time['dow'] = (int) date('w', $this->timestamp);
+		$this->time['min'] 		= (int) date('i', $this->timestamp);
+		$this->time['mins'] 	= (int) floor($this->timestamp / 60);
+		$this->time['hour'] 	= (int) date('H', $this->timestamp);
+		$this->time['hours'] 	= (int) floor($this->timestamp / 3600);
+		$this->time['day'] 		= (int) date('d', $this->timestamp);
+		$this->time['days'] 	= (int) floor($this->timestamp / 86400);
+		$this->time['month'] 	= (int) date('m', $this->timestamp);
+		$this->time['months'] 	= (int) floor($this->timestamp / 2592000);
+		$this->time['dow'] 		= (int) date('w', $this->timestamp);
 		
 		// configuration file
 		if (empty($config['file'])) {
 			throw new \Exception("Cron file not set");
-		}
-		if (!File::readable($config['file'])) {
-			throw new \Exception("Cron file could not be read");
 		}
 
 		// open the file and parse it

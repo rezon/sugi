@@ -1,12 +1,12 @@
 <?php namespace Sugi;
 /**
- * Filters
- * Wrapper functions for filter_var() in PHP >= 5.2
- *
  * @package Sugi
- * @version 12.11.12
+ * @version 12.11.21
  */
 
+/**
+ * Filters - a helper class which wraps a filter_var() function available in PHP >= 5.2
+ */
 class Filter
 {
 	/**
