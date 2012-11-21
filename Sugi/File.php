@@ -16,7 +16,7 @@ class File
 	 * @param string $filename - filename with optional path
 	 * @return boolean
 	 */
-	public static function exists($filename)
+	public function exists($filename)
 	{
 		return is_file($filename);
 	}
@@ -28,9 +28,9 @@ class File
 	 * @param string $filename - filename with optional path
 	 * @return boolean
 	 */
-	public static function readable($filename)
+	public function readable($filename)
 	{
-		return static::exists($filename) && is_readable($filename);
+		return is_file($filename) && is_readable($filename);
 	}
 
 	/**
@@ -41,7 +41,7 @@ class File
 	 */
 	public function isReadable($filename)
 	{
-		return static::exists($filename) && is_readable($filename);
+		return is_file($filename) && is_readable($filename);
 	}
 
 	/**
@@ -50,9 +50,9 @@ class File
 	 * @param string $filename - filename with optional path
 	 * @return boolean
 	 */
-	public static function writable($filename)
+	public function writable($filename)
 	{
-		return static::exists($filename) && is_writable($filename);
+		return is_file($filename) && is_writable($filename);
 	}
 
 	/**
@@ -71,9 +71,9 @@ class File
 	 * @param string $default
 	 * @return string
 	 */
-	public static function get($filename, $default = null)
+	public function get($filename, $default = null)
 	{
-		return static::readable($filename) ? file_get_contents($filename) : $default;
+		return File::isReadable($filename) ? file_get_contents($filename) : $default;
 	}
 
 	/**
@@ -86,11 +86,11 @@ class File
 	 * @param octal $mode default null
 	 * @return integer - the number of bytes (not chars!) that were written to the file, or FALSE on failure.
 	 */
-	public static function put($filename, $data, $mode = null)
+	public function put($filename, $data, $mode = null)
 	{
-		$chmod = !is_null($mode) && !static::exists($filename);
+		$chmod = !is_null($mode) && !is_file($filename);
 		$res = @file_put_contents($filename, $data, LOCK_EX);
-		$chmod && static::chmod($filename, $mode);
+		$chmod && File::chmod($filename, $mode);
 
 		return $res;
 	}
@@ -102,7 +102,7 @@ class File
 	 * @param string $data
 	 * @return integer - the number of bytes that were written to the file, or FALSE on failure.
 	 */
-	public static function append($filename, $data)
+	public function append($filename, $data)
 	{
 		return @file_put_contents($filename, $data, LOCK_EX | FILE_APPEND);
 	}
@@ -114,10 +114,10 @@ class File
 	 * @param octal $mode
 	 * @return boolean - TRUE on success or FALSE on failure. 
 	 */
-	public static function chmod($filename, $mode)
+	public function chmod($filename, $mode)
 	{
 		// intentionally check $filename is a file not a path since chmod works also on paths
-		return /*preg_match('@^0[0-7]{3}$@', $mode) and*/ static::exists($filename) and chmod($filename, $mode);
+		return /*preg_match('@^0[0-7]{3}$@', $mode) and*/ is_file($filename) and chmod($filename, $mode);
 	}
 
 	/**
@@ -126,7 +126,7 @@ class File
 	 * @param string $filename
 	 * @return integer, or FALSE on failure (e.g. file does not exists)
 	 */
-	public static function modified($filename)
+	public function modified($filename)
 	{
 		return @filemtime($filename);
 	}
@@ -138,7 +138,7 @@ class File
 	 * @param string $filename
 	 * @return string
 	 */
-	public static function ext($filename)
+	public function ext($filename)
 	{
 		return pathinfo($filename, PATHINFO_EXTENSION);
 	}
@@ -150,7 +150,7 @@ class File
 	 * @param string $filename
 	 * @return boolean
 	 */
-	public static function delete($filename) {
-		return static::exists($filename) ? @unlink($filename) : true;
+	public function delete($filename) {
+		return is_file($filename) ? @unlink($filename) : true;
 	}
 }
