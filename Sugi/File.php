@@ -1,13 +1,13 @@
 <?php namespace Sugi;
 /**
- * File
- * Wrapper functions to ease file specific operations.
- * Directory operations are intensionally avoided.
- *
  * @package Sugi
- * @version 20121019
+ * @version 12.11.21
  */
 
+/**
+ * File - Helper functions to ease file specific operations.
+ * Directory operations are intentionally avoided!
+ */
 class File
 {
 	/**
@@ -24,10 +24,22 @@ class File
 	/**
 	 * Determine if the file can be opened for reading
 	 *
+	 * @deprecated use isReadable()
 	 * @param string $filename - filename with optional path
 	 * @return boolean
 	 */
 	public static function readable($filename)
+	{
+		return static::exists($filename) && is_readable($filename);
+	}
+
+	/**
+	 * Determine if the file can be opened for reading
+	 *
+	 * @param string $filename - filename with optional path
+	 * @return boolean
+	 */
+	public function isReadable($filename)
 	{
 		return static::exists($filename) && is_readable($filename);
 	}
@@ -72,7 +84,7 @@ class File
 	 * @param string $filename
 	 * @param string $data
 	 * @param octal $mode default null
-	 * @return integer - the number of bytes that were written to the file, or FALSE on failure.
+	 * @return integer - the number of bytes (not chars!) that were written to the file, or FALSE on failure.
 	 */
 	public static function put($filename, $data, $mode = null)
 	{
@@ -120,7 +132,8 @@ class File
 	}
 
 	/** 
-	 * Extracts file extension from the name of the file
+	 * Extracts file extension from the name of the file.
+	 * Note that the function will return extension even if the file doesn't exists or it is actually a directory!
 	 *
 	 * @param string $filename
 	 * @return string

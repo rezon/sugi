@@ -14,7 +14,6 @@
 	<input name="pi" value="1" readonly="readonly" hidden="hidden" />
 	<input type="submit" value="Filter tests" />
 	<input type="button" value="Config" onclick="document.location='config.php'" />
-	<input type="button" value="File tests" onclick="document.location='file.php'" />
 	<input type="button" value="Request" onclick="document.location='request.php'" />
 	<input type="button" value="URI" onclick="document.location='uri.php'" />
 	<input type="button" value="Route" onclick="document.location='route.php'" />

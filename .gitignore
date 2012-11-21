@@ -1,3 +1,5 @@
+vendor/
+composer.lock
 *.sublime-*
 test/log/
 test/tmp/

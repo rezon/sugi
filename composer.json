@@ -11,6 +11,15 @@
     "require": {
         "php": ">=5.3"
     },
+    "require-dev": {
+        "phpunit/phpunit": "3.7.*",
+        "phpunit/php-invoker": "*",
+        "leafo/lessphp": "dev-master",
+        "tedivm/jshrink": "dev-master"
+    },
+    "config": {
+        "bin-dir": "bin"
+    },    
     "suggest": {
         "leafo/lessphp": "Include this LESS compiler to enable .less files to be added to the CSSPacker.",
         "tedivm/jshrink": "Include JShrink to use compression in JSPacker"
