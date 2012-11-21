@@ -4,7 +4,7 @@
  * @category tests
  * @version 12.11.21
  */
-
+error_reporting(E_ALL | E_STRICT);
 use Sugi\File;
 
 class FileStaticTest extends PHPUnit_Framework_TestCase {
