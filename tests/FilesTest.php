@@ -2,12 +2,12 @@
 /**
  * @package Sugi
  * @category tests
- * @version 12.11.21
+ * @version 12.11.22
  */
-error_reporting(E_ALL | E_STRICT);
-use Sugi\File;
+error_reporting(-1);
+use Sugi\Files;
 
-class FileStaticTest extends PHPUnit_Framework_TestCase {
+class FilesTests extends PHPUnit_Framework_TestCase {
 
 	public static function setUpBeforeClass()
 	{
@@ -21,82 +21,92 @@ class FileStaticTest extends PHPUnit_Framework_TestCase {
 
 	public function testExists()
 	{
+		$file = new Files;
 		$this->assertFileNotExists(TESTFILE);
-		$this->assertFalse(File::exists(TESTFILE));
+		$this->assertFalse($file->exists(TESTFILE));
 		file_put_contents(TESTFILE, 'Hello World');
 		$this->assertFileExists(TESTFILE);
-		$this->assertTrue(File::exists(TESTFILE));
-		$this->assertFalse(File::exists(__DIR__)); // this is a path!
+		$this->assertTrue($file->exists(TESTFILE));
+		$this->assertFalse($file->exists(__DIR__)); // this is a path!
 	}
 
 	public function testIsReadable()
 	{
-		$this->assertTrue(File::readable(__FILE__));
-		$this->assertFalse(File::readable(TESTFILE));
+		$file = new Files;
+		$this->assertTrue($file->isReadable(__FILE__));
+		$this->assertFalse($file->isReadable(TESTFILE));
 		file_put_contents(TESTFILE, 'Hello World');
-		$this->assertTrue(File::readable(TESTFILE));
+		$this->assertTrue($file->isReadable(TESTFILE));
 	}
 
 	public function testExtReturnsFileExtension()
 	{
-		$this->assertEquals('php', File::ext(__FILE__));
-		$this->assertEquals('php2', File::ext(__FILE__.'2'));
-		$this->assertEquals('', File::ext(__DIR__));
+		$file = new Files;
+		$this->assertEquals('php', $file->ext(__FILE__));
+		$this->assertEquals('php2', $file->ext(__FILE__.'2'));
+		$this->assertEquals('', $file->ext(__DIR__));
 	}
 
 	public function testGet()
 	{
-		$this->assertNull(File::get(TESTFILE));
-		$this->assertEquals('default', File::get(TESTFILE, 'default'));
+		$file = new Files;
+		$this->assertNull($file->get(TESTFILE));
+		$this->assertEquals('default', $file->get(TESTFILE, 'default'));
 		file_put_contents(TESTFILE, 'Hello World');
-		$this->assertEquals('Hello World', File::get(TESTFILE));
-		$this->assertNull(File::get(__DIR__)); // cannot get directory
+		$this->assertEquals('Hello World', $file->get(TESTFILE));
+		$this->assertNull($file->get(__DIR__)); // cannot get directory
 	}
 
 	public function testPut()
 	{
-		$this->assertEquals(11, File::put(TESTFILE, 'Hello World'));
+		$file = new Files;
+		$this->assertEquals(11, $file->put(TESTFILE, 'Hello World'));
 		$this->assertFileExists(TESTFILE);
 		$this->assertEquals('Hello World', file_get_contents(TESTFILE));
-		$this->assertFalse(File::put(__DIR__, 'test')); // cannot put in directory
+		$this->assertFalse($file->put(__DIR__, 'test')); // cannot put in directory
 	}
 
 	public function testPutOnWriteProtectedFiles()
 	{
+		$file = new Files;
 		file_put_contents(TESTFILE, 'foo');
 		chmod(TESTFILE, 0444);
-		$this->assertFalse(File::put(TESTFILE, 'Hello World'));
+		$this->assertFalse($file->put(TESTFILE, 'Hello World'));
 		$this->assertEquals('foo', file_get_contents(TESTFILE));
 	}
 
 	public function testAppend()
 	{
+		$file = new Files;
 		file_put_contents(TESTFILE, 'Hello');
-		$this->assertEquals(6, File::append(TESTFILE, ' World'));
+		$this->assertEquals(6, $file->append(TESTFILE, ' World'));
 		$this->assertEquals('Hello World', file_get_contents(TESTFILE));
-		$this->assertFalse(File::append(__DIR__, ' World'));
+		$this->assertFalse($file->append(__DIR__, ' World'));
 	}
 
 
 	public function testAppendOnWriteProtectedFiles()
 	{
+		$file = new Files;
 		file_put_contents(TESTFILE, 'Hello');
 		chmod(TESTFILE, 0444);
-		$this->assertFalse(File::append(TESTFILE, ' World'));
+		$this->assertFalse($file->append(TESTFILE, ' World'));
 		$this->assertEquals('Hello', file_get_contents(TESTFILE));
 	}
 
 	public function testAppendOnNonExistingFile()
 	{
-		$this->assertEquals(6, File::append(TESTFILE, ' World'));
+		$file = new Files;
+		$this->assertEquals(6, $file->append(TESTFILE, ' World'));
 		$this->assertEquals(' World', file_get_contents(TESTFILE));
 	}
 
 	public function testDelete()
 	{
-		$this->assertTrue(File::delete(TESTFILE));
+		$file = new Files;
+		$this->assertTrue($file->delete(TESTFILE));
 		file_put_contents(TESTFILE, 'Hello World');
-		$this->assertTrue(File::delete(TESTFILE));
+		$this->assertTrue($file->delete(TESTFILE));
 		$this->assertFalse(file_exists(TESTFILE));
 	}
 
@@ -105,15 +115,17 @@ class FileStaticTest extends PHPUnit_Framework_TestCase {
 	 */	
 	public function testChmod()
 	{
+		$file = new Files;
 		file_put_contents(TESTFILE, 'Hello World');
-		$this->assertTrue(File::chmod(TESTFILE, 0444));
+		$this->assertTrue($file->chmod(TESTFILE, 0444));
 		file_put_contents(TESTFILE, 'foo');
 	}
 
 	public function testChmodFailures()
 	{
-		$this->assertFalse(File::chmod(TESTFILE, 0444));
-		$this->assertFalse(File::chmod(__DIR__, 0775));
+		$file = new Files;
+		$this->assertFalse($file->chmod(TESTFILE, 0444));
+		$this->assertFalse($file->chmod(__DIR__, 0775));
 	}
 
 	/**
@@ -121,7 +133,8 @@ class FileStaticTest extends PHPUnit_Framework_TestCase {
 	 */	
 	public function testPutWithChmod()
 	{
-		$this->assertEquals(11, File::put(TESTFILE, 'Hello World', 0444));
+		$file = new Files;
+		$this->assertEquals(11, $file->put(TESTFILE, 'Hello World', 0444));
 		$this->assertEquals('Hello World', file_get_contents(TESTFILE));
 		file_put_contents(TESTFILE, 'foo');
 	}
