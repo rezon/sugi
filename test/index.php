@@ -22,7 +22,6 @@
 	<input type="button" value="Database::sqlite3" onclick="document.location='sqlite3.php'" />
 	<input type="button" value="Database::mysqli" onclick="document.location='mysqli.php'" />
 	<input type="button" value="Database::pgsql" onclick="document.location='pgsql.php'" />
-	<input type="button" value="Hash" onclick="document.location='hash.php'" />
 	<input type="button" value="Logger" onclick="document.location='logger.php'" />
 	<input type="button" value="Cron" onclick="document.location='cron.php'" />
 	<input type="button" value="STE" onclick="document.location='ste.php'" />

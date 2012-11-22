@@ -1,34 +1,35 @@
 <?php namespace Sugi;
 /**
- * How to safely store passwords in the DB.
- * Generates unique hash even for same passwords. The hash is 60 chars.
- * 
- * Usage:
- * <code>
- * 		//Generate unique hash for the password and store it in the DB:
- *   	$hash = Hash::make($_POST['password']);
- *    	// Now the hash will hold hash of the password along with its unique salt
- * 
- * 		// To check the password use:
- *   	if (Hash::check($hash, $_POST['password'])) {
- * 	  		echo "Access granted";
- *      }
- *      else {
- * 	    	echo "Wrong!";
- *      }
- * </code>
+ * Hash class
  * 
  * @package Sugi
- * @version 20121013
+ * @version 12.11.22
  */
 
 /**
- * Hash class
+ * Hash class- crypt and decrypt passwords
+ * Safely store passwords in the DB.
+ * Generates unique hash even for same passwords. The hash is 60 chars.
+ * 
+ * @example
+ * <code>
+ * //Generate unique hash for the password and store it in the DB:
+ * $hash = Hash::make($_POST['password']);
+ * // Now the hash will hold hash of the password along with its unique salt
+ * 
+ * // To check the password use:
+ * if (Hash::check($hash, $_POST['password'])) {
+ * 	echo "Access granted";
+ * }
+ * else {
+ * 	echo "Wrong!";
+ * }
+ * </code>
  */
 class Hash
 {
 	/**
-	 * Algorithm we use: blowfish
+	 * Algorithm to use: blowfish
 	 */
 	private static $algo = '$2a';
 
