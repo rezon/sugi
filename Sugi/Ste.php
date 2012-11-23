@@ -1,13 +1,12 @@
 <?php namespace Sugi; 
 /**
  * @package Sugi
- * @version 12.11.21
+ * @version 12.11.23
  */
 
 /**
  * Sugi Template Engine
  *
- * @example
  * <code>
  * $tpl = new Ste();
  * $tpl->load(path/to/template);

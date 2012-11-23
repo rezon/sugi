@@ -3,7 +3,7 @@
  * Route
  *
  * @package Sugi
- * @version 12.11.14
+ * @version 12.11.23
  */
 
 use \Sugi\Filter;
@@ -32,7 +32,6 @@ class Route
 	 * Creating Rule for routing
 	 * Executing callback function if current URI matches given pattern
 	 * 
-	 * @example
 	 * <code>
 	 * Route::add('(<lang>/)(<controller>(/<method>(/<param>)))', function ($segments) {
 	 * {

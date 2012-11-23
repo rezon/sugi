@@ -2,7 +2,6 @@
 /** 
  * Internationalization / Translation Class
  *
- * @example
  * <code>
  * 		Lang::
  * 		
@@ -14,7 +13,7 @@
  * </code>
  *  
  * @package Sugi
- * @version 20121024
+ * @version 12.11.23
  */
 
  namespace Sugi {

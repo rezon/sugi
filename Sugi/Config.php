@@ -1,7 +1,7 @@
 <?php namespace Sugi;
 /**
  * @package Sugi
- * @version 12.11.21
+ * @version 12.11.23
  */
 
 include_once __DIR__."/File.php";
@@ -70,7 +70,6 @@ class Config
 	/**
 	 * Magic method which is used to fetch items from configuration files. Shorthand for Config::file('filename', 'key', 'default');
 	 *
-	 * @example
 	 * <code>
 	 * // the code:
 	 * Config::test('foo', 'bar');

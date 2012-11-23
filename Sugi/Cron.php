@@ -1,9 +1,7 @@
 <?php namespace Sugi;
 /**
- * Cron jobs
- * 
  * @package Sugi
- * @version 12.11.21 
+ * @version 12.11.23 
  */
 use Sugi\Logger;
 use Sugi\Filter;
@@ -13,7 +11,6 @@ use Sugi\Filter;
  * 
  * Cronjobs are configured via crontab files similar to *NIX style
  * for example one configuration file can look like this:
- * @example
  * <code>
  * # min 	hour 	day 	month 	dayofweek 	command
  * *	*	*	*	*	foo.php
@@ -31,7 +28,6 @@ use Sugi\Filter;
  * Cron entry file can be started via CLI or via web request (lynx, wget etc.)
  * It should be started every minute! Local cronjob is preferred
  * 
- * @example
  * <code>
  * * 	*	*	*	*	/usr/bin/php /var/www/example.com/app/files/cron.php >/dev/null 2>&1
  * #or

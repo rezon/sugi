@@ -1,9 +1,7 @@
 <?php namespace Sugi;
 /**
- * Hash class
- * 
  * @package Sugi
- * @version 12.11.22
+ * @version 12.11.23
  */
 
 /**
@@ -11,7 +9,6 @@
  * Safely store passwords in the DB.
  * Generates unique hash even for same passwords. The hash is 60 chars.
  * 
- * @example
  * <code>
  * //Generate unique hash for the password and store it in the DB:
  * $hash = Hash::make($_POST['password']);

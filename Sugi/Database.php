@@ -1,6 +1,11 @@
 <?php namespace Sugi;
 /**
- * Database class - common database abstract class.
+ * @package Sugi
+ * @version 12.11.23
+ */
+
+/**
+ * Database class - database abstraction class.
  * DatabaseException class
  * 
  * Hookable methods: open, close, query, escape, fetch,
@@ -8,13 +13,6 @@
  * single_field, affected, last_id, free.
  * Hooks can be triggered before (pre_{method_name}) and 
  * after (post_{method_name}) each hookable methods.
- * 
- * @package Sugi
- * @version 20121007
- */
-
-/**
- * Database class
  */
 abstract class Database
 {
@@ -219,8 +217,8 @@ abstract class Database
 	/**
 	 * Hook a callback function/method to some hookable events.
 	 * Hooks could be 'pre_' and 'post_'.
-	 * @example:
-	 * <code>
+	 *
+	 *  <code>
 	 * 	// to hook an event before executing a query
 	 *  Database::hook('pre_query', array($object, 'method_name'));
 	 *  // to hook an event after executing a query
@@ -244,7 +242,6 @@ abstract class Database
 	 * If callback is not given all callbacks are unhooked from this event.
 	 * If event is not given all callbacks are unhooked.
 	 * 
-	 * @example: 
 	 * <code>
 	 * 	Database::unhook('pre_query', array($this, 'before_query')); // This will unhook method $this->before_query before query
 	 * 	Database::unhook('post_query'); // This will unhook all callbacks which are executed after query
@@ -364,7 +361,6 @@ abstract class Database
 	/**
 	 * Creates the Database instance of the $name type
 	 * 
-	 * @example
 	 * <code>
 	 * 		$db = \Sugi\Database::sqlite3($config);
 	 * 		$db->open();
