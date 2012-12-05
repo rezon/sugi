@@ -4,126 +4,89 @@
  * @version 12.11.21
  */
 
+use \Sugi\Config;
+
+
 /**
  * Module - registry of class, methods, objects with ability to instantiate them
  */
 class Module
 {
-	/**
-	 * Cache for all registered modules
-	 */
-	public static $registry = array();
 
 	/**
-	 * Register an object with a given name
-	 * 
-	 * @param string $key
-	 * @param mixed $obj
+	 * Module aliases
+	 * @var array
 	 */
-	public static function set($key, $obj)
-	{
-		static::$registry[$key] = $obj;
-	}
-
-	/**
-	 * Check an object has been registered
-	 * 
-	 * @param string $key
-	 * @return boolean
-	 */
-	public static function has($key)
-	{
-		return array_key_exists($key, static::$registry);
-	}
-
-	/**
-	 * Returns an item which was previously registered with register() .
-	 * If the item is callable function (closure) it will be fired and the result will be returned.
-	 * If there is no such item assume it is a class name. A class will be created as a singleton.
-	 * 
-	 * @param string $key
-	 * @return mixed
-	 */
-	public static function get($key)
-	{
-		$args = array_slice(func_get_args(), 1);
-
-		// check we have it registered
-		if (static::has($key)) {
-			$obj = static::$registry[$key];
-
-			// if it is callable function (closure)
-			if (is_callable($obj)) {
-				// fire it
-				return call_user_func_array($obj, $args);
-			}
-
-			// return registered object
-			if (!is_string($obj)) {
-				return $obj;
-			}
-
-			// we suppose $key is an alias of $obj
-			$key = $obj;
-		}
-
-		$obj = static::_reflect($key, $args);
-
-		// reigster it for further use
-		static::register($key, $obj);
-
-		return $obj;
-	}
-
-	/**
-	 * Unregister previously registered item
-	 * 
-	 * @param string $key
-	 */
-	public static function unregister($key)
-	{
-		unset(static::$registry[$key]);
-	}
-
-	/**
-	 * Reserved for further use
-	 */
-	protected static function config() { }
+	public static $aliases = array();
 	
 	/**
-	 * Reserved for further use
+	 * Module closures
+	 * @var array
 	 */
-	protected static function register() { }
+	public static $closures = array();
+
+
+	/**
+	 * Loaded modules
+	 * @var array
+	 */
+	protected static $modules = array();
 	
-	/**
-	 * Reserved for further use
-	 */
-	protected static function isRegistered() { }
 
-	/**
-	 * Check we can create an instance of a given class
-	 * 
-	 * @param string $key - class name
-	 * @param array $args - arguments to be passed to the constructor
-	 */
-	protected static function _reflect($key, $args) {
-		$ref = new \ReflectionClass($key);
+	public static function set($alias, $param) {
 
-		// Check we can create an instance of the class
-		if ($ref->isAbstract()) {
-			throw new \Exception("Class $key is abstract.");
+		$alias = strtolower($alias);
+
+		if (is_string($param)) 
+		{ //set alias
+			Module::$aliases[$alias] = $param;
+		} 
+		elseif (is_callable($param)) 
+		{	//set closure
+			Module::$closures[$alias] = $param;
 		}
 
-		if (!$ref->isInstantiable()) {
-			throw new \Exception("Class $key is not instantiable.");
-		}
+	}
 
-		// Try to create it
-		$constructor = $ref->getConstructor();
-		if (is_null($constructor)) {
-			return new $key;
-		}
 
-		return $ref->newInstanceArgs($args);
+	public static function get($alias) {
+		
+		$alias = strtolower($alias);
+		
+		if (isset(Module::$modules[$alias])) 
+		{	// If we have already loaded this module we return it right now
+			return Module::$modules[$alias];
+		} else 
+		{	// return new module and to the list for next reference
+			Module::$modules[$alias] = Module::factory($alias);
+			return Module::$modules[$alias];
+		}
+		
+	}
+	
+	public static function factory($alias, array $params = array()) {
+		
+		$module = FALSE;
+		$name = (isset(Module::$aliases[$alias])) ? Module::$aliases[$alias] : $alias;
+		
+		// Loader
+		if (isset(Module::$closures[$alias]) && is_callable(Module::$closures[$alias])) {
+			$module = call_user_func_array(Module::$closures[$alias], $params); 
+		}
+		elseif (($alias != $name) AND (isset(Module::$closures[$name]) && is_callable(Module::$closures[$name]))) {
+			$module = call_user_func_array(Module::$closures[$name] , $params); 
+		}
+		else {
+			Module::$closures[$name] = function() use ($alias, $name) {
+				// Configuration settings
+				if (!($conf = Config::$alias()))
+					if (!(($alias != $name) AND ($conf = Config::$name())))
+						$conf = FALSE;
+				return new $name($conf);
+			};
+			$module = call_user_func_array(Module::$closures[$name], $params); 	
+		}		
+		return $module;
+		
 	}
 }
