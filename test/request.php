@@ -1,6 +1,23 @@
-<?php namespace Sugi;
+<?php
+/**
+ * Request demo
+ *
+ * @package Sugi
+ * @version 12.12.11
+ */
+include "common.php";
+?>
+<!doctype html>
+<html lang="en">
+<head>
+	<title>Sugi Tests</title>
+	<meta charset="utf-8" />
+</head>
+<body>
+<a href="index.php">back</a><br />
+<?php
 
-include_once "../Sugi/Request.php";
+use Sugi\Request;
 
 echo "protocol() = " . Request::protocol() . '<br />';
 echo "host() = " .  Request::host() . '<br />';
@@ -12,3 +29,10 @@ echo "full() = " . Request::full() . '<br />';
 echo "ip() = " . Request::ip() . '<br />';
 echo "cli() = "; var_dump(Request::cli()); echo '<br />';
 echo "ajax() = "; var_dump(Request::ajax()); echo '<br />';
+
+?>
+<br />
+<a href="index.php">back</a>
+<br />
+</body>
+</html>

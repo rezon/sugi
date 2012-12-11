@@ -1,12 +1,14 @@
 <?php 
-namespace Sugi;
+/**
+ * STE demo
+ *
+ * @package Sugi
+ * @version 12.12.11
+ */
+
+include "common.php";
+
 use Sugi\Ste;
-
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
-include_once "../Sugi/Ste.php";
-include_once "../Sugi/File.php";
 
 $tpl = new Ste();
 $tpl->load('ste/index.html');

@@ -3,27 +3,10 @@
  * Filter Testcases
  *
  * @package Sugi
- * @version 20121004
+ * @version 12.12.11
  */
-include_once "../Sugi/Filter.php";
 
-// custom assertion handler function
-function my_assert_handler($file, $line, $code)	{
-	echo "<hr /><div style=\"color:red\">$code</div><hr />";
-}
-
-// Active assert and make it quiet
-assert_options(ASSERT_ACTIVE, 		1); // (default 1)
-assert_options(ASSERT_WARNING, 		0); // issue a PHP warning for each failed assertion (default 1)
-assert_options(ASSERT_BAIL, 		0); // terminate execution on failed assertions (default 0)
-assert_options(ASSERT_QUIET_EVAL, 	0); // disable error_reporting during assertion expression evaluation (default 0)
-assert_options(ASSERT_CALLBACK, 	'Sugi\my_assert_handler'); // Callback to call on failed assertions (default NULL)
-
-function ass($what) {
-	if (assert($what)) {
-		echo '<div>'.$what.'&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:green">OK</span></div>';
-	}
-}
+include "common.php";
 ?>
 <!doctype html>
 <html lang="en">
@@ -32,7 +15,7 @@ function ass($what) {
 	<meta charset="utf-8" />
 </head>
 <body>
-<a href="index.php">back</a>
+<a href="index.php">back</a><br />
 <?php
 echo '<h2>Integers</h2>';
 ass("\Sugi\Filter::int(1) === 1");

@@ -1,19 +1,29 @@
 <?php
 /**
- * Translations
+ * Translations Testcases
  *
  * @package Sugi
- * @version 20121023
+ * @version 12.12.11
  */
-namespace Sugi;
+include "common.php";
+?>
+<!doctype html>
+<html lang="en">
+<head>
+	<title>Sugi Tests</title>
+	<meta charset="utf-8" />
+</head>
+<body>
+<a href="index.php">back</a><br />
+<?php
 
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
-include_once "../Sugi/Lang.php";
-include_once "../Sugi/File.php";
-
-Lang::configure(array('lang' => 'bg', 'path' => dirname(__FILE__).'/lang/'));
-Lang::load('test');
-echo Lang::get('test') . '<br />';
+Sugi\Lang::configure(array('lang' => 'bg', 'path' => dirname(__FILE__).'/lang/'));
+Sugi\Lang::load('test');
+echo Sugi\Lang::get('test') . '<br />';
 echo __('Hi, :user', array(':user' => 'Joe'));
+?>
+<br />
+<a href="index.php">back</a>
+<br />
+</body>
+</html>

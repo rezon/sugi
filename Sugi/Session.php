@@ -3,10 +3,10 @@
  * Sessions
  * 
  * @package Sugi
- * @version 12.11.12
+ * @version 12.12.11
  */
+
 use \Sugi\File;
-include_once __DIR__.'/File.php';
 
 abstract class Session
 {

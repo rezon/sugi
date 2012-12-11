@@ -1,20 +1,37 @@
 <?php
-namespace Sugi;
+/**
+ * URI demo
+ *
+ * @package Sugi
+ * @version 12.12.11
+ */
+include "common.php";
+?>
+<!doctype html>
+<html lang="en">
+<head>
+	<title>Sugi Tests</title>
+	<meta charset="utf-8" />
+</head>
+<body>
+<a href="index.php">back</a><br />
+<?php
 
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
-include_once "../Sugi/Route.php";
-include_once "../Sugi/URI.php";
-
-Route::add('<path>/test/route', function() {
+Sugi\Route::add('<path>/test/route', function() {
 	echo 'route';
 });
 
-Route::add('<path>/test/route.php', function() {
+Sugi\Route::add('<path>/test/route.php', function() {
 	echo 'route.php is OK';
 });
 
-if (!Route::process_request()) {
+if (!Sugi\Route::process_request()) {
 	echo '404';
 };
+
+?>
+<br />
+<a href="index.php">back</a>
+<br />
+</body>
+</html>
