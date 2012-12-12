@@ -14,7 +14,6 @@
 		<input name="ps" value="postalabala" readonly="readonly" hidden="hidden" />
 		<input name="pi" value="1" readonly="readonly" hidden="hidden" />
 		<input type="submit" value="Filter tests" />
-		<input type="button" value="Config" onclick="document.location='config.php'" />
 		<input type="button" value="Translations" onclick="document.location='lang.php'" />
 		<input type="button" value="Request" onclick="document.location='request.php?test=key&amp;more=tests'" />
 		<input type="button" value="URI" onclick="document.location='uri.php'" />

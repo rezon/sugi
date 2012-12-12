@@ -1,10 +1,8 @@
 <?php namespace Sugi;
 /**
  * @package Sugi
- * @version 12.11.23
+ * @version 12.12.12
  */
-
-include_once __DIR__."/File.php";
 
 /**
  * Simplifies configurations via automatic loading and caching configuration files.
@@ -65,7 +63,7 @@ class Config
 	/**
 	 * Accepted extensions and search file order
 	 */
-	public static $ext_order = array('.conf.php', '.json');
+	public static $ext_order = array('.conf.php', '.json', '.neon');
 
 	/**
 	 * Magic method which is used to fetch items from configuration files. Shorthand for Config::file('filename', 'key', 'default');
@@ -173,6 +171,7 @@ class Config
 		foreach (static::$ext_order as $ext) {
 			if (File::exists("{$filebase}{$ext}")) {
 				if ($ext == '.json') return json_decode(File::get("{$filebase}{$ext}"), true);
+				if ($ext == '.neon') return Config\Neon::decode(File::get("{$filebase}{$ext}"));
 				return include("{$filebase}{$ext}");
 			}
 		}
