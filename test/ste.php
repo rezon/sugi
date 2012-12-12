@@ -27,6 +27,13 @@ $tpl->loop('block', array(
 	)
 );
 
+$tpl->loop('offers', array(
+	array('id' => 1, 'img' => false), // ne
+	array('id' => 2, 'img' => true), // da
+	array('id' => 3, 'img' => 'alabala'), // da
+	array('id' => 4), // ne
+));
+
 $tpl->register_function('test', function ($id, $html, $else = '') {
 	if ($id >= 3) return $html;
 	return $else;

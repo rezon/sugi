@@ -1,7 +1,7 @@
 <?php namespace Sugi; 
 /**
  * @package Sugi
- * @version 12.11.23
+ * @version 12.12.12
  */
 
 /**
@@ -310,6 +310,10 @@ class Ste
 	{
 		static $inloop = false;
 
+		// $matches[0] = block
+		// $matches[1] = block name
+		// $matches[2] = block content
+
 		// check the block is hidden
 		if (!empty($this->hide[$matches[1]])) {
 			return false;
@@ -326,6 +330,12 @@ class Ste
 			return $this->_parse($matches[2]);
 		}
 
+
+		if (!empty($this->loops[$matches[1]]) and !is_array($this->loops[$matches[1]])) {
+			// parse inside
+			return $this->_parse($matches[2]);
+		}
+
 		// loop
 		$return = '';
 		foreach ($this->loops[$matches[1]] as $key => $match) {
@@ -333,6 +343,8 @@ class Ste
 			foreach ($match as $k=>$m) {
 				if (is_array($m)) {
 					$this->loops[$k] = $m;
+				} elseif ($m !== false) {
+					$this->loops[$k] = true;
 				}
 			}
 			$this->vars[$matches[1]] = $match;
