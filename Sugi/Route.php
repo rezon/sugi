@@ -3,12 +3,8 @@
  * Route
  *
  * @package Sugi
- * @version 12.11.23
+ * @version 12.12.13
  */
-
-use \Sugi\Filter;
-
-include_once __DIR__ . '/Filter.php';
 
 /**
  * \Sugi\Route
@@ -117,6 +113,7 @@ class Route
 	 */
 	protected static function replace_segments($pattern, $segments)
 	{
+		// replacing NON mandatory segments/params
 		if (preg_match('#\(([^()]+)\)#uD', $pattern, $match)) {
 			//echo "<pre>" . htmlspecialchars(var_export($match, true)) . "</pre>";
 			$found = false;
@@ -136,6 +133,19 @@ class Route
 			if (!$found) $replace = '';
 			$pattern = str_replace($match[0], $replace, $pattern);
 			return static::replace_segments($pattern, $segments);
+		}
+
+		// replacing mandatory segments/params
+		if (preg_match_all('#'.static::REGEX_KEY.'#uD', $pattern, $segmatch)) {
+			foreach ($segmatch[1] as $key => $seg) {
+				if ($value = Filter::key($seg, $segments)) {
+					$pattern = str_replace("<$seg>", $value, $pattern);
+					$found = true;
+				}
+				else {
+					$pattern = str_replace("<$seg>", $seg, $pattern);
+				}
+			}
 		}
 
 		return $pattern;
