@@ -1,7 +1,7 @@
 <?php namespace Sugi; 
 /**
  * @package Sugi
- * @version 12.12.12
+ * @version 12.12.13
  */
 
 /**
@@ -340,11 +340,13 @@ class Ste
 		$return = '';
 		foreach ($this->loops[$matches[1]] as $key => $match) {
 			$inloop = true;
-			foreach ($match as $k=>$m) {
-				if (is_array($m)) {
-					$this->loops[$k] = $m;
-				} elseif ($m !== false) {
-					$this->loops[$k] = true;
+			if (is_array($match)) {
+				foreach ($match as $k=>$m) {
+					if (is_array($m)) {
+						$this->loops[$k] = $m;
+					} elseif ($m !== false) {
+						$this->loops[$k] = true;
+					}
 				}
 			}
 			$this->vars[$matches[1]] = $match;
