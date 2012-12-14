@@ -330,10 +330,13 @@ class Ste
 			return $this->_parse($matches[2]);
 		}
 
+		if (!is_array($this->loops[$matches[1]])) {
+			if (!empty($this->loops[$matches[1]])) {
+				// parse inside
+				return $this->_parse($matches[2]);
+			}
 
-		if (!empty($this->loops[$matches[1]]) and !is_array($this->loops[$matches[1]])) {
-			// parse inside
-			return $this->_parse($matches[2]);
+			return false;
 		}
 
 		// loop
