@@ -348,6 +348,9 @@ class Ste
 					} elseif ($m !== false) {
 						$this->loops[$k] = true;
 					}
+					} elseif ($m === false) {
+						$this->loops[$k] = false;
+					}
 					$kk[] = $k;
 				}
 			}
