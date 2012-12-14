@@ -347,7 +347,6 @@ class Ste
 						$this->loops[$k] = $m;
 					} elseif ($m !== false) {
 						$this->loops[$k] = true;
-					}
 					} elseif ($m === false) {
 						$this->loops[$k] = false;
 					}
