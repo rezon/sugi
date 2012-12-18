@@ -151,4 +151,14 @@ class Request
 	{
 		return (isset($_SERVER['HTTP_X_REQUESTED_WITH']) AND (strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest'));
 	}
+
+	/**
+	 * Returns request method used
+	 * 
+	 * @return string
+	 */
+	public static function method()
+	{
+		return $_SERVER['REQUEST_METHOD'];
+	}
 }
