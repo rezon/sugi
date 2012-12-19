@@ -341,6 +341,7 @@ class Ste
 
 		// loop
 		$return = '';
+		$num = 0;
 		foreach ($this->loops[$matches[1]] as $key => $match) {
 			$inloop = true;
 			$kk = array();
@@ -356,6 +357,9 @@ class Ste
 					$kk[] = $k;
 				}
 			}
+			$match['_count'] = count($this->loops[$matches[1]]);
+			$match['_num'] = ++$num;
+			$match['_parity'] = $num % 2 ? 'odd' : 'even';
 			$this->vars[$matches[1]] = $match;
 			$return .= $this->_parse($matches[2]);
 

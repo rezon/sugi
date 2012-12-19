@@ -3,15 +3,15 @@
 	<h1>{title} - {description}</h1>
 	<ul>
 		<!-- BEGIN block  -->
-		<li>
-			{block.li}
+		<li id="li_{block._num}" class="{block._parity}">
+			{block.li} (_num: {block._num}, _count: {block._count}, _parity: {block._parity})
 			<ul>
 				<!-- BEGIN nested -->
-				<li>
+				<li id="li_{block._num}_{nested._num}">
 					{block.li} => {nested.li}
 					<ul>
 						<!-- BEGIN nested2 -->
-						<li>{block.li} => {nested.li} => {nested2.li}</li>
+						<li id="li_{block._num}_{nested._num}_{nested2._num}">{block.li} => {nested.li} => {nested2.li}</li>
 						<!-- END nested2 -->
 					</ul>
 				</li>
