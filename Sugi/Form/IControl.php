@@ -21,6 +21,15 @@ interface IControl
 	 */
 	public function getValue();
 
+
+	/**
+	 * Reads GET/POST data
+	 *
+	 * @param string $metod - GET or POST
+	 * @return mixed
+	 */
+	public function readHttpData($method);
+
 	/**
 	 * Returns errors corresponding to the control
 	 * 

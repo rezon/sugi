@@ -15,6 +15,17 @@ class Submit extends TextInput
 		$this->setAttribute("type", "submit");
 	}
 
+	/**
+	 * Sets control value
+	 * 
+	 * @param string
+	 */
+	public function setValue($value)
+	{
+		// cannot change value
+		return $this;
+	}
+
 	public function getErrors()
 	{
 		return false;

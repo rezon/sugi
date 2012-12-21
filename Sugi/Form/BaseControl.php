@@ -15,6 +15,7 @@ class BaseControl
 	protected $attributes = array();
 	protected $label;
 	protected $required;
+	protected $value;
 
 	/**
 	 * Can't instantiate BaseControl
@@ -47,12 +48,14 @@ class BaseControl
 	}
 
 	/**
-	 * Returns control's value
+	 * Returns submitted data
+	 * 
 	 * @return string
 	 */
 	public function getValue()
 	{
-		return $this->getAttribute("value");
+		return $this->value;
+		// return $this->getAttribute("value");
 	}
 
 	/**
@@ -105,6 +108,14 @@ class BaseControl
 		if (is_null($form)) return $this->form;
 		$this->form = $form;
 		return $this;
+	}
+
+	public function readHttpData($method)
+	{
+		$arr = (strcasecmp($method, "post") == 0) ? $_POST : $_GET;
+		$this->value = Filter::key($this->getName(), $arr);
+		$this->setValue($this->value);
+		return $this->value;
 	}
 
 	public function setRequired($message = 'Required field')

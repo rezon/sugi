@@ -19,8 +19,9 @@ class Form
 	 */
 	public function __construct($name)
 	{
-		// currently this is only used for child controlls (prefix for ID's)
+		// currently this is only used for child controls (prefix for ID's)
 		$this->name = $name;
+		$this->attributes["name"] = $name;
 		// Sets default action attribute (form request URI)
 		$this->attributes["action"] = "";
 		// Set default method attribute (form request method)
@@ -117,26 +118,45 @@ class Form
 		return Filter::key($name, $this->attributes);
 	}	
 
-	public function isSubmitted()
+	public function submitted($controlName = null)
 	{
 		if (strcasecmp(Request::method(), $this->method())) return false;
 		if (!count($this->controls)) return false;
 
-		if (count($this->submitcontrols)) {
-			$arr = (strcasecmp($this->method(), "post") == 0) ? $_POST : $_GET;
-			foreach ($this->submitcontrols as $c) {
-				if (Filter::key($c, $arr)) return true;
+		$res = false;
+		$arr = (strcasecmp($this->method(), "post") == 0) ? $_POST : $_GET;
+		if (!is_null($controlName)) {
+			if (Filter::key($controlName, $arr)) {
+				$res = true;
 			}
 		}
+		elseif (count($this->submitControls)) {
+			foreach ($this->submitControls as $c) {
+				if (Filter::key($c, $arr)) {
+					$res = true;
+					$controlName = $c;
+					break;
+				}
+			}
+		}
+		else {
+			if (Filter::key('submit', $arr)) {
+				$res = true;
+				$controlName = 'submit';
+			}
+		}
+
+		if ($res) {
+			$this->readHttpData($this->method());
+			return $this->getControl($controlName);
+		}
+
 		return false;
 	}
 
 	public function isValid()
 	{
-		if (!$this->isSubmitted()) return false;
-		// populate values with submitted data
-		$this->setValues($this->getHttpData());
-
+		if (!$this->submitted()) return false;
 		foreach ($this->controls as $name => $control) {
 			if ($control->getErrors()) return false;
 		}
@@ -147,31 +167,15 @@ class Form
 	public function getValues()
 	{
 		$values = array();
-		foreach ($this->controls as $name => $control) {
-			$values[$name] = $control->getValue();
-		}
-		return $values;
-	}
-
-	public function getHttpData()
-	{
-		$values = array();
-		if ($this->isSubmitted()) {
-			$arr = (strcasecmp($this->method(), "post") == 0) ? $_POST : $_GET;
+		if ($this->submitted()) {
 			foreach ($this->controls as $name => $control) {
-				$values[$name] = Filter::key($name, $arr);
+				$values[$name] = $control->getValue();
 			}
 		}
 		return $values;
 	}
 
-	public function setValues($values)
-	{
-		foreach ($this->controls as $name => $control) {
-			if (isset($values[$name])) $control->setValue($values[$name]);
-		}
-	}
-
+	// ??
 	public function getErrors()
 	{
 		$errs = array();
@@ -181,6 +185,20 @@ class Form
 			}
 		}
 		return count($errs) ? $errs : false;
+	}
+
+	public function readHttpData($method)
+	{
+		foreach ($this->controls as $control) {
+			$control->readHttpData($method);
+		}
+	}
+
+	public function setValues($values)
+	{
+		foreach ($this->controls as $name => $control) {
+			if (isset($values[$name])) $control->setValue($values[$name]);
+		}
 	}
 
 	public function getControl($name)
@@ -206,7 +224,7 @@ class Form
 
 	public function addSubmit($name, $value = false)
 	{
-		$this->submitcontrols[] = $name;
+		$this->submitControls[] = $name;
 		return $this->addcontrol(new Form\Submit($name, $value))->form($this);
 	}
 
