@@ -1,15 +1,15 @@
 <?php namespace Sugi\Form;
 /**
  * @package Sugi
- * @version 12.12.19
+ * @version 12.12.21
  */
 
 /**
- * Sugi\Form\PasswordInput
+ * Sugi\Form\Password
  * 
- * @extends TextInput
+ * @extends Sugi\Form\Text
  */
-class PasswordInput extends TextInput
+class Password extends Text
 {
 	public function __construct($name, $label)
 	{

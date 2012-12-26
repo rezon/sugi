@@ -1,7 +1,7 @@
 <?php namespace Sugi; 
 /**
  * @package Sugi
- * @version 12.12.19
+ * @version 12.12.21
  */
 
 /**
@@ -9,23 +9,54 @@
  */
 class Form
 {
-	public $name;
 	protected $attributes = array();
 	protected $controls = array();
-	protected $submitControls = array();
+	protected $submitted;
+	protected $errors;
 
 	/**
 	 * Form Constuctor
+	 * 
+	 * @param string $name
 	 */
-	public function __construct($name)
+	public function __construct($name = '')
 	{
-		// currently this is only used for child controls (prefix for ID's)
-		$this->name = $name;
-		$this->attributes["name"] = $name;
+		// This is also used for child controls (prefix for ID's)
+		if ($name) $this->attributes["name"] = $name;
 		// Sets default action attribute (form request URI)
 		$this->attributes["action"] = "";
 		// Set default method attribute (form request method)
 		$this->attributes["method"] = "POST";
+	}
+
+	/**
+	 * Sets form name
+	 * 
+	 * @param string $name
+	 * @return \Sugi\Form
+	 */
+	protected function setName($name)
+	{
+		return $this->setAttribute("name", $action);
+	}
+
+	/**
+	 * Returns form name attribute
+	 * 
+	 * @return string
+	 */
+	protected function getName()
+	{
+		return $this->getAttribute("name");
+	}
+
+	/**
+	 * Sets/gets form name
+	 */
+	public function name($name = null)
+	{
+		if (is_null($name)) return $this->getName();
+		return $this->setName($name);
 	}
 
 	/**
@@ -34,7 +65,7 @@ class Form
 	 * @param string
 	 * @return \Sugi\Form
 	 */
-	public function setAction($action)
+	protected function setAction($action)
 	{
 		return $this->setAttribute("action", $action);
 	}
@@ -44,16 +75,13 @@ class Form
 	 * 
 	 * @return string
 	 */
-	public function getAction()
+	protected function getAction()
 	{
 		return $this->getAttribute("action");
 	}
 
 	/**
 	 * Sets/gets form action
-	 * 
-	 * @param null or string
-	 * @return string or \Sugi\Form
 	 */
 	public function action($action = null)
 	{
@@ -67,7 +95,7 @@ class Form
 	 * @param string
 	 * @return \Sugi\Form
 	 */
-	public function setMethod($method)
+	protected function setMethod($method)
 	{
 		return $this->setAttribute("method", $method);
 	}
@@ -77,16 +105,13 @@ class Form
 	 * 
 	 * @return string
 	 */
-	public function getMethod()
+	protected function getMethod()
 	{
 		return $this->getAttribute("method");
 	}
 
 	/**
 	 * Sets/gets form request method
-	 * 
-	 * @param null or string
-	 * @return string or \Sugi\Form
 	 */
 	public function method($method = null)
 	{
@@ -101,7 +126,7 @@ class Form
 	 * @param string $value
 	 * @return \Sugi\Form
 	 */
-	public function setAttribute($name, $value)
+	protected function setAttribute($name, $value)
 	{
 		$this->attributes[$name] = $value;
 		return $this;
@@ -113,84 +138,104 @@ class Form
 	 * @param string
 	 * @return string
 	 */
-	public function getAttribute($name)
+	protected function getAttribute($name)
 	{
 		return Filter::key($name, $this->attributes);
-	}	
-
-	public function submitted($controlName = null)
-	{
-		if (strcasecmp(Request::method(), $this->method())) return false;
-		if (!count($this->controls)) return false;
-
-		$res = false;
-		$arr = (strcasecmp($this->method(), "post") == 0) ? $_POST : $_GET;
-		if (!is_null($controlName)) {
-			if (Filter::key($controlName, $arr)) {
-				$res = true;
-			}
-		}
-		elseif (count($this->submitControls)) {
-			foreach ($this->submitControls as $c) {
-				if (Filter::key($c, $arr)) {
-					$res = true;
-					$controlName = $c;
-					break;
-				}
-			}
-		}
-		else {
-			if (Filter::key('submit', $arr)) {
-				$res = true;
-				$controlName = 'submit';
-			}
-		}
-
-		if ($res) {
-			$this->readHttpData($this->method());
-			return $this->getControl($controlName);
-		}
-
-		return false;
 	}
 
-	public function isValid()
+	/**
+	 * Sets/gets form attribute
+	 */
+	public function attribute($name, $value = null)
+	{
+		if (is_null($value)) return $this->getAttribute($name);
+		return $this->setAttribute($name, $value);
+	}
+
+	/**
+	 * Generates unique identifier for the form.
+	 * Used to check the form is submitted.
+	 * 
+	 * @return string
+	 */
+	protected function uid()
+	{
+		if ($n = $this->getName()) return $n;
+		$str = "";
+		foreach ($this->controls as $name => $c) {
+			$str .= $name;
+		}
+		return "form_" . abs(crc32($str));
+	}
+
+	/**
+	 * Checks if the form was submitted.
+	 * 
+	 * @return boolean
+	 */
+	public function submitted()
+	{
+		if (!is_null($this->submitted)) return $this->submitted;
+		if (strcasecmp(Request::method(), $this->method())) return $this->submitted = false;
+		if (!count($this->controls)) return $this->submitted = false;
+
+		$arr = (strcasecmp($this->method(), "post") == 0) ? $_POST : $_GET;
+		if (isset($arr[$this->uid()])) {
+			$this->readHttpData($arr);
+			return $this->submitted = true;
+		}
+
+		return $this->submitted = false;
+	}
+
+	/**
+	 * Checks the form was submitted and the submitted data meets all criteria
+	 * 
+	 * @return boolean
+	 */
+	public function valid()
 	{
 		if (!$this->submitted()) return false;
-		foreach ($this->controls as $name => $control) {
-			if ($control->getErrors()) return false;
-		}
-
-		return true;
+		return count($this->errors()) === 0;
 	}
 
-	public function getValues()
+	/**
+	 * Returns field errors
+	 * 
+	 * @return array
+	 */
+	public function errors()
+	{
+		if (!is_null($this->errors)) return $this->errors;
+		$this->errors = array();
+		foreach ($this->controls as $name => $control) {
+			if ($e = $control->error()) {
+				$this->errors[$name] = $e;
+			}
+		}
+		return $this->errors;
+	}
+
+	/**
+	 * Returns form data
+	 * 
+	 * @return array
+	 */
+	public function data()
 	{
 		$values = array();
 		if ($this->submitted()) {
 			foreach ($this->controls as $name => $control) {
-				$values[$name] = $control->getValue();
+				$values[$name] = $control->value();
 			}
 		}
 		return $values;
 	}
 
-	// ??
-	public function getErrors()
-	{
-		$errs = array();
-		foreach ($this->controls as $name => $control) {
-			if ($e = $control->getErrors()) {
-				$errs[$name] = $e;
-			}
-		}
-		return count($errs) ? $errs : false;
-	}
-
-	public function readHttpData($method)
+	protected function readHttpData($data)
 	{
 		foreach ($this->controls as $control) {
-			$control->readHttpData($method);
+			$control->readHttpData($data);
 		}
 	}
 
@@ -203,7 +248,7 @@ class Form
 
 	public function getControl($name)
 	{
-		return $this->controls[$name];
+		return Filter::key($name, $this->controls);
 	}
 
 	public function addControl(Form\Icontrol $control)
@@ -214,18 +259,22 @@ class Form
 
 	public function addText($name, $label = false)
 	{
-		return $this->addcontrol(new Form\TextInput($name, $label))->form($this);
+		return $this->addcontrol(new Form\Text($name, $label))->form($this);
 	}
 
 	public function addPassword($name, $label = false)
 	{
-		return $this->addcontrol(new Form\PasswordInput($name, $label))->form($this);
+		return $this->addcontrol(new Form\Password($name, $label))->form($this);
 	}
 
-	public function addSubmit($name, $value = false)
+	public function addSubmit($name, $value)
 	{
-		$this->submitControls[] = $name;
 		return $this->addcontrol(new Form\Submit($name, $value))->form($this);
+	}
+
+	public function addHidden($name, $value)
+	{
+		return $this->addControl(new Form\Hidden($name, $value))->form($this);
 	}
 
 	/**
@@ -240,6 +289,7 @@ class Form
 			$form .= " {$attr}=\"{$value}\"";
 		}
 		$form .= ">\n";
+		$form .= "\t<input type=\"hidden\" name=\"".$this->uid()."\" value=\"\" />\n";
 		foreach ($this->controls as $control)	{
 			$form .= $control;
 		}

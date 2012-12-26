@@ -1,21 +1,21 @@
 <?php namespace Sugi\Form;
 /**
  * @package Sugi
- * @version 12.12.19
+ * @version 12.12.21
  */
 
 use Sugi\Filter;
 
 /**
- * \Sugi\Form\BaseControl
+ * \Sugi\Form\Input
  */
-class BaseControl
+class Input
 {
 	protected $form;
 	protected $attributes = array();
 	protected $label;
 	protected $required;
-	protected $value;
+	protected $error = false;
 
 	/**
 	 * Can't instantiate BaseControl
@@ -42,7 +42,7 @@ class BaseControl
 	 * 
 	 * @param string
 	 */
-	public function setValue($value)
+	protected function setValue($value)
 	{
 		return $this->setAttribute("value", $value);
 	}
@@ -52,10 +52,9 @@ class BaseControl
 	 * 
 	 * @return string
 	 */
-	public function getValue()
+	protected function getValue()
 	{
-		return $this->value;
-		// return $this->getAttribute("value");
+		return $this->getAttribute("value");
 	}
 
 	/**
@@ -74,7 +73,7 @@ class BaseControl
 	 * @param string $value
 	 * @return \Sugi\Form\IControl
 	 */
-	public function setAttribute($name, $value)
+	protected function setAttribute($name, $value)
 	{
 		$this->attributes[$name] = $value;
 		return $this;
@@ -86,7 +85,7 @@ class BaseControl
 	 * @param string
 	 * @return string
 	 */
-	public function getAttribute($name)
+	protected function getAttribute($name)
 	{
 		return Filter::key($name, $this->attributes);
 	}
@@ -110,12 +109,9 @@ class BaseControl
 		return $this;
 	}
 
-	public function readHttpData($method)
+	public function readHttpData($data)
 	{
-		$arr = (strcasecmp($method, "post") == 0) ? $_POST : $_GET;
-		$this->value = Filter::key($this->getName(), $arr);
-		$this->setValue($this->value);
-		return $this->value;
+		$this->setValue(Filter::key($this->getName(), $data));
 	}
 
 	public function setRequired($message = 'Required field')

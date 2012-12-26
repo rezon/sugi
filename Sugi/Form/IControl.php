@@ -1,41 +1,34 @@
 <?php namespace Sugi\Form;
 /**
  * @package Sugi
- * @version 12.12.19
+ * @version 12.12.21
  */
 
-
+/**
+ * Interface for the Form Controls
+ */
 interface IControl
 {
 	/**
-	 * Sets control's value
-	 * 
-	 * @param string
-	 */
-	public function setValue($value);
-
-	/**
-	 * Returns control's value
+	 * sets/gets data (value) for the control
 	 * 
 	 * @return string
 	 */
-	public function getValue();
-
+	public function value($value = null);
 
 	/**
 	 * Reads GET/POST data
 	 *
-	 * @param string $metod - GET or POST
-	 * @return mixed
+	 * @param array $data - GET or POST data
 	 */
-	public function readHttpData($method);
+	public function readHttpData($data);
 
 	/**
-	 * Returns errors corresponding to the control
+	 * Return first error corresponding to the control
 	 * 
-	 * @return array
+	 * @return string
 	 */
-	public function getErrors();
+	public function error();
 
 	/**
 	 * Text
