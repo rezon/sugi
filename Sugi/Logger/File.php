@@ -1,16 +1,17 @@
-<?php
+<?php namespace Sugi\Logger;
 /**
  * Logger_file - very simple file log.
  * 
  * @package Sugi
- * @version 20121007
+ * @version 13.02.05
  */
-namespace Sugi\Logger;
+
 
 /**
  * Logger_file
  */
-class File extends \Sugi\Logger {
+class File extends \Sugi\Logger
+{
 	/**
 	 * Log filename
 	 * 

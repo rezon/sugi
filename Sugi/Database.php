@@ -1,7 +1,7 @@
 <?php namespace Sugi;
 /**
  * @package Sugi
- * @version 12.11.23
+ * @version 13.02.06
  */
 
 /**
@@ -14,8 +14,91 @@
  * Hooks can be triggered before (pre_{method_name}) and 
  * after (post_{method_name}) each hookable methods.
  */
-abstract class Database
+class Database
 {
+	/**
+	 * Database instance
+	 * @var string
+	 */
+	protected $db;
+
+	/**
+	 * Handle to DB connection
+	 * @var resource
+	 */
+	protected $dbHandle;
+	
+	/**
+	 * Hooks
+	 * @var array of events
+	 */
+	protected $_hooks = array();
+	
+	/**
+	 * Class constructor
+	 */
+	public function __construct(array $config = null)
+	{
+		if (empty($config["type"])) {
+			throw new DatabaseException("Required database type parameter is missing");
+		}
+		$type = $config["type"];
+		unset($config["type"]);
+
+		$type = ucfirst(strtolower($type));
+		$class_name = "\Sugi\Database\\$type";
+		$class_file = dirname(__FILE__)."/Database/{$type}.php";
+		if (!class_exists($class_name)) {
+			if (!file_exists($class_file)) {
+				throw new DatabaseException("Invalid database type $type");
+			}
+			include $class_file;
+		}
+
+		$this->db = new $class_name($config);
+	}
+
+	/**
+	 * Some methods are prefixed with h_. Those methods should be started without using h_ (hook) prefix.
+	 * In this way those methods will get here and all hooks will be invoked
+	 * 
+	 * @param string $name - method name, that is invoked
+	 * @param array $args - arguments that are passed
+	 * @return mixed
+	 * @throws DatabaseException If method is not marked as hookable
+	 */
+	public function __call($name, $args)
+	{
+		// calling hookable method?
+		if (strpos($name, 'h_') !== 0) {
+			throw new DatabaseException("Call to undefined method Database::{$name}()");
+		}
+
+		$method = substr($name, 1);
+		if (!method_exists($this->db, $method)) {
+			throw new DatabaseException("Call to undefined method Database::{$method}()");
+		}
+
+		// check for pre hooks
+		$this->triggerPreAction($method);
+		
+		// execute method
+		$result = call_user_func_array(array($this->db, $method), $args);
+
+		// check for post hooks
+		$this->triggerPostAction($method);
+		
+		return $result;
+	}
+
+	/**
+	 * Class destructor
+	 */
+	public function __destruct()
+	{
+		$this->close();
+	}
+
 	/**
 	 * Opens connection to the database
 	 * 
@@ -23,8 +106,14 @@ abstract class Database
 	 */
 	public function open()
 	{
-		$this->h_open();
-		return $this->_conn;
+		if ($this->dbHandle) {
+			return $this->dbHandle;
+		}
+
+		$this->dbHandle = $this->db->_open();
+		$this->triggerPostAction("open");
+
+		return $this->dbHandle;
 	}
 	
 	/**
@@ -32,8 +121,11 @@ abstract class Database
 	 */
 	public function close()
 	{
-		if ($this->_conn and $this->h_close()) {
-			$this->_conn = null;
+		if ($this->dbHandle) {
+			if ($this->db->_close()) {
+				$this->triggerPreAction("close");
+				$this->dbHandle = null;
+			}
 		}
 	}
 	
@@ -46,9 +138,7 @@ abstract class Database
 	public function escape($item)
 	{
 		// For delayed opens
-		if (!$this->_conn) {
-			$this->open();
-		}
+		$this->open();
 		return $this->h_escape($item);
 	}
 
@@ -62,14 +152,12 @@ abstract class Database
 	public function query($sql)
 	{
 		// For delayed opens
-		if (!$this->_conn) {
-			$this->open($this->_params);
-		}
+		$this->open();
 		if ($res = $this->h_query($sql)) {
 			return $res;
 		}
 			
-		throw new DatabaseException($this->_error($this->_conn));
+		throw new DatabaseException($this->db->_error());
 	}
 	
 	/**
@@ -118,9 +206,7 @@ abstract class Database
 	public function single($sql)
 	{
 		// For delayed opens
-		if (!$this->_conn) {
-			$this->open($this->_params);
-		}
+		$this->open();
 		return $this->h_single($sql);
 	}
 	
@@ -133,9 +219,7 @@ abstract class Database
 	public function single_field($sql)
 	{
 		// For delayed opens
-		if (!$this->_conn) {
-			$this->open($this->_params);
-		}
+		$this->open();
 		return $this->h_single_field($sql);
 	}
 
@@ -178,9 +262,7 @@ abstract class Database
 	public function begin()
 	{
 		// For delayed opens
-		if (!$this->_conn) {
-			$this->open($this->_params);
-		}
+		$this->open();
 		return $this->h_begin();
 	}
 	
@@ -209,16 +291,16 @@ abstract class Database
 	 * 
 	 * @return handle
 	 */
-	public function get_connection()
+	public function getdbHandleection()
 	{
-		return $this->_conn;
+		return $this->dbHandle;
 	}
-	
+
 	/**
 	 * Hook a callback function/method to some hookable events.
 	 * Hooks could be 'pre_' and 'post_'.
 	 *
-	 *  <code>
+	 * <code>
 	 * 	// to hook an event before executing a query
 	 *  Database::hook('pre_query', array($object, 'method_name'));
 	 *  // to hook an event after executing a query
@@ -230,12 +312,13 @@ abstract class Database
 	 */
 	public function hook($event, $callback)
 	{
-		// FIXME: this doesn't work with closures
 		if (is_array($callback)) $inx = get_class($callback[0]).'::'.$callback[1];
+		elseif (gettype($callback) == 'object') $inx = uniqid();
 		else $inx = $callback;
 				
 		$this->_hooks[$event][$inx] = $callback;
 	}
+
 	
 	/**
 	 * Unhook.
@@ -273,232 +356,26 @@ abstract class Database
 		}
 	}
 
-
-
-
-	/**
-	 * Database type - can be mysql, mysqli, sqlite, postgres...
-	 * 
-	 * @var string
-	 */
-	private $_dbtype = false;
-
-	/**
-	 * Handle to DB connection
-	 * @var resource
-	 */
-	protected $_conn = false;
-	
-	/**
-	 * Connection params
-	 * @var array
-	 */
-	protected $_params = false;
-	
-	/**
-	 * Hooks
-	 * @var array of events
-	 */
-	protected $_hooks = array();
-	
-	/**
-	 * Class constructor
-	 */
-	protected function __construct($dbtype, $params)
+	protected function triggerPreAction($action)
 	{
-		$this->_dbtype = $dbtype;
-		$this->_params = $params;
-	}
-
-	/**
-	 * Some methods are prefixed with h_. Those methods should be started without using h_ (hook) prefix.
-	 * In this way those methods will get here and all hooks will be invoked
-	 * 
-	 * @param string $name - method name, that is invoked
-	 * @param array $args - arguments that are passed
-	 * @return mixed
-	 * @throws DatabaseException If method is not marked as hookable
-	 */
-	public function __call($name, $args)
-	{
-		// calling hookable method?
-		if (strpos($name, 'h_') !== 0) {
-			throw new DatabaseException("Call to undefined method Database::{$name}()");
-		}
-
-		$method = substr($name, 1);
-		if (!method_exists($this, $method)) {
-			throw new DatabaseException("Call to undefined method Database::{$method}()");
-		}
-	
-		// check for pre hooks
-		$hook = 'pre'.$method;
+		$hook = "pre" . $action;
 		if (!empty($this->_hooks[$hook])) {
-			$callback_args = $args;
-			array_unshift($callback_args, $hook);
-			foreach ($this->_hooks[$hook] as $key => $callback) {
-				call_user_func_array($callback, $callback_args);
-			}
-		}
-		
-		// execute method
-		$result = call_user_func_array(array($this, $method), $args);
-		
-		// check for post hooks
-		$hook = 'post'.$method;
-		if (!empty($this->_hooks[$hook])) {
-			$callback_args = $args;
-			array_unshift($callback_args, $hook);
-			$callback_args[] = $result;
 			foreach ($this->_hooks[$hook] as $callback) {
-				call_user_func_array($callback, $callback_args);
+				$callback();
 			}
 		}
-		
-		return $result;
 	}
 
-	/**
-	 * Creates the Database instance of the $name type
-	 * 
-	 * <code>
-	 * 		$db = \Sugi\Database::sqlite3($config);
-	 * 		$db->open();
-	 * </code>
-	 * 
-	 * @param  string $name
-	 * @param  mixed $arguments
-	 * @return handle to created database class
-	 */
-	public static function __callStatic($name, $arguments)
+	protected function triggerPostAction($action)
 	{
-		$name = ucfirst(strtolower($name));
-		$class_name = "\Sugi\Database\\$name";
-		$class_file = dirname(__FILE__)."/Database/{$name}.php";
-		if (!class_exists($class_name)) {
-			if (!file_exists($class_file)) {
-				throw new DatabaseException("Call to undefined method Sugi\Database::{$name}()");
+		// check for post hooks
+		$hook = "post" . $action;
+		if (!empty($this->_hooks[$hook])) {
+			foreach ($this->_hooks[$hook] as $callback) {
+				$callback();
 			}
-			include $class_file;
 		}
-
-		return new $class_name($name, $arguments[0]);
 	}
-	
-	/**
-	 * Class destructor
-	 */
-	public function __destruct()
-	{
-		$this->close();
-	}
-
-
-
-
-	/**
-	 * Connects to the database
-	 * 
-	 * @return resource handle to connection
-	 */
-	abstract protected function _open();
-	
-	/**
-	 * Closes connection to the database
-	 * 
-	 * @return boolean - true on success
-	 */
-	abstract protected function _close();
-	
-	/**
-	 * Escapes a string for use as a query parameter
-	 * 
-	 * @param string
-	 * @return string
-	 */
-	abstract protected function _escape($item);
-	
-	/**
-	 * Executes query
-	 * 
-	 * @param string SQL statement
-	 * @return resource id
-	 */
-	abstract protected function _query($sql);
-	
-	/**
-	 * Fetches row
-	 * 
-	 * @param resource id
-	 * @return array if the query returns rows
-	 */
-	abstract protected function _fetch($res);
-	
-	/**
-	 * Returns one (first) row
-	 * 
-	 * @param string SQL statement
-	 * @return array
-	 */
-	abstract protected function _single($sql);
-	
-	/**
-	 * Returns first field in a first returned row
-	 * 
-	 * @param string SQL statement
-	 * @return string
-	 */
-	abstract protected function _single_field($sql);
-	
-	/**
-	 * Returns the number of rows that were changed by the most recent SQL statement (INSERT, UPDATE, REPLACE, DELETE)
-	 * 
-	 * @return integer
-	 */
-	abstract protected function _affected($res);
-	
-	/**
-	 * Returns the auto generated id used in the last query
-	 * 
-	 * @return mixed
-	 */
-	abstract protected function _last_id();
-	
-	/**
-	 * Frees the memory associated with a result
-	 * 
-	 * @param A result set identifier returned by query()
-	 */
-	abstract protected function _free($res);
-	
-	/**
-	 * Begin Transaction
-	 * 
-	 * @return boolean
-	 */
-	abstract protected function _begin();
-	
-	/**
-	 * Commit Transaction
-	 * 
-	 * @return boolean
-	 */
-	abstract protected function _commit();
-	
-	/**
-	 * Rollback Transaction
-	 * 
-	 * @return boolean
-	 */
-	abstract protected function _rollback();
-	
-	/**
-	 * Returns last error for given resource
-	 * 
-	 * @param resource id
-	 * @return string
-	 */
-	abstract protected function _error($res);
 }
 
 /**

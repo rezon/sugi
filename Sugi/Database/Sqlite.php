@@ -1,19 +1,28 @@
-<?php
+<?php namespace Sugi\Database;
 /**
- * SQLite extention for abstract Database class
- * 
  * @package Sugi
- * @version 20121005
+ * @version 13.02.06
  */
-namespace Sugi\Database;
 
-class Sqlite extends \Sugi\Database
+
+/**
+ * SQLite extention for Database class
+ */
+class Sqlite implements IDatabase
 {
+	protected $params;
+	protected $dbHandle = null;
 	private $_err = '';
+
+	public function __construct(array $config)
+	{
+		$this->params = $config;
+	}
 	
-	protected function _open() {
-		$database = (isset($this->_params['database'])) ? $this->_params['database'] : null;
-		$mode = (isset($this->_params['mode'])) ? $this->_params['mode'] : 0666;
+	function _open()
+	{
+		$database = (isset($this->params['database'])) ? $this->params['database'] : null;
+		$mode = (isset($this->params['mode'])) ? $this->params['mode'] : 0666;
 		$err = '';
 		$conn = sqlite_open($database, $mode, $err);
 		if ($err) {
@@ -27,63 +36,77 @@ class Sqlite extends \Sugi\Database
 			throw new \Sugi\DatabaseException('Could not connect to the database');
 		}
 
-		$this->_conn = $conn;
+		$this->dbHandle = $conn;
+
+		return $conn;
 	}
 	
-	protected function _close() {
-		sqlite_close($this->_conn);
+	function _close()
+	{
+		sqlite_close($this->dbHandle);
 		return true;
 	}
 	
-	protected function _escape($item) {
+	function _escape($item)
+	{
 		return sqlite_escape_string($item);
 	}
 	
-	protected function _query($sql) {
-		return sqlite_query($this->_conn, $sql, SQLITE_ASSOC, $this->_err);
+	function _query($sql)
+	{
+		return sqlite_query($this->dbHandle, $sql, SQLITE_ASSOC, $this->_err);
 	}
 
-	protected function _fetch($res) {
+	function _fetch($res)
+	{
 		return sqlite_fetch_array($res, SQLITE_ASSOC);		
 	}
 	
-	protected function _single($sql) {
+	function _single($sql)
+	{
 		$res = $this->unbuffered_query($sql);
 		$row = $this->fetch($res);
 		$this->free($res);
 		return $row;
 	}
 	
-	protected function _single_field($sql) {
-		return sqlite_single_query($this->_conn, $sql, true);
+	function _single_field($sql)
+	{
+		return sqlite_single_query($this->dbHandle, $sql, true);
 	}
 	
-	protected function _affected($res) {
-		return sqlite_changes($this->_conn);
+	function _affected($res)
+	{
+		return sqlite_changes($this->dbHandle);
 	}
 
-	protected function _last_id() {
-		return sqlite_last_insert_rowid($this->_conn);
+	function _last_id()
+	{
+		return sqlite_last_insert_rowid($this->dbHandle);
 	}
 
-	protected function _free($res) {
+	function _free($res)
+	{
 		//sqlite_free_result($res); 
 	}
 	
-	protected function _begin() {
+	function _begin()
+	{
 		return false;
 	}
 
-	protected function _commit() {
+	function _commit()
+	{
 		return false;
 	}
 	
-	protected function _rollback() {
+	function _rollback()
+	{
 		return false;
 	}
 		
-	protected function _error($res) {
+	function _error()
+	{
 		return $this->_err;
 	}
 }
-

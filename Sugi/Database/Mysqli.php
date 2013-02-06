@@ -1,14 +1,17 @@
-<?php
+<?php namespace Sugi\Database;
 /**
- * MySQLi extention for abstract DataBase class
- *
  * @package Sugi
- * @version 20121005
+ * @version 13.02.06
  */
-namespace Sugi\Database;
 
-class Mysqli extends \Sugi\Database
+/**
+ * MySQLi extention for Database class
+ */
+class Mysqli implements IDatabase
 {
+	protected $params;
+	protected $dbHandle = null;
+
 	/**
 	 * Default value is true;
 	 * This can be manually set to false with mysqli_autocommit(false)
@@ -16,8 +19,14 @@ class Mysqli extends \Sugi\Database
 	 */
 	private $_autocommit = true;
 
-	protected function _open() {
-		$params = $this->_params;
+	public function __construct(array $config)
+	{
+		$this->params = $config;
+	}
+
+	function _open()
+	{
+		$params = $this->params;
 
 		/*
 		 * When one of those are not given the MySQLi default will be used
@@ -28,59 +37,71 @@ class Mysqli extends \Sugi\Database
 		$database = (isset($params['database'])) ? $params['database'] : null;
 		
 		$conn = @mysqli_connect($host, $user, $pass, $database);
-		if (mysqli_connect_error()) {
-			throw new \Sugi\DatabaseException(mysqli_connect_error());
+		if (mysqlidbHandleect_error()) {
+			throw new \Sugi\DatabaseException(mysqlidbHandleect_error());
 		}
-		$this->_conn = $conn;
+		$this->dbHandle = $conn;
+
+		return $conn;
 	}
 	
-	protected function _close() {
-		if (mysqli_close($this->_conn)) {
+	function _close()
+	{
+		if (mysqli_close($this->dbHandle)) {
 			return true;
 		}
 
 		throw new \Sugi\DatabaseException(mysql_error());
 	}
 	
-	protected function _escape($item) {
-		return mysqli_real_escape_string($this->_conn, $item);
+	function _escape($item)
+	{
+		return mysqli_real_escape_string($this->dbHandle, $item);
 	}
 	
-	protected function _query($sql) {
-		return mysqli_query($this->_conn, $sql, MYSQLI_STORE_RESULT);
+	function _query($sql)
+	{
+		return mysqli_query($this->dbHandle, $sql, MYSQLI_STORE_RESULT);
 	}
 	
-	protected function _fetch($res) {
+	function _fetch($res)
+	{
 		return mysqli_fetch_assoc($res);
 	}
 
-	protected function _single($sql) {
+	function _single($sql)
+	{
 		$res = $this->query($sql);
 		$row = $this->fetch($res);
 		$this->free($res);
 		return $row;
 	}
 	
-	protected function _single_field($sql) {
+	function _single_field($sql)
+	{
 		$res = $this->query($sql);
 		$row = mysqli_fetch_row($res);
 		$this->free($res);
 		return $row[0];
 	}
 	
-	protected function _affected($res) {
-		return mysqli_affected_rows($this->_conn);
+	function _affected($res)
+	{
+		return mysqli_affected_rows($this->dbHandle);
 	}
 	
-	protected function _last_id() {
-		return mysqli_insert_id($this->_conn);
+	function _last_id()
+	{
+		return mysqli_insert_id($this->dbHandle);
 	}
 		
-	protected function _free($res) {
+	function _free($res)
+	{
 		mysqli_free_result($res);
 	}
 	
-	protected function _begin() {
+	function _begin()
+	{
 		if (!$this->_autocommit) {
 			return $this->mysqli_autocommit(false);
 		}
@@ -89,24 +110,27 @@ class Mysqli extends \Sugi\Database
 		}
 	}
 
-	protected function _commit() {
-		$r = mysqli_commit($this->_conn);
+	function _commit()
+	{
+		$r = mysqli_commit($this->dbHandle);
 		if (!$this->_autocommit) {
 			$this->mysqli_autocommit(true);
 		}
 		return $r;
 	}
 	
-	protected function _rollback() {
-		$r = mysqli_rollback($this->_conn);
+	function _rollback()
+	{
+		$r = mysqli_rollback($this->dbHandle);
 		if (!$this->_autocommit) {
 			$this->mysqli_autocommit(true);
 		}
 		return $r;
 	}
 	
-	protected function _error($res) {
-		return mysqli_error($res);
+	function _error()
+	{
+		return mysqli_error($this->dbHandle);
 	}
 	
 
@@ -120,8 +144,9 @@ class Mysqli extends \Sugi\Database
 	 * @param bool - Whether to turn on auto-commit or not. 
 	 * @return bool
 	 */
-	public function mysqli_autocommit($mode) {
-		if (mysqli_autocommit($this->_conn, $mode)) {
+	public function mysqli_autocommit($mode)
+	{
+		if (mysqli_autocommit($this->dbHandle, $mode)) {
 			$this->_autocommit = $mode;
 			return true;		
 		}

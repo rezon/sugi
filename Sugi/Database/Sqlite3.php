@@ -1,76 +1,86 @@
-<?php
+<?php namespace Sugi\Database;
 /**
- * SQLite3 extention for abstract Database class
- * 
  * @package Sugi
- * @version 20121005
+ * @version 13.02.06
  */
-namespace Sugi\Database;
 
-class Sqlite3 extends \Sugi\Database
+/**
+ * SQLite3 extention for Database class
+ */
+class Sqlite3 implements IDatabase
 {
-	protected function _open() {
-		$database = (isset($this->_params['database'])) ? $this->_params['database'] : null;
+	protected $params;
+	protected $dbHandle = null;
+
+	public function __construct(array $config)
+	{
+		$this->params = $config;
+	}
+
+	function _open() {
+		$database = (isset($this->params['database'])) ? $this->params['database'] : null;
 
 		if (!$conn = new \SQLite3($database)) {
 			throw new \Sugi\DatabaseException('Connection failed');
 		}
-		$this->_conn = $conn;
+		$this->dbHandle = $conn;
+
+		return $conn;
 	}
 	
-	protected function _close() {
-		if ($this->_conn->close()) {
+	function _close() {
+		if ($this->dbHandle->close()) {
 			return true;
 		}
 
-		throw new \Sugi\DatabaseException($this->_conn->lastErrorMsg());
+		throw new \Sugi\DatabaseException($this->dbHandle->lastErrorMsg());
 	}
 	
-	protected function _escape($item) {
-		return $this->_conn->escapeString($item);
+	function _escape($item) {
+		return $this->dbHandle->escapeString($item);
 	}
 	
-	protected function _query($sql) {
-		return $this->_conn->query($sql);
+	function _query($sql) {
+		return $this->dbHandle->query($sql);
 	}
 	
-	protected function _fetch($res) {
+	function _fetch($res) {
 		return $res->fetchArray(SQLITE3_ASSOC);
 	}
 
-	protected function _single($sql) {
-		return $this->_conn->querySingle($sql, true);
+	function _single($sql) {
+		return $this->dbHandle->querySingle($sql, true);
 	}
 	
-	protected function _single_field($sql) {
-		return $this->_conn->querySingle($sql, false);
+	function _single_field($sql) {
+		return $this->dbHandle->querySingle($sql, false);
 	}
 	
-	protected function _affected($res) {
-		return $this->_conn->changes();
+	function _affected($res) {
+		return $this->dbHandle->changes();
 	}
 	
-	protected function _last_id() {
-		return $this->_conn->lastInsertRowID();
+	function _last_id() {
+		return $this->dbHandle->lastInsertRowID();
 	}
 		
-	protected function _free($res) {
+	function _free($res) {
 		return $res->finalize();
 	}
 	
-	protected function _begin() {
+	function _begin() {
 		return FALSE;
 	}
 
-	protected function _commit() {
+	function _commit() {
 		return FALSE;
 	}
 	
-	protected function _rollback() {
+	function _rollback() {
 		return FALSE;
 	}
 	
-	protected function _error($res) {
-		return $this->_conn->lastErrorMsg();
+	function _error() {
+		return $this->dbHandle->lastErrorMsg();
 	}
 }

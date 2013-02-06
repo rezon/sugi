@@ -4,12 +4,14 @@
  * Autoloads and executes application specific classes
  *
  * @package Sugi
- * @version 20121013
+ * @version 13.02.05
  */
 
-defined('APPLICATION_START') or define('APPLICATION_START', microtime(true));
+defined("APPLICATION_START") or define("APPLICATION_START", microtime(true));
 
-defined('DS') or define('DS', DIRECTORY_SEPARATOR);
+defined("DS") or define("DS", DIRECTORY_SEPARATOR);
+
+defined("BASEPATH") or define("BASEPATH", realpath(__DIR__.DS."..".DS."..".DS."..".DS."..").DS);
 
 class App
 {
@@ -24,7 +26,7 @@ class App
 	public static function autoload($class_name)
 	{
 		if (!class_exists($class_name)) {
-			if ($file = static::search_file(str_replace('_', DIRECTORY_SEPARATOR, strtolower($class_name)).'.php')) {
+			if ($file = static::search_file(str_replace("_", DIRECTORY_SEPARATOR, strtolower($class_name)).".php")) {
 				require_once $file;
 			}
 		}
@@ -36,7 +38,7 @@ class App
 	public static function register()
 	{
 		static::$registered = true;
-		spl_autoload_register(array('\Sugi\App', 'autoload'), true, false);
+		spl_autoload_register(array("\Sugi\App", "autoload"), true, false);
 	}
 
 	/**
@@ -45,7 +47,7 @@ class App
 	public static function unregister()
 	{
 		static::$registered = false;
-		spl_autoload_unregister(array('\Sugi\App', 'autoload'));
+		spl_autoload_unregister(array("\Sugi\App", "autoload"));
 	}
 
 	/**
@@ -53,20 +55,39 @@ class App
 	 *
 	 * @param array $config
 	 */
-	public static function configure($config = array())
+	public static function configure(array $config = null)
 	{
+		// checking for configuration
+		if (is_null($config)) {
+			// checking config has been configured. If not - guess the configuration path
+			Config::has("_path") or Config::set("_path", realpath(BASEPATH."app".DS."config").DS);
+			// loading configuration
+			$config = Config::file("app");
+		}
+
+		/**
+		 * Are we on development or on production server
+		 * To set development environment add the following code in your apache configuration file
+		 * <code>
+		 * 	SetEnv APPLICATION_ENV development
+		 * </code>
+		 * 
+		 * @var string
+		 */
+		defined("APPLICATION_ENV") or define("APPLICATION_ENV", (getenv("APPLICATION_ENV") === "development") ? "development" : "production");
+
 		/**
 		 * Define DEBUG flag
 		 * Debug depends of is it on development or production, 
 		 * or it can be manually set to true or false in config file or with
 		 * <code>
-		 * 	define('DEBUG', true);
-		 * 	define('DEBUG', false);
+		 * 	define("DEBUG", true);
+		 * 	define("DEBUG", false);
 		 * </code>
 		 *
 		 * @var string
 		 */
-		defined('DEBUG') OR define('DEBUG', isset($config['debug']) ? $config['debug'] : (Request::ip() == '127.0.0.1'));
+		defined("DEBUG") OR define("DEBUG", isset($config["debug"]) ? $config["debug"] : (APPLICATION_ENV == "development"));
 				
 		/*
 		 * Set error reporting level
@@ -80,31 +101,22 @@ class App
 		 * Display errors can be set to false, or to DEBUG which will show errors on development and 
 		 * hide them from production
 		 */
-		ini_set('display_errors', DEBUG);
+		ini_set("display_errors", DEBUG);
 				
 		/*
 		 * Since we have no error_handler at this time, it's a good idea to see them in HTML format
 		 * can be set to true or false
-		 * or ini_get('diaplay_errors') which will make them appear in HTML format on the screen, or in text format when errors does not appear on screen
+		 * or ini_get("diaplay_errors") which will make them appear in HTML format on the screen, or in text format when errors does not appear on screen
 		 */
-		ini_set('html_errors', ini_get('diaplay_errors'));
-				
-		// No magic quotes allowed!
-		// TODO: move it somewhere else or remove it 
-		if (get_magic_quotes_gpc()) throw new \ErrorException('magic_quotes_gpc is On. Edit php.ini file and make sure to turn it Off');
+		ini_set("html_errors", ini_get("diaplay_errors"));
 
 		// Set the default time zone
-		if (!empty($config['timezone'])) date_default_timezone_set('Europe/Sofia');
-
-		// Default path to search
-		if (isset($config['search_path'])) {
-			if (!set_include_path(implode(PATH_SEPARATOR, $config['search_path']))) static::$path = $config['search_path'];
-		} 
+		if (!empty($config["timezone"])) date_default_timezone_set($config["timezone"]);
 
 		// Register/Unregister default application autoloder
-		if (isset($config['autoload'])) {
-			if ($config['autoload'] and !static::$registered) static::register();
-			if (!$config['autoload'] and static::$registered) static::unregister();
+		if (isset($config["autoload"])) {
+			if ($config["autoload"] and !static::$registered) static::register();
+			if (!$config["autoload"] and static::$registered) static::unregister();
 		}
 	}
 	
@@ -180,13 +192,13 @@ class App
 			$controller = $class->newInstance();
 	
 			// Execute the "before action" method
-			if ($class->hasMethod('pre_action')) $class->getMethod('pre_action')->invoke($controller);
+			if ($class->hasMethod("pre_action")) $class->getMethod("pre_action")->invoke($controller);
 			
 			// Execute the main action with the parameters
 			$class->getMethod($method)->invokeArgs($controller, $params);
 			
 			// Execute the "after action" method
-			if ($class->hasMethod('post_action')) $class->getMethod('post_action')->invoke($controller);
+			if ($class->hasMethod("post_action")) $class->getMethod("post_action")->invoke($controller);
 			
 			return $controller; 
 		}

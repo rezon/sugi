@@ -1,16 +1,27 @@
-<?php
+<?php namespace Sugi\Database;
 /**
- * PgSQL extention for abstract Database class
- * 
  * @package Sugi
- * @version 20121005
+ * @version 13.02.06
  */
-namespace Sugi\Database;
 
-class Pgsql extends \Sugi\Database
+/**
+ * PgSQL extention for Database class
+ */
+class Pgsql implements IDatabase
 {
-	protected function _open() {
-		$params = $this->_params;
+	protected $params;
+	protected $dbHandle = null;
+	private $res;
+
+
+	public function __construct(array $config)
+	{
+		$this->params = $config;
+	}
+
+	function _open()
+	{
+		$params = $this->params;
 		$conn_string = '';
 		foreach($params as $key=>$value) {
 			if ($key == 'pass') $key = 'password';
@@ -22,69 +33,84 @@ class Pgsql extends \Sugi\Database
 			throw new \Sugi\DatabaseException('Connection failed');
 		}
 
-		$this->_conn = $conn;
+		$this->dbHandle = $conn;
+		return $conn;
 	}
 	
-	protected function _close() {
-		if (pg_close($this->_conn)) {
+	function _close()
+	{
+		if (pg_close($this->dbHandle)) {
 			return true;
 		}
 
 		throw new \Sugi\DatabaseException(pg_last_error());
 	}
 	
-	protected function _escape($item) {
-		return pg_escape_string($this->_conn, $item);
+	function _escape($item)
+	{
+		return pg_escape_string($this->dbHandle, $item);
 	}
 	
-	protected function _query($sql) {
-		return pg_query($this->_conn, $sql);
+	function _query($sql)
+	{
+		$this->res = pg_query($this->dbHandle, $sql);
+		return $this->res;
 	}
 	
-	protected function _fetch($res) {
+	function _fetch($res)
+	{
 		return pg_fetch_assoc($res);
 	}
 
-	protected function _single($sql) {
+	function _single($sql)
+	{
 		$res = $this->query($sql);
 		$row = $this->fetch($res);
 		$this->free($res);
 		return $row;
 	}
 	
-	protected function _single_field($sql) {
+	function _single_field($sql)
+	{
 		$res = $this->query($sql);
 		$row = pg_fetch_row($res);
 		$this->free($res);
 		return $row[0];
 	}
 	
-	protected function _affected($res) {
+	function _affected($res)
+	{
 		return pg_affected_rows($res);
 	}
 	
-	protected function _last_id() {
+	function _last_id()
+	{
 		return false;
 	}
 		
-	protected function _free($res) {
+	function _free($res)
+	{
 		pg_free_result($res);
 	}
 	
-	protected function _begin() {
-		return pg_query($this->_conn, 'BEGIN TRANSACTION');
+	function _begin()
+	{
+		return pg_query($this->dbHandle, 'BEGIN TRANSACTION');
 	}
 
-	protected function _commit() {
-		return pg_query($this->_conn, 'COMMIT TRANSACTION');
+	function _commit()
+	{
+		return pg_query($this->dbHandle, 'COMMIT TRANSACTION');
 	}
 	
-	protected function _rollback() {
-		return pg_query($this->_conn, 'ROLLBACK TRANSACTION');
+	function _rollback()
+	{
+		return pg_query($this->dbHandle, 'ROLLBACK TRANSACTION');
 	}
 	
-	protected function _error($res) {
-		return pg_last_error($res);
+	function _error()
+	{
+		return pg_last_error($this->res);
 	}
 	
 	/*

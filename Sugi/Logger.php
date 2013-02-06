@@ -14,11 +14,8 @@
  * To modify it you should add 'none' in the begining of the filter.
  *
  * @package Sugi
- * @version 20121014
+ * @version 13.02.05
  */
-use Sugi\Request;
-
-include_once('Request.php');
 
 abstract class Logger 
 {
@@ -27,6 +24,7 @@ abstract class Logger
 	 */
 	protected static $_loggers = array();
 
+	protected static $configured = false;
 
 	/**
 	 * Create loggers with Logger specific files
@@ -50,11 +48,49 @@ abstract class Logger
 			$config = $arguments[0];
 		}
 
-		// create logger child
-		$log = new $class_name($config);
-		static::$_loggers[] = $log;
+		$logger = new $class_name($config);
+		static::$_loggers[] = $logger;
 
-		return $log;
+		static::$configured = true;
+
+		return $logger;
+	}
+
+
+	public static function configure($config = null)
+	{
+		if (is_array($config)) {
+			if (isset($config["type"])) {
+				$logger = $config["type"];
+				unset($config["type"]);
+				static::$logger($config);
+			}
+			else {
+				foreach ($config as $conf) {
+					$logger = $conf["type"];
+					unset($conf["type"]);
+					static::$logger($conf) ;
+				}
+			}
+		}
+		static::$configured = true;
+	}
+
+	/**
+	 * Log some message
+	 * 
+	 * @param  string $message - the message to be logged
+	 * @param  string $level - the level (which may be filtered)
+	 */
+	public static function log($message, $level)
+	{
+		if (!static::$configured) {
+			static::configure(Config::file("logger"));
+		}
+		// for each registered logger
+		foreach (static::$_loggers as $log) {
+			$log->message($message, $level);
+		}
 	}
 
 	/**
@@ -117,20 +153,6 @@ abstract class Logger
 	}
 
 	/**
-	 * Log some message
-	 * 
-	 * @param  string $message - the message to be logged
-	 * @param  string $level - the level (which may be filtered)
-	 */
-	public static function log($message, $level)
-	{
-		// for each registered logger
-		foreach (static::$_loggers as $log) {
-			$log->message($message, $level);
-		}
-	}
-
-	/**
 	 * Check current message level shold be logged
 	 * 
 	 * @param  string $current level received from Logger::log
@@ -178,8 +200,9 @@ abstract class Logger
 	 * Constructor
 	 * @param array $config
 	 */
-	protected function __construct($config = array())
+	protected function __construct(array $config = null)
 	{
+		static::$configured = true;
 		if (isset($config['filter'])) $this->filter($config['filter']);
 		if (isset($config['format'])) $this->format($config['format']);
 	}
