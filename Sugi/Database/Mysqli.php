@@ -71,17 +71,17 @@ class Mysqli implements IDatabase
 
 	function _single($sql)
 	{
-		$res = $this->query($sql);
-		$row = $this->fetch($res);
-		$this->free($res);
+		$res = $this->_query($sql);
+		$row = $this->_fetch($res);
+		$this->_free($res);
 		return $row;
 	}
 	
 	function _single_field($sql)
 	{
-		$res = $this->query($sql);
+		$res = $this->_query($sql);
 		$row = mysqli_fetch_row($res);
-		$this->free($res);
+		$this->_free($res);
 		return $row[0];
 	}
 	

@@ -64,17 +64,17 @@ class Pgsql implements IDatabase
 
 	function _single($sql)
 	{
-		$res = $this->query($sql);
-		$row = $this->fetch($res);
-		$this->free($res);
+		$res = $this->_query($sql);
+		$row = $this->_fetch($res);
+		$this->_free($res);
 		return $row;
 	}
 	
 	function _single_field($sql)
 	{
-		$res = $this->query($sql);
+		$res = $this->_query($sql);
 		$row = pg_fetch_row($res);
-		$this->free($res);
+		$this->_free($res);
 		return $row[0];
 	}
 	
@@ -117,7 +117,7 @@ class Pgsql implements IDatabase
 	 * PgSQL Specific Functions
 	 */
 	public function next_val($sequence) {
-		$sequence = $this->escape($sequence);
-		return $this->single_field("SELECT nextval('$sequence') AS newid");
+		$sequence = $this->_escape($sequence);
+		return $this->_single_field("SELECT nextval('$sequence') AS newid");
 	}
 }

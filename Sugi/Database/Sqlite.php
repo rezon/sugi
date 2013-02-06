@@ -64,9 +64,9 @@ class Sqlite implements IDatabase
 	
 	function _single($sql)
 	{
-		$res = $this->unbuffered_query($sql);
-		$row = $this->fetch($res);
-		$this->free($res);
+		$res = $this->_query($sql);
+		$row = $this->_fetch($res);
+		$this->_free($res);
 		return $row;
 	}
 	
