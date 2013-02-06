@@ -358,7 +358,9 @@ class Database
 
 	protected function triggerPreAction($action)
 	{
+		if (strpos($action, "_") !== 0) $action = "_$action";
 		$hook = "pre" . $action;
+		// check for pre hooks
 		if (!empty($this->_hooks[$hook])) {
 			foreach ($this->_hooks[$hook] as $callback) {
 				$callback();
@@ -368,8 +370,9 @@ class Database
 
 	protected function triggerPostAction($action)
 	{
-		// check for post hooks
+		if (strpos($action, "_") !== 0) $action = "_$action";
 		$hook = "post" . $action;
+		// check for post hooks
 		if (!empty($this->_hooks[$hook])) {
 			foreach ($this->_hooks[$hook] as $callback) {
 				$callback();
