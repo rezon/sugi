@@ -37,8 +37,8 @@ class Mysqli implements IDatabase
 		$database = (isset($params['database'])) ? $params['database'] : null;
 		
 		$conn = @mysqli_connect($host, $user, $pass, $database);
-		if (mysqlidbHandleect_error()) {
-			throw new \Sugi\DatabaseException(mysqlidbHandleect_error());
+		if (mysqli_connect_error()) {
+			throw new \Sugi\DatabaseException(mysqli_connect_error());
 		}
 		$this->dbHandle = $conn;
 
