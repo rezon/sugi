@@ -1,7 +1,7 @@
 <?php namespace Sugi;
 /**
  * @package Sugi
- * @version 13.02.06
+ * @author Plamen Popov <tzappa@gmail.com>
  */
 
 /**
@@ -354,6 +354,32 @@ class Database
 		else {
 			unset($this->_hooks[$event][$inx]);
 		}
+	}
+
+
+	public function escapeAll(array $values)
+	{
+		$return = array();
+		foreach ($values as $key => $value) {
+			if (is_null($value)) $value = 'null';
+			elseif (is_numeric($value)) ;
+			elseif (is_bool($value)) $value = $value ? 'TRUE' : 'FALSE';
+			else $value = "'" . $this->escape($value) . "'";
+			$return[$key] = $value;
+		}
+		return $return;
+	}
+
+	public function bindParams($sql, array $params)
+	{
+		$params = $this->escapeAll($params);
+		if (preg_match_all('#:([a-zA-Z0-9_]+)#', $sql, $matches)) {
+			foreach ($matches[1] as $match) {
+				$value = isset($params[$match]) ? $params[$match] : 'null';
+				$sql = str_replace(":$match", $value, $sql);
+			}
+		}
+		return $sql;
 	}
 
 	protected function triggerPreAction($action)
