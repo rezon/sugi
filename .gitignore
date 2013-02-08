@@ -1,5 +1,5 @@
 vendor/
 composer.lock
 *.sublime-*
-test/log/
-test/tmp/
+examples/log/
+examples/tmp/
