@@ -1,7 +1,7 @@
 <?php namespace Sugi\Session;
 /**
  * @package Sugi
- * @version 12.12.11
+ * @author Plamen Popov <tzappa@gmail.com>
  */
 
 /**
@@ -23,7 +23,7 @@ class Database extends \Sugi\Session
 	protected $dbHandle;
 	protected $updateInterval;
 	protected $sessionTime = 0;
-	protected $sessionData = '';
+	protected $sessionData = "";
 	protected $lifetimeChanged = FALSE;
 
 		
@@ -36,13 +36,13 @@ class Database extends \Sugi\Session
 	protected function __construct($config = array()) {
 		parent::__construct();
 		
-		if (empty($config['db'])) {
-			throw new \Exception('Database based sessions needs an Database connection handle');
+		if (empty($config["db"])) {
+			throw new \Exception("Database based sessions needs a Database connection handle");
 		}
 		
-		$this->dbHandle = $config['db'];
-		$this->dbTable = (isset($config['table'])) ? $config['table'] : 'sessions';
-		$this->updateInterval = (isset($config['updateInterval'])) ? $config['updateInterval'] : 120;
+		$this->dbHandle = $config["db"];
+		$this->dbTable = (isset($config["table"])) ? $config["table"] : "sessions";
+		$this->updateInterval = (isset($config["updateInterval"])) ? $config["updateInterval"] : 120;
 	}
 	
 	protected function _open($save_path, $id) {
@@ -54,11 +54,11 @@ class Database extends \Sugi\Session
 		$session_id = "'" . $this->dbHandle->escape($id) . "'";
 		$sql = "SELECT * FROM {$this->dbTable} WHERE session_id = {$session_id}";
 		if ($row = $this->dbHandle->single($sql)) {
-			$this->sessionData = (string) $row['session_data'];
-			$this->sessionTime = $row['session_time'];
+			$this->sessionData = (string) $row["session_data"];
+			$this->sessionTime = $row["session_time"];
 			return $this->sessionData;
 		}
-		return '';
+		return "";
 	}
 	
 	protected function _write($id, $data) {
@@ -87,7 +87,7 @@ class Database extends \Sugi\Session
 				$session_lifetime = (parent::$lifetime) ? (int) (parent::$lifetime) : 0;
 			}
 			else {
-				$session_lifetime = 'session_lifetime';
+				$session_lifetime = "session_lifetime";
 			}
 			$sql = "UPDATE {$this->dbTable} SET session_time = $session_time, session_data = $session_data, session_lifetime = $session_lifetime WHERE session_id = $session_id";
 			$this->dbHandle->query($sql);

@@ -1,17 +1,15 @@
-<?php
+<?php namespace Sugi;
 /**
- * Session
- *
  * @package Sugi
- * @version 12.12.11
+ * @author Plamen Popov <tzappa@gmail.com>
  */
 
 include "common.php";
 
 // Register DB
-Sugi\Module::set('database', function ()
+Module::set("Database", function ()
 {
-	$db = Sugi\Database::sqlite3(array('database' => __DIR__.'/tmp/test.sqllite3'));
+	$db = new Database(array("type" => "sqlite3", "database" => __DIR__."/tmp/test.sqllite3"));
 	$db->query('
 	CREATE TABLE IF NOT EXISTS sessions (
 		session_id VARCHAR(40) NOT NULL PRIMARY KEY,
@@ -22,25 +20,23 @@ Sugi\Module::set('database', function ()
 	return $db;
 });
 
-Sugi\Session::singleton(
-	array(
-		// set session driver
-		'type' => 'database', // custom database driver
-		'type' => false, // default
-		'type' => 'file', // custom file driver
-		'type' => Sugi\Filter::key('type', $_GET, 0, 20, false),
-		
-		// Sugi\Session\File driver
-		'file' => array(
-			'path' => __DIR__.'/tmp/',
-		),
-
-		// Sugi\Session\Database driver
-		'database' => array(
-			'db' => Sugi\Module::get('database'),
-		),
+$config = array(
+	// set session driver
+	"type" => Filter::get_str("type", 0, 20, false),
+	
+	// Sugi\Session\File driver
+	"file" => array(
+		"path" => __DIR__."/tmp/",
 	)
 );
+// Sugi\Session\Database driver
+if ($config["type"] == "database") {
+	$config["database"] = array(
+		"db" => Module::get("Database"),
+	);	
+}
+
+Session::singleton($config);
 
 session_start();
 $_SESSION['count'] = isset($_SESSION['count']) ? $_SESSION['count'] + 1 : 0;

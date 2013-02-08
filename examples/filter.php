@@ -1,9 +1,9 @@
-<?php
+<?php namespace Sugi;
 /**
  * Filter Testcases
  *
  * @package Sugi
- * @version 12.12.11
+ * @author Plamen Popov <tzappa@gmail.com>
  */
 
 include "common.php";

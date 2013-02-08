@@ -1,13 +1,12 @@
 <?php namespace Sugi;
 /**
- * Sessions
- * 
  * @package Sugi
- * @version 12.12.11
+ * @author Plamen Popov <tzappa@gmail.com>
  */
 
-use \Sugi\File;
-
+/**
+ * Sessions
+ */
 abstract class Session
 {
 	protected static $session = null;

@@ -1,54 +1,19 @@
 <?php namespace Sugi;
 /**
- * Application base class
- * Autoloads and executes application specific classes
- *
  * @package Sugi
- * @version 13.02.05
+ * @author Plamen Popov <tzappa@gmail.com>
  */
 
 defined("APPLICATION_START") or define("APPLICATION_START", microtime(true));
 
-defined("DS") or define("DS", DIRECTORY_SEPARATOR);
-
-defined("BASEPATH") or define("BASEPATH", realpath(__DIR__.DS."..".DS."..".DS."..".DS."..").DS);
-
+/**
+ * Application base class
+ * Autoloads and executes application specific classes
+ */
 class App
 {
 	static $path = array();
 	static $registered = false;
-
-	/**
-	 * Autoload function - loads var classes
-	 *
-	 * @param string $class_name
-	 */
-	public static function autoload($class_name)
-	{
-		if (!class_exists($class_name)) {
-			if ($file = static::search_file(str_replace("_", DIRECTORY_SEPARATOR, strtolower($class_name)).".php")) {
-				require_once $file;
-			}
-		}
-	}
-
-	/**
-	 * Registers application autoload function
-	 */
-	public static function register()
-	{
-		static::$registered = true;
-		spl_autoload_register(array("\Sugi\App", "autoload"), true, false);
-	}
-
-	/**
-	 * Unregisters application autoload function
-	 */
-	public static function unregister()
-	{
-		static::$registered = false;
-		spl_autoload_unregister(array("\Sugi\App", "autoload"));
-	}
 
 	/**
 	 * Convinient way to configure application
@@ -64,6 +29,9 @@ class App
 			// loading configuration
 			$config = Config::file("app");
 		}
+
+		defined("DS") or define("DS", DIRECTORY_SEPARATOR);
+		defined("BASEPATH") or define("BASEPATH", realpath(__DIR__.DS."..".DS."..".DS."..".DS."..").DS);
 
 		/**
 		 * Are we on development or on production server
@@ -118,6 +86,39 @@ class App
 			if ($config["autoload"] and !static::$registered) static::register();
 			if (!$config["autoload"] and static::$registered) static::unregister();
 		}
+	}
+
+
+	/**
+	 * Autoload function - loads var classes
+	 *
+	 * @param string $class_name
+	 */
+	public static function autoload($class_name)
+	{
+		if (!class_exists($class_name)) {
+			if ($file = static::search_file(str_replace("_", DIRECTORY_SEPARATOR, strtolower($class_name)).".php")) {
+				require_once $file;
+			}
+		}
+	}
+
+	/**
+	 * Registers application autoload function
+	 */
+	public static function register()
+	{
+		static::$registered = true;
+		spl_autoload_register(array("\Sugi\App", "autoload"), true, false);
+	}
+
+	/**
+	 * Unregisters application autoload function
+	 */
+	public static function unregister()
+	{
+		static::$registered = false;
+		spl_autoload_unregister(array("\Sugi\App", "autoload"));
 	}
 	
 	/**
