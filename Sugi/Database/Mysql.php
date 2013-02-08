@@ -1,13 +1,13 @@
 <?php namespace Sugi\Database;
 /**
  * @package Sugi
- * @version 13.02.06
+ * @author Plamen Popov <tzappa@gmail.com>
  */
 
 /**
- * MySQLi extention for Database class
+ * MySQLi extention for Sugi Database class
  */
-class Mysqli implements IDatabase
+class Mysql implements IDatabase
 {
 	protected $params;
 	protected $dbHandle = null;
@@ -38,7 +38,7 @@ class Mysqli implements IDatabase
 		
 		$conn = @mysqli_connect($host, $user, $pass, $database);
 		if (mysqli_connect_error()) {
-			throw new \Sugi\DatabaseException(mysqli_connect_error());
+			throw new Exception(mysqli_connect_error());
 		}
 		$this->dbHandle = $conn;
 
@@ -69,22 +69,6 @@ class Mysqli implements IDatabase
 		return mysqli_fetch_assoc($res);
 	}
 
-	function _single($sql)
-	{
-		$res = $this->_query($sql);
-		$row = $this->_fetch($res);
-		$this->_free($res);
-		return $row;
-	}
-	
-	function _single_field($sql)
-	{
-		$res = $this->_query($sql);
-		$row = mysqli_fetch_row($res);
-		$this->_free($res);
-		return $row[0];
-	}
-	
 	function _affected($res)
 	{
 		return mysqli_affected_rows($this->dbHandle);

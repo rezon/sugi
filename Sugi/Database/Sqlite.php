@@ -1,9 +1,9 @@
 <?php namespace Sugi\Database;
 /**
  * @package Sugi
- * @version 13.02.06
+ * @author Plamen Popov <tzappa@gmail.com>
+ * @deprecated SQLite is not available in PHP > 5.4
  */
-
 
 /**
  * SQLite extention for Database class
@@ -24,7 +24,7 @@ class Sqlite implements IDatabase
 		$database = (isset($this->params['database'])) ? $this->params['database'] : null;
 		$mode = (isset($this->params['mode'])) ? $this->params['mode'] : 0666;
 		$err = '';
-		$conn = sqlite_open($database, $mode, $err);
+		$conn = \sqlite_open($database, $mode, $err);
 		if ($err) {
 			throw new \Sugi\DatabaseException('Could not connect to the database with message ' . $err);
 		}
@@ -43,46 +43,33 @@ class Sqlite implements IDatabase
 	
 	function _close()
 	{
-		sqlite_close($this->dbHandle);
+		\sqlite_close($this->dbHandle);
 		return true;
 	}
 	
 	function _escape($item)
 	{
-		return sqlite_escape_string($item);
+		return \sqlite_escape_string($item);
 	}
 	
 	function _query($sql)
 	{
-		return sqlite_query($this->dbHandle, $sql, SQLITE_ASSOC, $this->_err);
+		return \sqlite_query($this->dbHandle, $sql, SQLITE_ASSOC, $this->_err);
 	}
 
 	function _fetch($res)
 	{
-		return sqlite_fetch_array($res, SQLITE_ASSOC);		
-	}
-	
-	function _single($sql)
-	{
-		$res = $this->_query($sql);
-		$row = $this->_fetch($res);
-		$this->_free($res);
-		return $row;
-	}
-	
-	function _single_field($sql)
-	{
-		return sqlite_single_query($this->dbHandle, $sql, true);
+		return \sqlite_fetch_array($res, SQLITE_ASSOC);		
 	}
 	
 	function _affected($res)
 	{
-		return sqlite_changes($this->dbHandle);
+		return \sqlite_changes($this->dbHandle);
 	}
 
 	function _last_id()
 	{
-		return sqlite_last_insert_rowid($this->dbHandle);
+		return \sqlite_last_insert_rowid($this->dbHandle);
 	}
 
 	function _free($res)

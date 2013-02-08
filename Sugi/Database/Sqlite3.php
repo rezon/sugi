@@ -1,11 +1,11 @@
 <?php namespace Sugi\Database;
 /**
  * @package Sugi
- * @version 13.02.06
+ * @author Plamen Popov <tzappa@gmail.com>
  */
 
 /**
- * SQLite3 extention for Database class
+ * SQLite3 extention for Sugi Database class
  */
 class Sqlite3 implements IDatabase
 {
@@ -18,10 +18,10 @@ class Sqlite3 implements IDatabase
 	}
 
 	function _open() {
-		$database = (isset($this->params['database'])) ? $this->params['database'] : null;
+		$database = (isset($this->params["database"])) ? $this->params["database"] : null;
 
 		if (!$conn = new \SQLite3($database)) {
-			throw new \Sugi\DatabaseException('Connection failed');
+			throw new Exception("Connection failed");
 		}
 		$this->dbHandle = $conn;
 
@@ -46,14 +46,6 @@ class Sqlite3 implements IDatabase
 	
 	function _fetch($res) {
 		return $res->fetchArray(SQLITE3_ASSOC);
-	}
-
-	function _single($sql) {
-		return $this->dbHandle->querySingle($sql, true);
-	}
-	
-	function _single_field($sql) {
-		return $this->dbHandle->querySingle($sql, false);
 	}
 	
 	function _affected($res) {

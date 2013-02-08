@@ -1,7 +1,12 @@
-<?php
-	include "common.php";
-	setcookie('cs', 'alabalacookie');
-	setcookie('ci', 1);
+<?php namespace Sugi;
+/**
+ * @package Sugi
+ */
+
+include "common.php";
+setcookie('cs', 'alabalacookie');
+setcookie('ci', 1);
+
 ?>
 <!doctype html>
 <html lang="en">
@@ -21,10 +26,9 @@
 		<input type="button" value="Session (default)" onclick="document.location='session.php'" />
 		<input type="button" value="Session (file)" onclick="document.location='session.php?type=file'" />
 		<input type="button" value="Session (database)" onclick="document.location='session.php?type=database'" />
-		<input type="button" value="Database::sqlite" onclick="document.location='sqlite.php'" />
-		<input type="button" value="Database::sqlite3" onclick="document.location='sqlite3.php'" />
-		<input type="button" value="Database::mysqli" onclick="document.location='mysqli.php'" />
-		<input type="button" value="Database::pgsql" onclick="document.location='pgsql.php'" />
+		<input type="button" value="SQLite3" onclick="document.location='database.php?driver=sqlite3'" />
+		<input type="button" value="MySQL" onclick="document.location='database.php?driver=mysql'" />
+		<input type="button" value="PgSql" onclick="document.location='database.php?driver=pgsql'" />
 		<input type="button" value="Logger" onclick="document.location='logger.php'" />
 		<input type="button" value="Cron" onclick="document.location='cron.php'" />
 		<input type="button" value="STE" onclick="document.location='ste.php'" />

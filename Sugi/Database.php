@@ -6,11 +6,8 @@
 
 /**
  * Database class - database abstraction class.
- * DatabaseException class
  * 
- * Hookable methods: open, close, query, escape, fetch,
- * begin, commit, rollback, single, 
- * single_field, affected, last_id, free.
+ * Hookable methods: open, close, query
  * Hooks can be triggered before (pre_{method_name}) and 
  * after (post_{method_name}) each hookable methods.
  */
@@ -32,7 +29,7 @@ class Database
 	 * Hooks
 	 * @var array of events
 	 */
-	protected $_hooks = array();
+	protected $hooks = array();
 	
 	/**
 	 * Class constructor
@@ -40,55 +37,25 @@ class Database
 	public function __construct(array $config = null)
 	{
 		if (empty($config["type"])) {
-			throw new DatabaseException("Required database type parameter is missing");
+			throw new Database\Exception("Required database type parameter is missing");
 		}
 		$type = $config["type"];
 		unset($config["type"]);
 
 		$type = ucfirst(strtolower($type));
+		// support for old type mysqli
+		if ($type == "Mysqli") $type = "Mysql";
+
 		$class_name = "\Sugi\Database\\$type";
-		$class_file = dirname(__FILE__)."/Database/{$type}.php";
-		if (!class_exists($class_name)) {
-			if (!file_exists($class_file)) {
-				throw new DatabaseException("Invalid database type $type");
-			}
-			include $class_file;
+		try {
+			$this->db = new $class_name($config);
+		} catch (\Exception $e) {
+			throw new Database\Exception("Could not instantiate $class_name", 0, $e);
 		}
 
-		$this->db = new $class_name($config);
-	}
-
-	/**
-	 * Some methods are prefixed with h_. Those methods should be started without using h_ (hook) prefix.
-	 * In this way those methods will get here and all hooks will be invoked
-	 * 
-	 * @param string $name - method name, that is invoked
-	 * @param array $args - arguments that are passed
-	 * @return mixed
-	 * @throws DatabaseException If method is not marked as hookable
-	 */
-	public function __call($name, $args)
-	{
-		// calling hookable method?
-		if (strpos($name, 'h_') !== 0) {
-			throw new DatabaseException("Call to undefined method Database::{$name}()");
+		if (!$this->db instanceof \Sugi\Database\IDatabase) {
+			throw new Database\Exception("$class_name is not Sugi\Database\IDatabase");
 		}
-
-		$method = substr($name, 1);
-		if (!method_exists($this->db, $method)) {
-			throw new DatabaseException("Call to undefined method Database::{$method}()");
-		}
-
-		// check for pre hooks
-		$this->triggerPreAction($method);
-		
-		// execute method
-		$result = call_user_func_array(array($this->db, $method), $args);
-
-		// check for post hooks
-		$this->triggerPostAction($method);
-		
-		return $result;
 	}
 
 	/**
@@ -110,8 +77,9 @@ class Database
 			return $this->dbHandle;
 		}
 
+		$this->triggerAction("pre", "open");
 		$this->dbHandle = $this->db->_open();
-		$this->triggerPostAction("open");
+		$this->triggerAction("post", "open");
 
 		return $this->dbHandle;
 	}
@@ -123,8 +91,9 @@ class Database
 	{
 		if ($this->dbHandle) {
 			if ($this->db->_close()) {
-				$this->triggerPreAction("close");
+				$this->triggerAction("pre", "close");
 				$this->dbHandle = null;
+				$this->triggerAction("post", "close");
 			}
 		}
 	}
@@ -139,7 +108,8 @@ class Database
 	{
 		// For delayed opens
 		$this->open();
-		return $this->h_escape($item);
+
+		return $this->db->_escape($item);
 	}
 
 	/**
@@ -147,17 +117,21 @@ class Database
 	 * Query could be any valid SQL statement.
 	 * 
 	 * @param string $sql
-	 * @throws DatabaseException If the query fails
+	 * @throws Database\Exception If the query fails
+	 * @return mixed
 	 */
 	public function query($sql)
 	{
 		// For delayed opens
 		$this->open();
-		if ($res = $this->h_query($sql)) {
+
+		$this->triggerAction("pre", "query", $sql);
+		if ($res = $this->db->_query($sql)) {
+			$this->triggerAction("post", "query", $sql);
 			return $res;
 		}
 			
-		throw new DatabaseException($this->db->_error());
+		throw new Database\Exception($this->db->_error());
 	}
 	
 	/**
@@ -168,7 +142,13 @@ class Database
 	 */
 	public function fetch($res)
 	{
-		return $this->h_fetch($res);
+		try {
+			$res = $this->db->_fetch($res);
+		} catch (\Exception $e) {
+			throw new Database\Exception($e->getMessage());
+		}
+
+		return $res;
 	}
 
 	/**
@@ -177,13 +157,21 @@ class Database
 	 * @param handle $res result returned from query()
 	 * @return array
 	 */
-	public function fetch_all($res)
+	public function fetchAll($res)
 	{
 		$return = array();
 		while ($row = $this->fetch($res)) {
 			$return[] = $row;
 		}
 		return $return;
+	}
+
+	/**
+	 * Alias of fetchAll
+	 */
+	public function fetch_all($res)
+	{
+		return $this->fetchAll($res);
 	}
 	
 	/**
@@ -194,33 +182,45 @@ class Database
 	 */
 	public function all($sql)
 	{
-		return $this->fetch_all($this->query($sql));
+		return $this->fetchAll($this->query($sql));
 	}
 	
 	/**
 	 * Fetches single row
 	 * 
 	 * @param string $sql SQL statement
-	 * @return array
+	 * @return array|null
 	 */
 	public function single($sql)
 	{
-		// For delayed opens
-		$this->open();
-		return $this->h_single($sql);
+		if ($res = $this->query($sql)) {
+			return $this->fetch($res);
+		}
+
+		return null;
 	}
 	
 	/**
 	 * Returns first field of the first row
 	 * 
 	 * @param string $sql - SQL statment
-	 * @return string
+	 * @return string|null
+	 */
+	public function singleField($sql)
+	{
+		if ($row = $this->single($sql)) {
+			return array_shift($row);
+		}
+
+		return null;
+	}
+
+	/**
+	 * Alias of single_field()
 	 */
 	public function single_field($sql)
 	{
-		// For delayed opens
-		$this->open();
-		return $this->h_single_field($sql);
+		return $this->singleField($sql);
 	}
 
 	/**
@@ -231,7 +231,7 @@ class Database
 	 */
 	public function affected($res = null)
 	{
-		return $this->h_affected($res);
+		return $this->db->_affected($res);
 	}
 	
 	/**
@@ -239,9 +239,17 @@ class Database
 	 * 
 	 * @return mixed
 	 */
+	public function lastId()
+	{
+		return $this->db->_last_id();
+	}
+	
+	/**
+	 * Alias of lastId()
+	 */
 	public function last_id()
 	{
-		return $this->h_last_id();
+		return $this->lastId();
 	}
 	
 	/**
@@ -251,7 +259,7 @@ class Database
 	 */
 	public function free($res)
 	{
-		$this->h_free($res);
+		$this->db->_free($res);
 	}
 
 	/**
@@ -263,7 +271,7 @@ class Database
 	{
 		// For delayed opens
 		$this->open();
-		return $this->h_begin();
+		return $this->db->_begin();
 	}
 	
 	/**
@@ -273,7 +281,7 @@ class Database
 	 */
 	public function commit()
 	{
-		return $this->h_commit();
+		return $this->db->_commit();
 	}
 	
 	/**
@@ -283,7 +291,7 @@ class Database
 	 */
 	public function rollback()
 	{
-		return $this->h_rollback();
+		return $this->db->_rollback();
 	}
 	
 	/**
@@ -291,7 +299,7 @@ class Database
 	 * 
 	 * @return handle
 	 */
-	public function getdbHandleection()
+	public function getConnection()
 	{
 		return $this->dbHandle;
 	}
@@ -316,7 +324,7 @@ class Database
 		elseif (gettype($callback) == 'object') $inx = uniqid();
 		else $inx = $callback;
 				
-		$this->_hooks[$event][$inx] = $callback;
+		$this->hooks[$event][$inx] = $callback;
 	}
 
 	
@@ -341,22 +349,27 @@ class Database
 		else $inx = $callback;
 						
 		if (is_null($event) AND is_null($callback)) {
-			$this->_hooks = array();
+			$this->hooks = array();
 		}
 		elseif (is_null($callback)) {
-			$this->_hooks[$event] = array();
+			$this->hooks[$event] = array();
 		}
 		elseif (is_null($event)) {
-			foreach ($this->_hooks as $key => $value) {
-				unset($this->_hooks[$key][$inx]);
+			foreach ($this->hooks as $key => $value) {
+				unset($this->hooks[$key][$inx]);
 			}
 		}
 		else {
-			unset($this->_hooks[$event][$inx]);
+			unset($this->hooks[$event][$inx]);
 		}
 	}
 
-
+	/**
+	 * Escapes each element in the array
+	 * 
+	 * @param array
+	 * @return array
+	 */
 	public function escapeAll(array $values)
 	{
 		$return = array();
@@ -370,6 +383,13 @@ class Database
 		return $return;
 	}
 
+	/**
+	 * Escapes all parameters and binds them in the SQL
+	 * 
+	 * @param string $sql
+	 * @param array $params Associative array, where the key is replaced in the SQL with the value  
+	 * @return string
+	 */
 	public function bindParams($sql, array $params)
 	{
 		$params = $this->escapeAll($params);
@@ -382,69 +402,14 @@ class Database
 		return $sql;
 	}
 
-	protected function triggerPreAction($action)
+	protected function triggerAction($type, $action, $data = null)
 	{
-		if (strpos($action, "_") !== 0) $action = "_$action";
-		$hook = "pre" . $action;
-		// check for pre hooks
-		if (!empty($this->_hooks[$hook])) {
-			foreach ($this->_hooks[$hook] as $callback) {
-				$callback();
+		$hook = "{$type}_{$action}";
+		// check for hooks
+		if (!empty($this->hooks[$hook])) {
+			foreach ($this->hooks[$hook] as $callback) {
+				$callback($action, $data);
 			}
 		}
-	}
-
-	protected function triggerPostAction($action)
-	{
-		if (strpos($action, "_") !== 0) $action = "_$action";
-		$hook = "post" . $action;
-		// check for post hooks
-		if (!empty($this->_hooks[$hook])) {
-			foreach ($this->_hooks[$hook] as $callback) {
-				$callback();
-			}
-		}
-	}
-}
-
-/**
- * Database exception class
- */
-class DatabaseException extends \Exception
-{
-	public function __construct($message, $code = 0, Exception $previous = null)
-	{
-		parent::__construct($message, $code, $previous);
-	}
-
-	public function __toString()
-	{
-		$code = $this->code;
-		switch($this->code) {
-			case E_USER_ERROR: 
-				$code = 'User Error';
-				break;
-			case E_USER_NOTICE:
-				$code = 'User Notice';
-				break;
-			case E_USER_WARNING:
-				$code = 'User Warning';
-				break; 
-			default: 
-				$code = $this->code;
-		};
-		$file = $this->getFile(); 
-		$line = $this->getLine();
-		$trace = $this->getTrace();
-		$stripped = '';
-		$num = 0;
-		foreach($trace as $backtrace) {
-			if (!empty($backtrace['file']) AND ($backtrace['file'] !== __FILE__)) {
-				$stripped .= "#{$num} {$backtrace['file']} ({$backtrace['line']})\n";
-				$num++;
-			}
-		}
-		$trace = print_r($stripped, TRUE);
-		return __CLASS__ . ": [{$code}]: {$this->message} in {$file} ({$line}):\n$stripped";
 	}
 }

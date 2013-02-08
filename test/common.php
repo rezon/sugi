@@ -1,9 +1,10 @@
-<?php
-error_reporting(-1);
-ini_set('display_errors', 1);
-date_default_timezone_set('Europe/Sofia');
+<?php namespace Sugi;
+/**
+ * @package Sugi
+ */
 
 include "../vendor/autoload.php";
+App::configure();
 
 // custom assertion handler function
 function my_assert_handler($file, $line, $code)	{

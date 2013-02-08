@@ -1,7 +1,7 @@
 <?php namespace Sugi\Database;
 /**
  * @package Sugi
- * @version 13.02.06
+ * @author Plamen Popov <tzappa@gmail.com>
  */
 
 interface IDatabase
@@ -43,22 +43,6 @@ interface IDatabase
 	 * @return array if the query returns rows
 	 */
 	function _fetch($res);
-	
-	/**
-	 * Returns one (first) row
-	 * 
-	 * @param string SQL statement
-	 * @return array
-	 */
-	function _single($sql);
-	
-	/**
-	 * Returns first field in a first returned row
-	 * 
-	 * @param string SQL statement
-	 * @return string
-	 */
-	function _single_field($sql);
 	
 	/**
 	 * Returns the number of rows that were changed by the most recent SQL statement (INSERT, UPDATE, REPLACE, DELETE)
