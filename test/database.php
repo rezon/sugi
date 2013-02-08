@@ -12,32 +12,31 @@ function postQuery($action, $data)
 
 $driver = Filter::get_str("driver", 1, 20, "mysql");
 
-$config["mysql"] = array(
-	"type"     => "mysql",
-	"host"     => "localhost",
-	"database" => "test",
-	"user"     => "test",
-	"pass"     => ""
-);
-$config["pgsql"] = array(
-	"type"     => "pgsql",
-	"host"     => "localhost",
-	"database" => "test",
-	"user"     => "test",
-	"pass"     => "pass"
-);
-$config["sqlite3"] = array(
-	"type"     => "sqlite3",
-	"database" => "test/db.sqlite3",
-	"database" => ":memory:",
-);
-$config["sqlite"] = array(
-	"type"     => "sqlite",
-	"database" => ":memory:",
+$config = array(
+	"type"     => $driver,
+	"mysql"    => array(
+		"host"     => "localhost",
+		"database" => "test",
+		"user"     => "test",
+		"pass"     => ""
+	),
+	"pgsql"    => array(
+		"host"     => "localhost",
+		"database" => "test",
+		"user"     => "test",
+		"pass"     => "pass"
+	),
+	"sqlite3"  => array(
+		"database" => "test/db.sqlite3",
+		"database" => ":memory:",
+	),
+	"sqlite"   => array(
+		"database" => ":memory:",
+	),
 );
 
 echo "<h2>$driver</h2>";
-$db = new Database($config[$driver]);
+$db = new Database($config);
 
 $db->hook("post_open", function ($action, $data) use ($db) {
 	global $driver;

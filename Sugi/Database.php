@@ -42,6 +42,10 @@ class Database
 		$type = $config["type"];
 		unset($config["type"]);
 
+		if (isset($config[$type]) and is_array($config[$type])) {
+			$config = $config[$type];
+		}
+
 		$type = ucfirst(strtolower($type));
 		// support for old type mysqli
 		if ($type == "Mysqli") $type = "Mysql";
@@ -168,6 +172,7 @@ class Database
 
 	/**
 	 * Alias of fetchAll
+	 * @deprecated use fetchAll()
 	 */
 	public function fetch_all($res)
 	{
@@ -217,6 +222,7 @@ class Database
 
 	/**
 	 * Alias of single_field()
+	 * @deprecated use singleField()
 	 */
 	public function single_field($sql)
 	{
@@ -246,6 +252,7 @@ class Database
 	
 	/**
 	 * Alias of lastId()
+	 * @deprecated use lastId()
 	 */
 	public function last_id()
 	{
