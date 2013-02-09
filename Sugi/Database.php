@@ -1,7 +1,8 @@
 <?php namespace Sugi;
 /**
  * @package Sugi
- * @author Plamen Popov <tzappa@gmail.com>
+ * @author  Plamen Popov <tzappa@gmail.com>
+ * @license http://opensource.org/licenses/mit-license.php (MIT License)
  */
 
 /**
@@ -24,13 +25,13 @@ class Database
 	 * @var resource
 	 */
 	protected $dbHandle;
-	
+
 	/**
 	 * Hooks
 	 * @var array of events
 	 */
 	protected $hooks = array();
-	
+
 	/**
 	 * Class constructor
 	 */
@@ -87,7 +88,7 @@ class Database
 
 		return $this->dbHandle;
 	}
-	
+
 	/**
 	 * Closes connection to the database
 	 */
@@ -101,7 +102,7 @@ class Database
 			}
 		}
 	}
-	
+
 	/**
 	 * Escapes a string
 	 * 
@@ -137,7 +138,7 @@ class Database
 			
 		throw new Database\Exception($this->db->error());
 	}
-	
+
 	/**
 	 * Fetches one row
 	 * 
@@ -178,7 +179,7 @@ class Database
 	{
 		return $this->fetchAll($res);
 	}
-	
+
 	/**
 	 * Fetches all rows
 	 * 
@@ -189,7 +190,7 @@ class Database
 	{
 		return $this->fetchAll($this->query($sql));
 	}
-	
+
 	/**
 	 * Fetches single row
 	 * 
@@ -204,7 +205,7 @@ class Database
 
 		return null;
 	}
-	
+
 	/**
 	 * Returns first field of the first row
 	 * 
@@ -239,7 +240,7 @@ class Database
 	{
 		return $this->db->affected($res);
 	}
-	
+
 	/**
 	 * Returns last ID returned after successfull INSERT statement
 	 * 
@@ -249,7 +250,7 @@ class Database
 	{
 		return $this->db->lastId();
 	}
-	
+
 	/**
 	 * Alias of lastId()
 	 * @deprecated use lastId()
@@ -258,7 +259,7 @@ class Database
 	{
 		return $this->lastId();
 	}
-	
+
 	/**
 	 * Frees result
 	 * 
@@ -280,7 +281,7 @@ class Database
 		$this->open();
 		return $this->db->begin();
 	}
-	
+
 	/**
 	 * Commits transaction
 	 *
@@ -290,7 +291,7 @@ class Database
 	{
 		return $this->db->commit();
 	}
-	
+
 	/**
 	 * Rollbacks transaction
 	 *
@@ -300,7 +301,7 @@ class Database
 	{
 		return $this->db->rollback();
 	}
-	
+
 	/**
 	 * Returns handle to a connection established with open()
 	 * 

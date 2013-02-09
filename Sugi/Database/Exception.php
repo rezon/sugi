@@ -1,11 +1,12 @@
 <?php namespace Sugi\Database;
 /**
  * @package Sugi
- * @author Plamen Popov <tzappa@gmail.com>
+ * @author  Plamen Popov <tzappa@gmail.com>
+ * @license http://opensource.org/licenses/mit-license.php (MIT License)
  */
 
 /**
- * Exception class for Sugi Database
+ * Exception for Sugi\Database class
  */
 class Exception extends \Exception
 {

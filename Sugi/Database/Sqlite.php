@@ -1,12 +1,14 @@
 <?php namespace Sugi\Database;
 /**
  * @package Sugi
- * @author Plamen Popov <tzappa@gmail.com>
- * @deprecated SQLite is not available in PHP versions 5.4.0 and above
+ * @author  Plamen Popov <tzappa@gmail.com>
+ * @license http://opensource.org/licenses/mit-license.php (MIT License)
  */
 
 /**
- * SQLite extention for Database class
+ * SQLite driver for Sugi\Database class
+ *
+ * @deprecated SQLite is not available in PHP versions 5.4.0 and above
  */
 class Sqlite implements IDatabase
 {

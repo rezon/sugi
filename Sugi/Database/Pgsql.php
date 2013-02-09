@@ -1,11 +1,12 @@
 <?php namespace Sugi\Database;
 /**
  * @package Sugi
- * @author Plamen Popov <tzappa@gmail.com>
+ * @author  Plamen Popov <tzappa@gmail.com>
+ * @license http://opensource.org/licenses/mit-license.php (MIT License)
  */
 
 /**
- * PgSQL extention for Sugi Database class
+ * PgSQL driver for Sugi\Database class
  */
 class Pgsql implements IDatabase
 {
@@ -51,6 +52,7 @@ class Pgsql implements IDatabase
 	function close()
 	{
 		if (\pg_close($this->dbHandle)) {
+			$this->dbHandle = null;
 			return true;
 		}
 

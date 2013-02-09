@@ -1,9 +1,13 @@
 <?php namespace Sugi\Database;
 /**
  * @package Sugi
- * @author Plamen Popov <tzappa@gmail.com>
+ * @author  Plamen Popov <tzappa@gmail.com>
+ * @license http://opensource.org/licenses/mit-license.php (MIT License)
  */
 
+/**
+ * Interface that all Sugi\Database drivers shoul implement
+ */
 interface IDatabase
 {
 	/**

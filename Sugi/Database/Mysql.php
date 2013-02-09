@@ -1,11 +1,12 @@
 <?php namespace Sugi\Database;
 /**
  * @package Sugi
- * @author Plamen Popov <tzappa@gmail.com>
+ * @author  Plamen Popov <tzappa@gmail.com>
+ * @license http://opensource.org/licenses/mit-license.php (MIT License)
  */
 
 /**
- * MySQLi extention for Sugi Database class
+ * MySQL driver for Sugi\Database class
  */
 class Mysql implements IDatabase
 {

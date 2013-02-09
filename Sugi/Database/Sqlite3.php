@@ -1,11 +1,12 @@
 <?php namespace Sugi\Database;
 /**
  * @package Sugi
- * @author Plamen Popov <tzappa@gmail.com>
+ * @author  Plamen Popov <tzappa@gmail.com>
+ * @license http://opensource.org/licenses/mit-license.php (MIT License)
  */
 
 /**
- * SQLite3 extention for Sugi Database class
+ * SQLite3 driver for Sugi\Database class
  */
 class Sqlite3 implements IDatabase
 {
@@ -42,6 +43,7 @@ class Sqlite3 implements IDatabase
 	
 	function close() {
 		if ($this->dbHandle->close()) {
+			$this->dbHandle = null;
 			return true;
 		}
 
