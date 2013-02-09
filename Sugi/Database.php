@@ -82,7 +82,7 @@ class Database
 		}
 
 		$this->triggerAction("pre", "open");
-		$this->dbHandle = $this->db->_open();
+		$this->dbHandle = $this->db->open();
 		$this->triggerAction("post", "open");
 
 		return $this->dbHandle;
@@ -94,7 +94,7 @@ class Database
 	public function close()
 	{
 		if ($this->dbHandle) {
-			if ($this->db->_close()) {
+			if ($this->db->close()) {
 				$this->triggerAction("pre", "close");
 				$this->dbHandle = null;
 				$this->triggerAction("post", "close");
@@ -113,7 +113,7 @@ class Database
 		// For delayed opens
 		$this->open();
 
-		return $this->db->_escape($item);
+		return $this->db->escape($item);
 	}
 
 	/**
@@ -130,12 +130,12 @@ class Database
 		$this->open();
 
 		$this->triggerAction("pre", "query", $sql);
-		if ($res = $this->db->_query($sql)) {
+		if ($res = $this->db->query($sql)) {
 			$this->triggerAction("post", "query", $sql);
 			return $res;
 		}
 			
-		throw new Database\Exception($this->db->_error());
+		throw new Database\Exception($this->db->error());
 	}
 	
 	/**
@@ -147,7 +147,7 @@ class Database
 	public function fetch($res)
 	{
 		try {
-			$res = $this->db->_fetch($res);
+			$res = $this->db->fetch($res);
 		} catch (\Exception $e) {
 			throw new Database\Exception($e->getMessage());
 		}
@@ -237,7 +237,7 @@ class Database
 	 */
 	public function affected($res = null)
 	{
-		return $this->db->_affected($res);
+		return $this->db->affected($res);
 	}
 	
 	/**
@@ -247,7 +247,7 @@ class Database
 	 */
 	public function lastId()
 	{
-		return $this->db->_last_id();
+		return $this->db->lastId();
 	}
 	
 	/**
@@ -266,7 +266,7 @@ class Database
 	 */
 	public function free($res)
 	{
-		$this->db->_free($res);
+		$this->db->free($res);
 	}
 
 	/**
@@ -278,7 +278,7 @@ class Database
 	{
 		// For delayed opens
 		$this->open();
-		return $this->db->_begin();
+		return $this->db->begin();
 	}
 	
 	/**
@@ -288,7 +288,7 @@ class Database
 	 */
 	public function commit()
 	{
-		return $this->db->_commit();
+		return $this->db->commit();
 	}
 	
 	/**
@@ -298,7 +298,7 @@ class Database
 	 */
 	public function rollback()
 	{
-		return $this->db->_rollback();
+		return $this->db->rollback();
 	}
 	
 	/**

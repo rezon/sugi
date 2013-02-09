@@ -11,14 +11,14 @@ interface IDatabase
 	 * 
 	 * @return resource handle to connection
 	 */
-	function _open();
+	function open();
 	
 	/**
 	 * Closes connection to the database
 	 * 
 	 * @return boolean - true on success
 	 */
-	function _close();
+	function close();
 	
 	/**
 	 * Escapes a string for use as a query parameter
@@ -26,7 +26,7 @@ interface IDatabase
 	 * @param string
 	 * @return string
 	 */
-	function _escape($item);
+	function escape($item);
 	
 	/**
 	 * Executes query
@@ -34,7 +34,7 @@ interface IDatabase
 	 * @param string SQL statement
 	 * @return resource id
 	 */
-	function _query($sql);
+	function query($sql);
 	
 	/**
 	 * Fetches row
@@ -42,49 +42,49 @@ interface IDatabase
 	 * @param resource id
 	 * @return array if the query returns rows
 	 */
-	function _fetch($res);
+	function fetch($res);
 	
 	/**
 	 * Returns the number of rows that were changed by the most recent SQL statement (INSERT, UPDATE, REPLACE, DELETE)
 	 * 
 	 * @return integer
 	 */
-	function _affected($res);
+	function affected($res);
 	
 	/**
 	 * Returns the auto generated id used in the last query
 	 * 
 	 * @return mixed
 	 */
-	function _last_id();
+	function lastId();
 	
 	/**
 	 * Frees the memory associated with a result
 	 * 
 	 * @param A result set identifier returned by query()
 	 */
-	function _free($res);
+	function free($res);
 	
 	/**
 	 * Begin Transaction
 	 * 
 	 * @return boolean
 	 */
-	function _begin();
+	function begin();
 	
 	/**
 	 * Commit Transaction
 	 * 
 	 * @return boolean
 	 */
-	function _commit();
+	function commit();
 	
 	/**
 	 * Rollback Transaction
 	 * 
 	 * @return boolean
 	 */
-	function _rollback();
+	function rollback();
 	
 	/**
 	 * Returns last error for given resource
@@ -92,5 +92,5 @@ interface IDatabase
 	 * @param resource id
 	 * @return string
 	 */
-	function _error();
+	function error();
 }

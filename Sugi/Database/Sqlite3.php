@@ -15,9 +15,21 @@ class Sqlite3 implements IDatabase
 	public function __construct(array $config)
 	{
 		$this->params = $config;
+
+		if (!empty($config["handle"])) {
+			if (gettype($config["handle"]) and get_class($config["handle"]) == "SQLite3") {
+				$this->dbHandle = $config["handle"];
+			}
+			else throw new Exception("Handle paramater must be of type SQLite3");
+		}
 	}
 
-	function _open() {
+	function open() {
+		// if we have a SQLite3 database handle (connection) return it and ignore other settings
+		if ($this->dbHandle) {
+			return $this->dbHandle;
+		}
+
 		$database = (isset($this->params["database"])) ? $this->params["database"] : null;
 
 		if (!$conn = new \SQLite3($database)) {
@@ -28,7 +40,7 @@ class Sqlite3 implements IDatabase
 		return $conn;
 	}
 	
-	function _close() {
+	function close() {
 		if ($this->dbHandle->close()) {
 			return true;
 		}
@@ -36,43 +48,43 @@ class Sqlite3 implements IDatabase
 		throw new \Sugi\DatabaseException($this->dbHandle->lastErrorMsg());
 	}
 	
-	function _escape($item) {
+	function escape($item) {
 		return $this->dbHandle->escapeString($item);
 	}
 	
-	function _query($sql) {
+	function query($sql) {
 		return $this->dbHandle->query($sql);
 	}
 	
-	function _fetch($res) {
+	function fetch($res) {
 		return $res->fetchArray(SQLITE3_ASSOC);
 	}
 	
-	function _affected($res) {
+	function affected($res) {
 		return $this->dbHandle->changes();
 	}
 	
-	function _last_id() {
+	function lastId() {
 		return $this->dbHandle->lastInsertRowID();
 	}
 		
-	function _free($res) {
+	function free($res) {
 		return $res->finalize();
 	}
 	
-	function _begin() {
+	function begin() {
 		return FALSE;
 	}
 
-	function _commit() {
+	function commit() {
 		return FALSE;
 	}
 	
-	function _rollback() {
+	function rollback() {
 		return FALSE;
 	}
 	
-	function _error() {
+	function error() {
 		return $this->dbHandle->lastErrorMsg();
 	}
 }

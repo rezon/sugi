@@ -9,7 +9,16 @@
  */
 class Mysql implements IDatabase
 {
+	/**
+	 * Cache of connection parame
+	 * @var array
+	 */
 	protected $params;
+
+	/**
+	 * MySQLi connection handle
+	 * @var object
+	 */
 	protected $dbHandle = null;
 
 	/**
@@ -17,15 +26,37 @@ class Mysql implements IDatabase
 	 * This can be manually set to false with mysqli_autocommit(false)
 	 * or can temporary deactivate using begin() and restored with commit() or rollback() functions
 	 */
-	private $_autocommit = true;
+	private $autocommit = true;
 
+	/**
+	 * Creates an instance of Sugi/IDatabase
+	 * 
+	 * @param array $config - associative array:
+	 *  - "handle" object - if this is set and it's a MySQLi handle all other config options are ignored on first connect
+	 *  - "host" string - OPTIONAL
+	 *  - "user" string - connection username
+	 *  - "pass" string - OPTIONAL connection password
+	 *  - "database" string - database name
+	 */
 	public function __construct(array $config)
 	{
 		$this->params = $config;
+
+		if (!empty($config["handle"])) {
+			if (gettype($config["handle"]) and get_class($config["handle"]) == "mysqli") {
+				$this->dbHandle = $config["handle"];
+			}
+			else throw new Exception("Handle paramater must be of type mysqli");
+		}
 	}
 
-	function _open()
+	function open()
 	{
+		// if we have a MySQL database handle (connection) return it and ignore other settings
+		if ($this->dbHandle) {
+			return $this->dbHandle;
+		}
+
 		$params = $this->params;
 
 		/*
@@ -45,48 +76,49 @@ class Mysql implements IDatabase
 		return $conn;
 	}
 	
-	function _close()
+	function close()
 	{
 		if (mysqli_close($this->dbHandle)) {
+			$this->dbHandle = null;
 			return true;
 		}
 
-		throw new \Sugi\DatabaseException(mysql_error());
+		throw new Exception(mysql_error());
 	}
 	
-	function _escape($item)
+	function escape($item)
 	{
 		return mysqli_real_escape_string($this->dbHandle, $item);
 	}
 	
-	function _query($sql)
+	function query($sql)
 	{
 		return mysqli_query($this->dbHandle, $sql, MYSQLI_STORE_RESULT);
 	}
 	
-	function _fetch($res)
+	function fetch($res)
 	{
 		return mysqli_fetch_assoc($res);
 	}
 
-	function _affected($res)
+	function affected($res)
 	{
 		return mysqli_affected_rows($this->dbHandle);
 	}
 	
-	function _last_id()
+	function lastId()
 	{
 		return mysqli_insert_id($this->dbHandle);
 	}
 		
-	function _free($res)
+	function free($res)
 	{
 		mysqli_free_result($res);
 	}
 	
-	function _begin()
+	function begin()
 	{
-		if (!$this->_autocommit) {
+		if (!$this->autocommit) {
 			return $this->mysqli_autocommit(false);
 		}
 		else {
@@ -94,25 +126,25 @@ class Mysql implements IDatabase
 		}
 	}
 
-	function _commit()
+	function commit()
 	{
 		$r = mysqli_commit($this->dbHandle);
-		if (!$this->_autocommit) {
+		if (!$this->autocommit) {
 			$this->mysqli_autocommit(true);
 		}
 		return $r;
 	}
 	
-	function _rollback()
+	function rollback()
 	{
 		$r = mysqli_rollback($this->dbHandle);
-		if (!$this->_autocommit) {
+		if (!$this->autocommit) {
 			$this->mysqli_autocommit(true);
 		}
 		return $r;
 	}
 	
-	function _error()
+	function error()
 	{
 		return mysqli_error($this->dbHandle);
 	}
@@ -131,7 +163,7 @@ class Mysql implements IDatabase
 	public function mysqli_autocommit($mode)
 	{
 		if (mysqli_autocommit($this->dbHandle, $mode)) {
-			$this->_autocommit = $mode;
+			$this->autocommit = $mode;
 			return true;		
 		}
 		else {

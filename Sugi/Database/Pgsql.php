@@ -16,10 +16,22 @@ class Pgsql implements IDatabase
 	public function __construct(array $config)
 	{
 		$this->params = $config;
+
+		if (!empty($config["handle"])) {
+			if (gettype($config["handle"]) and get_class($config["handle"]) == "pgsql") {
+				$this->dbHandle = $config["handle"];
+			}
+			else throw new Exception("Handle paramater must be of type pgsql");
+		}
 	}
 
-	function _open()
+	function open()
 	{
+		// if we have a pgsql database handle (connection) return it and ignore other settings
+		if ($this->dbHandle) {
+			return $this->dbHandle;
+		}
+
 		$params = $this->params;
 		$conn_string = "";
 		foreach($params as $key=>$value) {
@@ -36,7 +48,7 @@ class Pgsql implements IDatabase
 		return $conn;
 	}
 	
-	function _close()
+	function close()
 	{
 		if (\pg_close($this->dbHandle)) {
 			return true;
@@ -45,53 +57,53 @@ class Pgsql implements IDatabase
 		throw new Exception(\pg_last_error());
 	}
 	
-	function _escape($item)
+	function escape($item)
 	{
 		return \pg_escape_string($this->dbHandle, $item);
 	}
 	
-	function _query($sql)
+	function query($sql)
 	{
 		$this->res = \pg_query($this->dbHandle, $sql);
 		return $this->res;
 	}
 	
-	function _fetch($res)
+	function fetch($res)
 	{
 		return \pg_fetch_assoc($res);
 	}
 
-	function _affected($res)
+	function affected($res)
 	{
 		return \pg_affected_rows($res);
 	}
 	
-	function _last_id()
+	function lastId()
 	{
 		return false;
 	}
 		
-	function _free($res)
+	function free($res)
 	{
 		\pg_free_result($res);
 	}
 	
-	function _begin()
+	function begin()
 	{
 		return \pg_query($this->dbHandle, "BEGIN TRANSACTION");
 	}
 
-	function _commit()
+	function commit()
 	{
 		return \pg_query($this->dbHandle, "COMMIT TRANSACTION");
 	}
 	
-	function _rollback()
+	function rollback()
 	{
 		return \pg_query($this->dbHandle, "ROLLBACK TRANSACTION");
 	}
 	
-	function _error()
+	function error()
 	{
 		return \pg_last_error($this->res);
 	}
