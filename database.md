@@ -1,4 +1,4 @@
-== IDatabase ==
+== IDatabase
 
 Sugi\Database\IDatabase is the first level of abstraction. On this level there are several database drivers for different databases like MySQL, PosgreSQL, SQLite, etc. Each database driver that implements this interface is giving us the ability to use same functions to connect to the server and access the data in an uniform way. This includes few basic operations like:
  - open()
@@ -18,7 +18,7 @@ query() method is used for all CRUD routines. If a query fails the method will r
 
 And finally one note. You can use these drivers directly, but since they are very lightweight, they are limited in what they do. Instead you should use Sugi\Database to access much more functionality.
 
-== Sugi\Database ==
+== Sugi\Database
 
 Sugi\Database acts as a second level of abstraction. It uses IDatabase drivers as a base and extends functionality.
  - all settings are done on construction providing only one parameter (an array)
@@ -27,7 +27,7 @@ Sugi\Database acts as a second level of abstraction. It uses IDatabase drivers a
  - database functions specific to the type of the server can be accessed via their original names.
  - on close() the database handle is freed
 
-== Sugi\Database\Exception ==
+== Sugi\Database\Exception
 
 Each database has it's own exception, warning and error routines, so we need one standard way do deal with them.
 Sugi\Database\Exception defines an exception type:

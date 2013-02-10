@@ -131,27 +131,39 @@ class Pgsql implements IDatabase
 	}
 
 
+	/*
+	 * Custom methods
+	 */
+	
+	/**
+	 * Begin transaction
+	 */
+	public function begin()
+	{
+		return \pg_query($this->dbHandle, "BEGIN TRANSACTION");
+	}
+
+	/**
+	 * Commit transaction
+	 */
+	public function commit()
+	{
+		return \pg_query($this->dbHandle, "COMMIT TRANSACTION");
+	}
+	
+	/**
+	 * Rollback transaction
+	 */
+	public function rollback()
+	{
+		return \pg_query($this->dbHandle, "ROLLBACK TRANSACTION");
+	}
+
 	protected function setHandle($handle)
 	{
 		if (gettype($handle) != "object" or get_class($handle) != "pgsql") {
 			throw new Exception("Handle must be PgSQL object", "internal_error");
 		}
 		$this->dbHandle = $handle;
-	}
-
-
-	public function begin()
-	{
-		return \pg_query($this->dbHandle, "BEGIN TRANSACTION");
-	}
-
-	public function commit()
-	{
-		return \pg_query($this->dbHandle, "COMMIT TRANSACTION");
-	}
-	
-	public function rollback()
-	{
-		return \pg_query($this->dbHandle, "ROLLBACK TRANSACTION");
 	}
 }

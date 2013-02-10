@@ -18,11 +18,6 @@ class Exception extends \Exception
 		$this->error_type = $error_type;
 	}
 
-	// public function __toString()
-	// {
-	// 	return "Database Exception: {$this->getMessage()}: {$this->getType()}";
-	// }
-
 	public function getType()
 	{
 		return $this->error_type;

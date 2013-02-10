@@ -6,7 +6,7 @@
  */
 
 /**
- * Interface that all Sugi\Database drivers shoul implement
+ * Interface that all Sugi\Database drivers should implement
  */
 interface IDatabase
 {
@@ -72,7 +72,7 @@ interface IDatabase
 	function free($res);
 
 	/**
-	 * Reutrn a database handle
+	 * Return a database handle
 	 * @return object|null
 	 */
 	function getHandle();

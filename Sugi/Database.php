@@ -252,7 +252,7 @@ class Database
 	}
 
 	/**
-	 * Returns last ID returned after successfull INSERT statement
+	 * Returns last ID returned after successful INSERT statement
 	 * 
 	 * @return mixed
 	 */
