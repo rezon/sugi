@@ -10,83 +10,109 @@
  */
 class Sqlite3 implements IDatabase
 {
+	/**
+	 * Cache of connection parameters
+	 * @var array
+	 */
 	protected $params;
+
+	/**
+	 * SQLite3 connection handle
+	 * @var object
+	 */
 	protected $dbHandle = null;
 
-	public function __construct(array $config)
+	function __construct(array $params)
 	{
-		$this->params = $config;
-
-		if (!empty($config["handle"])) {
-			if (gettype($config["handle"]) and get_class($config["handle"]) == "SQLite3") {
-				$this->dbHandle = $config["handle"];
-			}
-			else throw new Exception("Handle paramater must be of type SQLite3");
+		if (!isset($params["handle"]) and empty($params["database"])) {
+			throw new Exception("internal_error", "Database handle or database name required"); 
 		}
+		if (isset($params["handle"])) {
+			$this->setHandle($params["handle"]);
+		}
+
+		$this->params = $params;
 	}
 
-	function open() {
-		// if we have a SQLite3 database handle (connection) return it and ignore other settings
+	function open()
+	{
+		// if we have a SQLite database handle (connection) return it now
 		if ($this->dbHandle) {
 			return $this->dbHandle;
 		}
-
-		$database = (isset($this->params["database"])) ? $this->params["database"] : null;
-
-		if (!$conn = new \SQLite3($database)) {
-			throw new Exception("Connection failed");
+		// Database parameter is mandatory
+		if (empty($this->params["database"])) {
+			throw new Exception("internal_error", "Database parameter is missing");
 		}
-		$this->dbHandle = $conn;
-
-		return $conn;
-	}
-	
-	function close() {
-		if ($this->dbHandle->close()) {
-			$this->dbHandle = null;
-			return true;
+		// Establish connection
+		try {
+			$this->dbHandle = new \SQLite3($this->params["database"]);
+		} catch (\Exception $e) {
+			throw new Exception("connection_error", $e->getMessage());
 		}
 
-		throw new \Sugi\DatabaseException($this->dbHandle->lastErrorMsg());
+		return $this->dbHandle;
 	}
-	
-	function escape($item) {
+
+	function close()
+	{
+		if (!$this->dbHandle) {
+			return;
+		}
+		$this->dbHandle->close();
+		$this->dbHandle = null;
+	}
+
+	function escape($item)
+	{
 		return $this->dbHandle->escapeString($item);
 	}
 	
-	function query($sql) {
-		return $this->dbHandle->query($sql);
+	/**
+	 * Executes query
+	 * 
+	 * @param string SQL statement
+	 * @return object(SQLite3Result) or FALSE on failure
+	 */
+	function query($sql)
+	{
+		// additional warning is triggered
+		return @$this->dbHandle->query($sql);
 	}
-	
-	function fetch($res) {
+
+	function fetch($res)
+	{
 		return $res->fetchArray(SQLITE3_ASSOC);
 	}
-	
-	function affected($res) {
+
+	function affected($res)
+	{
 		return $this->dbHandle->changes();
 	}
-	
-	function lastId() {
+
+	function lastId()
+	{
 		return $this->dbHandle->lastInsertRowID();
 	}
-		
+	
 	function free($res) {
 		return $res->finalize();
 	}
-	
-	function begin() {
-		return FALSE;
-	}
 
-	function commit() {
-		return FALSE;
-	}
-	
-	function rollback() {
-		return FALSE;
-	}
-	
 	function error() {
 		return $this->dbHandle->lastErrorMsg();
+	}
+
+	function getHandle()
+	{
+		return $this->dbHandle;
+	}
+
+	protected function setHandle($handle)
+	{
+		if (gettype($handle) != "object" or get_class($handle) != "SQLite3") {
+			throw new Exception("internal_error", "Handle must be SQLite3 object");
+		}
+		$this->dbHandle = $handle;
 	}
 }

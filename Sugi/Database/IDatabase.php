@@ -11,16 +11,21 @@
 interface IDatabase
 {
 	/**
-	 * Connects to the database
-	 * 
+	 * Constructors must accept only one array parameter
+	 * @param array $array - connection parameters
+	 * @throws \Sugi\Database\Exception If required parameters are not set
+	 */
+	function __construct(array $params);
+
+	/**
+	 * Establish a database connection
 	 * @return resource handle to connection
+	 * @throws \Sugi\Database\Exception
 	 */
 	function open();
 	
 	/**
 	 * Closes connection to the database
-	 * 
-	 * @return boolean - true on success
 	 */
 	function close();
 	
@@ -36,7 +41,7 @@ interface IDatabase
 	 * Executes query
 	 * 
 	 * @param string SQL statement
-	 * @return resource id
+	 * @return mixed - FALSE on query failure
 	 */
 	function query($sql);
 	
@@ -50,50 +55,30 @@ interface IDatabase
 	
 	/**
 	 * Returns the number of rows that were changed by the most recent SQL statement (INSERT, UPDATE, REPLACE, DELETE)
-	 * 
 	 * @return integer
 	 */
 	function affected($res);
 	
 	/**
 	 * Returns the auto generated id used in the last query
-	 * 
 	 * @return mixed
 	 */
 	function lastId();
 	
 	/**
 	 * Frees the memory associated with a result
-	 * 
 	 * @param A result set identifier returned by query()
 	 */
 	function free($res);
-	
+
 	/**
-	 * Begin Transaction
-	 * 
-	 * @return boolean
+	 * Reutrn a database handle
+	 * @return object|null
 	 */
-	function begin();
-	
-	/**
-	 * Commit Transaction
-	 * 
-	 * @return boolean
-	 */
-	function commit();
-	
-	/**
-	 * Rollback Transaction
-	 * 
-	 * @return boolean
-	 */
-	function rollback();
+	function getHandle();
 	
 	/**
 	 * Returns last error for given resource
-	 * 
-	 * @param resource id
 	 * @return string
 	 */
 	function error();

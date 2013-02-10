@@ -5,12 +5,14 @@
 
 include "common.php";
 
+
 function postQuery($action, $data)
 {
 	echo "<p>postQuery is executed with params: $action, $data</p>";
 }
 
-$driver = Filter::get_str("driver", 1, 20, "mysql");
+$driver = Filter::get_str("driver", 1, 20, "");
+if (!$driver) exit;
 
 $config = array(
 	"type"     => $driver,
@@ -24,10 +26,10 @@ $config = array(
 		"host"     => "localhost",
 		"database" => "test",
 		"user"     => "test",
-		"pass"     => "pass"
+		"pass"     => "test"
 	),
 	"sqlite3"  => array(
-		"database" => "test/db.sqlite3",
+		"database" => "db.sqlite3",
 		"database" => ":memory:",
 	),
 	"sqlite"   => array(
@@ -46,22 +48,19 @@ $db->hook("post_open", function ($action, $data) use ($db) {
 		$db->query("SET NAMES utf8");
 		$db->query("CREATE TABLE IF NOT EXISTS test (id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY, val VARCHAR(255))");
 		// $res = $db->query("INSERT INTO test(val) VALUES ('PHP is cool!')");
-		// echo "<hr />lastId(): ";
-		// var_dump($db->lastId($res));
 		// $res = $db->query($db->bindParams("INSERT INTO test(val) VALUES (:val)", array("val" => 'Sugi')));
-		// echo "<hr />lastId(): ";
-		// var_dump($db->lastId($res));
 	}
 	// SQLite specific routines
 	elseif ($driver == "sqlite" or $driver == "sqlite3") {
 		// since we use MEMORY table we need them to be created on every DB connection
 		$db->query("CREATE TABLE test (id integer not null primary key, val varchar(255))");
 		$res = $db->query("INSERT INTO test(val) VALUES ('PHP is cool!')");
-		echo "<hr />lastId(): ";
-		var_dump($db->lastId($res));
 		$res = $db->query($db->bindParams("INSERT INTO test(val) VALUES (:val)", array("val" => 'Sugi')));
-		echo "<hr />lastId(): ";
-		var_dump($db->lastId($res));
+	}
+	elseif ($driver == "pgsql") {
+		$db->query("CREATE TABLE IF NOT EXISTS test (id SERIAL NOT NULL PRIMARY KEY, val VARCHAR(255))");
+		// $res = $db->query("INSERT INTO test(val) VALUES ('PHP is cool!')");
+		// $res = $db->query($db->bindParams("INSERT INTO test(val) VALUES (:val)", array("val" => 'Sugi')));
 	}
 });
 
@@ -93,4 +92,8 @@ var_dump($db->open());
 echo "<hr />singleField(): ";
 var_dump($res = $db->singleField("SELECT * FROM test"));
 echo "<hr />lastId(): ";
-var_dump($db->lastId($res));
+$res = $db->query("INSERT INTO test (val) VALUES ('err')");
+$v = $db->lastId($res);
+echo $v;
+$db->query("DELETE FROM test WHERE id = $v");
+echo "<hr />";

@@ -15,7 +15,7 @@
 class Database
 {
 	/**
-	 * Database instance
+	 * Database driver instance
 	 * @var string
 	 */
 	protected $db;
@@ -38,7 +38,7 @@ class Database
 	public function __construct(array $config = null)
 	{
 		if (empty($config["type"])) {
-			throw new Database\Exception("Required database type parameter is missing");
+			throw new Database\Exception("internal_error", "Required database type parameter is missing");
 		}
 		$type = $config["type"];
 		unset($config["type"]);
@@ -55,11 +55,11 @@ class Database
 		try {
 			$this->db = new $class_name($config);
 		} catch (\Exception $e) {
-			throw new Database\Exception("Could not instantiate $class_name", 0, $e);
+			throw new Database\Exception("internal_error", "Could not instantiate $class_name", $e->getMessage);
 		}
 
 		if (!$this->db instanceof \Sugi\Database\IDatabase) {
-			throw new Database\Exception("$class_name is not Sugi\Database\IDatabase");
+			throw new Database\Exception("internal_error", "$class_name is not Sugi\Database\IDatabase");
 		}
 	}
 
@@ -95,11 +95,10 @@ class Database
 	public function close()
 	{
 		if ($this->dbHandle) {
-			if ($this->db->close()) {
-				$this->triggerAction("pre", "close");
-				$this->dbHandle = null;
-				$this->triggerAction("post", "close");
-			}
+			$this->db->close();
+			$this->triggerAction("pre", "close");
+			$this->dbHandle = null;
+			$this->triggerAction("post", "close");
 		}
 	}
 
@@ -136,7 +135,7 @@ class Database
 			return $res;
 		}
 			
-		throw new Database\Exception($this->db->error());
+		throw new Database\Exception("sql_error", $this->db->error());
 	}
 
 	/**
@@ -150,7 +149,7 @@ class Database
 		try {
 			$res = $this->db->fetch($res);
 		} catch (\Exception $e) {
-			throw new Database\Exception($e->getMessage());
+			throw new Database\Exception("resource_error", $e->getMessage());
 		}
 
 		return $res;
@@ -267,39 +266,10 @@ class Database
 	 */
 	public function free($res)
 	{
+		if (!$res) {
+			throw new Database\Exception("resource_error", "Could not free unknown resource");
+		}
 		$this->db->free($res);
-	}
-
-	/**
-	 * Starts a transaction
-	 * 
-	 * @return boolean
-	 */
-	public function begin()
-	{
-		// For delayed opens
-		$this->open();
-		return $this->db->begin();
-	}
-
-	/**
-	 * Commits transaction
-	 *
-	 * @return boolean
-	 */
-	public function commit()
-	{
-		return $this->db->commit();
-	}
-
-	/**
-	 * Rollbacks transaction
-	 *
-	 * @return boolean
-	 */
-	public function rollback()
-	{
-		return $this->db->rollback();
 	}
 
 	/**
@@ -307,7 +277,7 @@ class Database
 	 * 
 	 * @return handle
 	 */
-	public function getConnection()
+	public function getHandle()
 	{
 		return $this->dbHandle;
 	}
