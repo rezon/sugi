@@ -5,9 +5,11 @@
     "authors": [
         {
             "name": "Plamen Popov",
-            "email": "tzappa@gmail.com"
+            "email": "tzappa@gmail.com",
+            "role": "Developer"
         }
     ],
+    "license": "MIT",
     "require": {
         "php": ">=5.3"
     },

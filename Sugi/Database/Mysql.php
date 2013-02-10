@@ -42,7 +42,7 @@ class Mysql implements IDatabase
 	function __construct(array $params)
 	{
 		if (!isset($params["handle"]) and empty($params["database"])) {
-			throw new Exception("internal_error", "Database handle or database name required"); 
+			throw new Exception("Database handle or database name required", "internal_error"); 
 		}
 		if (isset($params["handle"])) {
 			$this->setHandle($params["handle"]);
@@ -69,7 +69,7 @@ class Mysql implements IDatabase
 		
 		// Establish connection
 		if (!$this->dbHandle = @mysqli_connect($host, $user, $pass, $database)) {
-			throw new Exception("connection_error", mysqli_connect_error());
+			throw new Exception(mysqli_connect_error(), "connection_error");
 		}
 
 		return $this->dbHandle;
@@ -191,7 +191,7 @@ class Mysql implements IDatabase
 	protected function setHandle($handle)
 	{
 		if (gettype($handle) != "object" or get_class($handle) != "mysqli") {
-			throw new Exception("internal_error", "Handle must be MySQLi object");
+			throw new Exception("Handle must be MySQLi object", "internal_error");
 		}
 		$this->dbHandle = $handle;
 	}

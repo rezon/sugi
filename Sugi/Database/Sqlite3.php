@@ -25,7 +25,7 @@ class Sqlite3 implements IDatabase
 	function __construct(array $params)
 	{
 		if (!isset($params["handle"]) and empty($params["database"])) {
-			throw new Exception("internal_error", "Database handle or database name required"); 
+			throw new Exception("Database handle or database name required", "internal_error"); 
 		}
 		if (isset($params["handle"])) {
 			$this->setHandle($params["handle"]);
@@ -42,13 +42,13 @@ class Sqlite3 implements IDatabase
 		}
 		// Database parameter is mandatory
 		if (empty($this->params["database"])) {
-			throw new Exception("internal_error", "Database parameter is missing");
+			throw new Exception("Database parameter is missing", "internal_error");
 		}
 		// Establish connection
 		try {
 			$this->dbHandle = new \SQLite3($this->params["database"]);
 		} catch (\Exception $e) {
-			throw new Exception("connection_error", $e->getMessage());
+			throw new Exception($e->getMessage(), "connection_error");
 		}
 
 		return $this->dbHandle;
@@ -111,7 +111,7 @@ class Sqlite3 implements IDatabase
 	protected function setHandle($handle)
 	{
 		if (gettype($handle) != "object" or get_class($handle) != "SQLite3") {
-			throw new Exception("internal_error", "Handle must be SQLite3 object");
+			throw new Exception("Handle must be SQLite3 object", "internal_error");
 		}
 		$this->dbHandle = $handle;
 	}

@@ -10,21 +10,21 @@
  */
 class Exception extends \Exception
 {
-	public $error_description = "";
+	public $error_type;
 
-	public function __construct($message, $error_description = "")
+	public function __construct($message, $error_type)
 	{
 		parent::__construct($message);
-		$this->error_description = $error_description;
+		$this->error_type = $error_type;
 	}
 
 	// public function __toString()
 	// {
-	// 	return "Database Exception: {$this->getMessage()}: {$this->getDescription()}";
+	// 	return "Database Exception: {$this->getMessage()}: {$this->getType()}";
 	// }
 
-	public function getDescription()
+	public function getType()
 	{
-		return $this->error_description;
+		return $this->error_type;
 	}
 }

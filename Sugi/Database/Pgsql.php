@@ -25,7 +25,7 @@ class Pgsql implements IDatabase
 	function __construct(array $params)
 	{
 		if (!isset($params["handle"]) and empty($params["database"])) {
-			throw new Exception("internal_error", "Database handle or database name required"); 
+			throw new Exception("Database handle or database name required", "internal_error"); 
 		}
 		if (isset($params["handle"])) {
 			$this->setHandle($params["handle"]);
@@ -63,7 +63,7 @@ class Pgsql implements IDatabase
 			global $old_error_handler;
 			// restoring error_handler
 			restore_error_handler($old_error_handler);
-			throw new Exception("connection_error", $errstr);
+			throw new Exception($errstr, "connection_error");
 		});
 		// establish connection
 		$this->dbHandle = \pg_connect($conn);
@@ -134,7 +134,7 @@ class Pgsql implements IDatabase
 	protected function setHandle($handle)
 	{
 		if (gettype($handle) != "object" or get_class($handle) != "pgsql") {
-			throw new Exception("internal_error", "Handle must be PgSQL object");
+			throw new Exception("Handle must be PgSQL object", "internal_error");
 		}
 		$this->dbHandle = $handle;
 	}

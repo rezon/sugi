@@ -24,13 +24,15 @@ Sugi\Database acts as a second level of abstraction. It uses IDatabase drivers a
  - all settings are done on construction providing only one parameter (an array)
  - database connection is not established on creation. This give you ability to instantiate Sugi\Database very early in the application.
  - connection is automatically established when it's really necessary - first time when you execute any database operation.
- - database functions specific to the type of the server can be accessed via their original names (TODO).
+ - database functions specific to the type of the server can be accessed via their original names.
  - on close() the database handle is freed
 
 == Sugi\Database\Exception ==
 
-Each database has it's own exception, warning and error routines, so we need one standard way do deal with them. Error messages (sometimes too long and descriptive) are transfered to an error descriptions and we define only a few standard errors:
+Each database has it's own exception, warning and error routines, so we need one standard way do deal with them.
+Sugi\Database\Exception defines an exception type:
  - internal_error - typically on Sugi\Database creation - missing or invalid parameters, wrong database driver type, invalid handles, etc.
  - connection_error - database connection errors
  - sql_error - errors in database queries
  - resource_error - errors while fetching data, etc. providing wrong resource, typically after mismatched SQL queries 
+Exception type can be 

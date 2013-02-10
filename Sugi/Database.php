@@ -38,7 +38,7 @@ class Database
 	public function __construct(array $config = null)
 	{
 		if (empty($config["type"])) {
-			throw new Database\Exception("internal_error", "Required database type parameter is missing");
+			throw new Database\Exception("Required database type parameter is missing", "internal_error");
 		}
 		$type = $config["type"];
 		unset($config["type"]);
@@ -55,11 +55,11 @@ class Database
 		try {
 			$this->db = new $class_name($config);
 		} catch (\Exception $e) {
-			throw new Database\Exception("internal_error", "Could not instantiate $class_name", $e->getMessage);
+			throw new Database\Exception("Could not instantiate $class_name", "internal_error");
 		}
 
 		if (!$this->db instanceof \Sugi\Database\IDatabase) {
-			throw new Database\Exception("internal_error", "$class_name is not Sugi\Database\IDatabase");
+			throw new Database\Exception("$class_name is not Sugi\Database\IDatabase", "internal_error");
 		}
 	}
 
@@ -69,6 +69,17 @@ class Database
 	public function __destruct()
 	{
 		$this->close();
+	}
+
+	/**
+	 * Calling methods that are only part of the database driver
+	 */
+	public function __call($method, $args)
+	{
+		if (method_exists($this->db, $method)) {
+			return call_user_func_array(array($this->db, $method), $args);
+		}
+		throw new Database\Exception("Method $method does not exist", "internal_error");		
 	}
 
 	/**
@@ -135,7 +146,7 @@ class Database
 			return $res;
 		}
 			
-		throw new Database\Exception("sql_error", $this->db->error());
+		throw new Database\Exception($this->db->error(), "sql_error");
 	}
 
 	/**
@@ -149,7 +160,7 @@ class Database
 		try {
 			$res = $this->db->fetch($res);
 		} catch (\Exception $e) {
-			throw new Database\Exception("resource_error", $e->getMessage());
+			throw new Database\Exception($e->getMessage(), "resource_error");
 		}
 
 		return $res;
@@ -267,7 +278,7 @@ class Database
 	public function free($res)
 	{
 		if (!$res) {
-			throw new Database\Exception("resource_error", "Could not free unknown resource");
+			throw new Database\Exception("Could not free invalid resource.", "resource_error");
 		}
 		$this->db->free($res);
 	}
