@@ -2,6 +2,7 @@
 /**
  * @package Sugi
  * @author Plamen Popov <tzappa@gmail.com>
+ * @license http://opensource.org/licenses/mit-license.php (MIT License)
  */
 
 /**
@@ -24,7 +25,7 @@ class Database extends \Sugi\Session
 	protected $updateInterval;
 	protected $sessionTime = 0;
 	protected $sessionData = "";
-	protected $lifetimeChanged = FALSE;
+	protected $lifetimeChanged = false;
 
 		
 	public static function set_lifetime($days) {
@@ -75,7 +76,7 @@ class Database extends \Sugi\Session
 				$res = $this->dbHandle->query($sql);
 				return true;
 			} 
-			catch (\DataBaseException $e) {
+			catch (\Sugi\Database\Exception $e) {
 				// This will fail if there is Primary Key Violation
 				// Try to update it
 			}
@@ -93,7 +94,7 @@ class Database extends \Sugi\Session
 			$this->dbHandle->query($sql);
 		}
 		// It's time to update it anyway
-		elseif ($this->sessionTime < $time - $this->_updateInterval) {
+		elseif ($this->sessionTime < $time - $this->updateInterval) {
 			$sql = "UPDATE {$this->dbTable} SET session_time = $session_time WHERE session_id = $session_id";
 			$this->dbHandle->query($sql);
 		}
