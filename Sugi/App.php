@@ -22,6 +22,9 @@ class App
 	 */
 	public static function configure(array $config = null)
 	{
+		defined("DS") or define("DS", DIRECTORY_SEPARATOR);
+		defined("BASEPATH") or define("BASEPATH", realpath(__DIR__.DS."..".DS."..".DS."..".DS."..").DS);
+
 		// checking for configuration
 		if (is_null($config)) {
 			// checking config has been configured. If not - guess the configuration path
@@ -29,9 +32,6 @@ class App
 			// loading configuration
 			$config = Config::file("app");
 		}
-
-		defined("DS") or define("DS", DIRECTORY_SEPARATOR);
-		defined("BASEPATH") or define("BASEPATH", realpath(__DIR__.DS."..".DS."..".DS."..".DS."..").DS);
 
 		/**
 		 * Are we on development or on production server
