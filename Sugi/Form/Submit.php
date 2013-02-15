@@ -9,6 +9,9 @@
  *
  * @extends Sugi\Form\Text
  */
+
+use Sugi\Filter;
+
 class Submit extends Text
 {
 	public function __construct($name, $label)
@@ -26,8 +29,10 @@ class Submit extends Text
 		return $this;
 	}
 
+
 	public function error()
 	{
 		return false;
 	}
+
 }

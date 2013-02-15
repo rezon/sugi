@@ -4,19 +4,30 @@
  * @version 12.12.21
  */
 
+use Sugi\Filter;
+
 /**
- * Sugi\Form\Text
- *
- * @extends  Sugi\Form\Input
- * @implements Sugi\Form\IControl
+ * \Sugi\Form\Input
  */
-class Text extends Input implements IControl
-{
+class Textarea extends BaseControl implements IControl
+{ 
+
+	protected $value = null;
+
+	/**
+	 * Can't instantiate BaseControl
+	 * 
+	 * @param string
+	 */
 	public function __construct($name, $label)
 	{
-		parent::__construct($name);
-		$this->setAttribute("type", "text");
+		$this->attributes['name'] = $name;
 		$this->label = $label;
+	}
+
+	public function readHttpData($data)
+	{
+		$this->setValue(Filter::key($this->getName(), $data));
 	}
 
 	public function __toString()
@@ -31,25 +42,21 @@ class Text extends Input implements IControl
 		}
 
 		$classAdded = false;
-		$input = "<input";
+		$textarea = "<textarea";
 		foreach ($this->attributes as $attr => $value) {
 			if ($this->error and ($attr == 'class')) {
 				$value .= " error";
 				$classAdded = true;
 			}
-			$input .= " {$attr}=\"{$value}\"";
+			$textarea .= " {$attr}=\"{$value}\"";
 		}
 		if ($this->error and !$classAdded) {
-			$input .= ' class="error"';
+			$textarea .= ' class="error"';
 		}
-		$input .= " />";
+		$textarea .= ">{$this->getValue()}</textarea>";
 
 		$error = $this->error ? "<span class=\"error\">{$this->error}</span>" : "";
 		
-		return "{$label}\t{$input}{$error}\n";
+		return "{$label}\t{$textarea}{$error}<br />\n";
 	}
-
-
-
-
 }

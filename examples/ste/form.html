@@ -1,0 +1,48 @@
+<!doctype html>
+<html>
+<head>
+	<style>
+		label {display:inline-block; width:150px;}
+		label.required  { color: maroon; }
+		input.error { background: #fdd; }
+		span.error {color: red;}
+		input[type=submit] {float: left;}
+	</style>
+</head>
+<body>
+
+	<pre><code>{data}</code></pre>
+
+	<!-- BEGIN form -->
+
+	<hr/>
+
+
+	{form.header}
+	<p>{form.control.terms}<p>
+	<p>{form.control.test_select}</p>
+	<p>{form.control.test_mselect}</p>
+	<p>{form.control.test_radio}</p>
+	<p>{form.control.test_checkboxList}</p>
+	<p>{form.control.test_area}</p>
+	<p>{form.control.fname}</p>
+	<p>{form.control.email}</p>
+	<p>{form.control.url}</p>
+	<p>{form.control.file}</p>
+
+	<p>
+	{form.control.submit}
+	{form.control.submit2}
+	</p>
+	{form.footer}
+	<br/>
+	<br/>
+
+	<!-- END form -->
+
+	<hr/>
+
+	<pre><code>{form_code}</code></pre>
+
+</body>
+</html>

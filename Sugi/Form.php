@@ -11,6 +11,7 @@ class Form
 {
 	protected $attributes = array();
 	protected $controls = array();
+	protected $submits = array();
 	protected $submitted;
 	protected $errors;
 
@@ -184,8 +185,21 @@ class Form
 			$this->readHttpData($arr);
 			return $this->submitted = true;
 		}
-
 		return $this->submitted = false;
+	}
+
+	
+	/**
+	 * Checks if the form was submitted.
+	 * 
+	 * @return Corntrol
+	 */
+	public function submitter()
+	{
+		foreach ($this->data() as $name => $value) {
+			if ($this->controls[$name]->attribute('type') == 'submit') return $this->controls[$name];			
+		}
+		return null;
 	}
 
 	/**
@@ -225,8 +239,11 @@ class Form
 	{
 		$values = array();
 		if ($this->submitted()) {
+			$arr = (strcasecmp($this->method(), "post") == 0) ? $_POST : $_GET;
 			foreach ($this->controls as $name => $control) {
-				$values[$name] = $control->value();
+				if ($control->attribute('type') != 'submit' || isset($arr[$name])) {
+					$values[$name] = $control->value();
+				}
 			}
 		}
 		return $values;
@@ -277,6 +294,46 @@ class Form
 		return $this->addControl(new Form\Hidden($name, $value))->form($this);
 	}
 
+	public function addCheckbox($name, $label, $value = true)
+	{
+		return $this->addControl(new Form\Checkbox($name, $label, $value))->form($this);
+	}
+
+	public function addCheckboxList($name, $label, $values = array())
+	{
+		return $this->addControl(new Form\CheckboxList($name, $label, $values))->form($this);
+	}
+
+	public function addSelect($name, $label, $values = array())
+	{
+		return $this->addControl(new Form\Select($name, $label, $values))->form($this);
+	}
+
+	public function addMultipleSelect($name, $label, $values = array())
+	{
+		return $this->addControl(new Form\MultipleSelect($name, $label, $values))->form($this);
+	}
+
+	public function addRadio($name, $label, $values = array())
+	{
+		return $this->addControl(new Form\Radio($name, $label, $values))->form($this);
+	}
+
+	public function addTextarea($name, $label, $values = array())
+	{
+		return $this->addControl(new Form\Textarea($name, $label))->form($this);
+	}
+
+	public function addUpload($name, $label)
+	{
+		$this->setAttribute("enctype","multipart/form-data");
+		return $this->addControl(new Form\Upload($name, $label))->form($this);
+	}
+
+	public function addError($name, $e) {
+		if ($c = $this->getControl($name)) $c->setError($e);
+	}
+
 	/**
 	 * Simple HTML form rendering
 	 * 
@@ -284,17 +341,43 @@ class Form
 	 */
 	public function __toString()
 	{
+		$form = $this->header();
+		foreach ($this->controls as $control)	{
+			$form .= $control;
+		}
+		$form .= $this->footer();
+
+		return $form;
+	}
+
+
+	/**
+	 * return array of rendered form component
+	 * 
+	 * @return array
+	 */
+	public function toArray()
+	{
+
+		return array(
+			'header'  => $this->header(),
+			'control' => $this->controls,
+			'footer'  => $this->footer()
+		);
+	}
+
+
+	private function header() {
 		$form = "<form";
 		foreach ($this->attributes as $attr => $value) {
 			$form .= " {$attr}=\"{$value}\"";
 		}
 		$form .= ">\n";
 		$form .= "\t<input type=\"hidden\" name=\"".$this->uid()."\" value=\"\" />\n";
-		foreach ($this->controls as $control)	{
-			$form .= $control;
-		}
-		$form .= "</form>";
-
 		return $form;
+	}
+
+	private function footer() {
+		return "</form>";
 	}
 }
