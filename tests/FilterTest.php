@@ -1,9 +1,9 @@
 <?php
 /**
- * @package Sugi
+ * @package  Sugi
  * @category tests
- * @author  Plamen Popov <tzappa@gmail.com>
- * @license http://opensource.org/licenses/mit-license.php (MIT License)
+ * @author   Plamen Popov <tzappa@gmail.com>
+ * @license  http://opensource.org/licenses/mit-license.php (MIT License)
  */
 
 use Sugi\Filter;

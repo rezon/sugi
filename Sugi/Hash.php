@@ -1,7 +1,8 @@
 <?php namespace Sugi;
 /**
  * @package Sugi
- * @version 12.11.23
+ * @author  Plamen Popov <tzappa@gmail.com>
+ * @license http://opensource.org/licenses/mit-license.php (MIT License)
  */
 
 /**
@@ -10,17 +11,17 @@
  * Generates unique hash even for same passwords. The hash is 60 chars.
  * 
  * <code>
- * //Generate unique hash for the password and store it in the DB:
- * $hash = Hash::make($_POST['password']);
- * // Now the hash will hold hash of the password along with its unique salt
+ *  //Generate unique hash for the password and store it in the DB:
+ *  $hash = Hash::make($_POST['password']);
+ *  // Now the hash will hold hash of the password along with its unique salt
  * 
- * // To check the password use:
- * if (Hash::check($hash, $_POST['password'])) {
- * 	echo "Access granted";
- * }
- * else {
- * 	echo "Wrong!";
- * }
+ *  // To check the password use:
+ *  if (Hash::check($hash, $_POST['password'])) {
+ * 	    echo "Access granted";
+ *  }
+ *  else {
+ * 	    echo "Wrong!";
+ *  }
  * </code>
  */
 class Hash

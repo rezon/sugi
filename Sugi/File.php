@@ -1,11 +1,12 @@
 <?php namespace Sugi;
 /**
  * @package Sugi
- * @version 12.11.22
+ * @author  Plamen Popov <tzappa@gmail.com>
+ * @license http://opensource.org/licenses/mit-license.php (MIT License)
  */
 
 /**
- * Facedes \Sugi\Files
+ * Facades \Sugi\Files
  */
 class File extends Facade
 {
@@ -13,7 +14,9 @@ class File extends Facade
 
 	protected static function _getInstance()
 	{
-		if (!static::$instance) static::$instance = new Files;
+		if (!static::$instance) {
+			static::$instance = new Files();
+		}
 
 		return static::$instance;
 	}
