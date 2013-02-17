@@ -6,7 +6,8 @@
  */
 
 /**
- * Filter - a helper class which wraps a filter_var() function available in PHP >= 5.2
+ * Filter - a helper class which wraps a filter_var() function available 
+ * in PHP >= 5.2
  */
 class Filter
 {
@@ -28,8 +29,8 @@ class Filter
 		// We realy DO NOT need to validate user inputs like 010 or 0x10
 		// If in the code we use something like static::int(010) this is the 
 		// same as static::int(8) - so it will pass and return 8
-		// But if we read it from user input, a file etc, it should fail by default
-		// example - right padding some currencies like 0010.00 USD   
+		// But if we read it from user input, a file etc, it should fail by 
+		// default. Example - right padding some currencies like 0010.00 USD   
 		// $options["flags"] = FILTER_FLAG_ALLOW_OCTAL | FILTER_FLAG_ALLOW_HEX;
 		return filter_var($value, FILTER_VALIDATE_INT, $options);
 	}
@@ -68,8 +69,10 @@ class Filter
 	
 	/**
 	 * Validates URL
-	 * Does not validate FTP URLs like ftp://example.com. It only accepts http or https
-	 * http://localhost is also not valid since we want some user"s url, not localhost
+	 * Does not validate FTP URLs like ftp://example.com. 
+	 * It only accepts http or https
+	 * http://localhost is also not valid since we want some user"s url,
+	 * not localhost
 	 * http://8.8.8.8 is not accepted, it's IP, not URL
 	 *  
 	 * @param string $value - URL to filter
@@ -78,7 +81,8 @@ class Filter
 	 */
 	public static function url($value, $default = false)
 	{
-		$protocol = "http(s)?://"; // starting with http:// or https:// no more protocols are accepted
+		// starting with http:// or https:// no more protocols are accepted
+		$protocol = "http(s)?://";
 		$userpass = "([a-z0-9+!*(),;?&=\$_.-]+(\:[a-z0-9+!*(),;?&=\$_.-]+)?@)?";
 		$domain = "([\w_-]+\.)+[\w_-]{2,}"; // at least x.xx
 		$port = "(\:[0-9]{2,5})?";// starting with colon and folowed by 2 upto 5 digits
@@ -93,7 +97,8 @@ class Filter
 	 * 
 	 * @param string $value
 	 * @param mixed $default - default value to return on validation failure
-	 * @param bool $checkMxRecord - check existance of MX record. If check fails default value will be returned
+	 * @param bool $checkMxRecord - check existance of MX record. 
+	 *        If check fails default value will be returned
 	 * @return mixed
 	 */
 	public static function email($value, $default = false, $checkMxRecord = false)
@@ -109,8 +114,10 @@ class Filter
 
 	/**
 	 * Validates skype names
-	 * Skype Name must be between 6 and 32 characters. It must start with a letter and can contain only letters, numbers, full stop (.), comma (,), dash (-), underscore (_)
-	 *  
+	 * Skype Name must be between 6 and 32 characters.
+	 * It must start with a letter and can contain only letters, numbers,
+	 * full stop (.), comma (,), dash (-), underscore (_)
+	 * 
 	 * @param string $value - skype name to validate
 	 * @param mixed $default - return value if filter fails
 	 * @return mixed - string on success (value) or $default on failure
@@ -300,7 +307,8 @@ class Filter
 	 * @param string $key
 	 * @param mixed $min_range - integer or false not to check
 	 * @param mixed $max_range - integer or false when there is no limit
-	 * @param mixed $default - integer will be returned when validation succeeds, or default value of failure
+	 * @param mixed $default - integer will be returned when validation succeeds,
+	 *        or default value of failure
 	 * @return mixed
 	 */
 	static function getInt($key, $min_range = false, $max_range = false, $default = false)
@@ -314,7 +322,8 @@ class Filter
 	 * @param string $key
 	 * @param mixed $min_range - integer or false not to check
 	 * @param mixed $max_range - integer or false when there is no limit
-	 * @param mixed $default - integer will be returned when validation succeeds, or default value of failure
+	 * @param mixed $default - integer will be returned when validation succeeds,
+	 *        or default value of failure
 	 * @return mixed
 	 */
 	static function postInt($key, $min_range = false, $max_range = false, $default = false)
@@ -328,7 +337,8 @@ class Filter
 	 * @param string $key
 	 * @param mixed $min_range - integer or false not to check
 	 * @param mixed $max_range - integer or false when there is no limit
-	 * @param mixed $default - integer will be returned when validation succeeds, or default value of failure
+	 * @param mixed $default - integer will be returned when validation succeeds,
+	 *        or default value of failure
 	 * @return mixed
 	 */
 	static function cookieInt($key, $min_range = false, $max_range = false, $default = false)
@@ -342,7 +352,8 @@ class Filter
 	 * @param string $key
 	 * @param mixed $min_range - integer or false not to check
 	 * @param mixed $max_range - integer or false when there is no limit
-	 * @param mixed $default - integer will be returned when validation succeeds, or default value of failure
+	 * @param mixed $default - integer will be returned when validation succeeds, 
+	 *        or default value of failure
 	 * @return mixed
 	 */
 	static function sessionInt($key, $min_range = false, $max_range = false, $default = false)
