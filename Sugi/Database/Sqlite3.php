@@ -8,7 +8,7 @@
 /**
  * SQLite3 driver for Sugi\Database class
  */
-class Sqlite3 implements IDatabase
+class Sqlite3 implements DriverInterface
 {
 	/**
 	 * Cache of connection parameters

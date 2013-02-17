@@ -8,7 +8,7 @@
 /**
  * PgSQL driver for Sugi\Database class
  */
-class Pgsql implements IDatabase
+class Pgsql implements DriverInterface
 {
 	/**
 	 * Cache of connection parameters
@@ -58,7 +58,8 @@ class Pgsql implements IDatabase
 		}
 		$conn = implode(" ", $conn);
 
-		// before connection we want to handle errors/warnings and convert them to Sugi\Database\Exceptions
+		// before connection we want to handle errors/warnings and convert 
+		// them to Sugi\Database\Exceptions
 		$old_error_handler = set_error_handler(function($errno, $errstr, $errfile, $errline) {
 			global $old_error_handler;
 			// restoring error_handler

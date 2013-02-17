@@ -8,7 +8,7 @@
 /**
  * MySQL driver for Sugi\Database class
  */
-class Mysql implements IDatabase
+class Mysql implements DriverInterface
 {
 	/**
 	 * Cache of connection parameters
@@ -25,15 +25,17 @@ class Mysql implements IDatabase
 	/**
 	 * Default value is true;
 	 * This can be manually set to false with mysqli_autocommit(false)
-	 * or can temporary deactivate using begin() and restored with commit() or rollback() functions
+	 * or can temporary deactivate using begin() and restored with commit() or 
+	 * rollback() functions
 	 */
 	private $autocommit = true;
 
 	/**
-	 * Creates an instance of Sugi/IDatabase
+	 * Creates an instance of Sugi/DriverInterface
 	 * 
 	 * @param array $params - associative array:
-	 *  - "handle" object - if this is set and it's a MySQLi handle all other config options are ignored on first connect
+	 *  - "handle" object - if this is set and it's a MySQLi handle all other 
+	 *     config options are ignored on first connect
 	 *  - "host" string - OPTIONAL
 	 *  - "user" string - connection username
 	 *  - "pass" string - OPTIONAL connection password
@@ -131,7 +133,7 @@ class Mysql implements IDatabase
 	}
 
 	/*
-	 * Other functions that are not part of the IDatabase
+	 * Other functions that are not part of the DriverInterface
 	 */
 	
 	/**

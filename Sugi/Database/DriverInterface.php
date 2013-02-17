@@ -8,7 +8,7 @@
 /**
  * Interface that all Sugi\Database drivers should implement
  */
-interface IDatabase
+interface DriverInterface
 {
 	/**
 	 * Constructors must accept only one array parameter
@@ -54,7 +54,8 @@ interface IDatabase
 	function fetch($res);
 	
 	/**
-	 * Returns the number of rows that were changed by the most recent SQL statement (INSERT, UPDATE, REPLACE, DELETE)
+	 * Returns the number of rows that were changed by the most recent SQL 
+	 * statement (INSERT, UPDATE, REPLACE, DELETE)
 	 * @return integer
 	 */
 	function affected($res);

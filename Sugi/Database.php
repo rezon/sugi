@@ -51,15 +51,15 @@ class Database
 		// support for old type mysqli
 		if ($type == "Mysqli") $type = "Mysql";
 
-		$class_name = "\Sugi\Database\\$type";
+		$className = "\Sugi\Database\\$type";
 		try {
-			$this->db = new $class_name($config);
+			$this->db = new $className($config);
 		} catch (\Exception $e) {
-			throw new Database\Exception("Could not instantiate $class_name", "internal_error");
+			throw new Database\Exception("Could not instantiate $className", "internal_error");
 		}
 
-		if (!$this->db instanceof \Sugi\Database\IDatabase) {
-			throw new Database\Exception("$class_name is not Sugi\Database\IDatabase", "internal_error");
+		if (!$this->db instanceof Database\DriverInterface) {
+			throw new Database\Exception("$className is not Sugi\Database\DriverInterface", "internal_error");
 		}
 	}
 
