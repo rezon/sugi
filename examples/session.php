@@ -1,15 +1,14 @@
 <?php namespace Sugi;
 /**
  * @package Sugi
- * @author Plamen Popov <tzappa@gmail.com>
  */
 
 include "common.php";
 
 // Register DB
-Module::set("Database", function ()
+Module::set("db", function ()
 {
-	$db = new Database(array("type" => "sqlite3", "database" => __DIR__."/tmp/test.sqllite3"));
+	$db = Module::get("Database", array("type" => "sqlite3", "database" => __DIR__."/tmp/test.sqllite3"));
 	$db->query('
 	CREATE TABLE IF NOT EXISTS sessions (
 		session_id VARCHAR(40) NOT NULL PRIMARY KEY,
@@ -32,7 +31,7 @@ $config = array(
 // Sugi\Session\Database driver
 if ($config["type"] == "database") {
 	$config["database"] = array(
-		"db" => Module::get("Database"),
+		"db" => Module::get("db"),
 	);	
 }
 

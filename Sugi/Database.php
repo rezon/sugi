@@ -18,13 +18,13 @@ class Database
 	 * Database driver instance
 	 * @var string
 	 */
-	protected $db;
+	protected $driver;
 
 	/**
 	 * Handle to DB connection
 	 * @var resource
 	 */
-	protected $dbHandle;
+	protected $handle;
 
 	/**
 	 * Hooks
@@ -35,7 +35,15 @@ class Database
 	/**
 	 * Class constructor
 	 */
-	public function __construct(array $config = null)
+	public function __construct(Database\DriverInterface $driver)
+	{
+		$this->driver = $driver;
+	}
+
+	/**
+	 * Used for Dependency Injections
+	 */
+	public static function factory(array $config)
 	{
 		if (empty($config["type"])) {
 			throw new Database\Exception("Required database type parameter is missing", "internal_error");
@@ -53,14 +61,12 @@ class Database
 
 		$className = "\Sugi\Database\\$type";
 		try {
-			$this->db = new $className($config);
+			$driver = new $className($config);
 		} catch (\Exception $e) {
 			throw new Database\Exception("Could not instantiate $className", "internal_error");
 		}
 
-		if (!$this->db instanceof Database\DriverInterface) {
-			throw new Database\Exception("$className is not Sugi\Database\DriverInterface", "internal_error");
-		}
+		return new Database($driver);
 	}
 
 	/**
@@ -76,8 +82,8 @@ class Database
 	 */
 	public function __call($method, $args)
 	{
-		if (method_exists($this->db, $method)) {
-			return call_user_func_array(array($this->db, $method), $args);
+		if (method_exists($this->driver, $method)) {
+			return call_user_func_array(array($this->driver, $method), $args);
 		}
 		throw new Database\Exception("Method $method does not exist", "internal_error");		
 	}
@@ -89,15 +95,15 @@ class Database
 	 */
 	public function open()
 	{
-		if ($this->dbHandle) {
-			return $this->dbHandle;
+		if ($this->handle) {
+			return $this->handle;
 		}
 
 		$this->triggerAction("pre", "open");
-		$this->dbHandle = $this->db->open();
+		$this->handle = $this->driver->open();
 		$this->triggerAction("post", "open");
 
-		return $this->dbHandle;
+		return $this->handle;
 	}
 
 	/**
@@ -105,10 +111,10 @@ class Database
 	 */
 	public function close()
 	{
-		if ($this->dbHandle) {
-			$this->db->close();
+		if ($this->handle) {
+			$this->driver->close();
 			$this->triggerAction("pre", "close");
-			$this->dbHandle = null;
+			$this->handle = null;
 			$this->triggerAction("post", "close");
 		}
 	}
@@ -124,7 +130,7 @@ class Database
 		// For delayed opens
 		$this->open();
 
-		return $this->db->escape($item);
+		return $this->driver->escape($item);
 	}
 
 	/**
@@ -141,12 +147,12 @@ class Database
 		$this->open();
 
 		$this->triggerAction("pre", "query", $sql);
-		if ($res = $this->db->query($sql)) {
+		if ($res = $this->driver->query($sql)) {
 			$this->triggerAction("post", "query", $sql);
 			return $res;
 		}
 			
-		throw new Database\Exception($this->db->error(), "sql_error");
+		throw new Database\Exception($this->driver->error(), "sql_error");
 	}
 
 	/**
@@ -158,7 +164,7 @@ class Database
 	public function fetch($res)
 	{
 		try {
-			$res = $this->db->fetch($res);
+			$res = $this->driver->fetch($res);
 		} catch (\Exception $e) {
 			throw new Database\Exception($e->getMessage(), "resource_error");
 		}
@@ -248,7 +254,7 @@ class Database
 	 */
 	public function affected($res = null)
 	{
-		return $this->db->affected($res);
+		return $this->driver->affected($res);
 	}
 
 	/**
@@ -258,7 +264,7 @@ class Database
 	 */
 	public function lastId()
 	{
-		return $this->db->lastId();
+		return $this->driver->lastId();
 	}
 
 	/**
@@ -280,7 +286,7 @@ class Database
 		if (!$res) {
 			throw new Database\Exception("Could not free invalid resource.", "resource_error");
 		}
-		$this->db->free($res);
+		$this->driver->free($res);
 	}
 
 	/**
@@ -290,7 +296,7 @@ class Database
 	 */
 	public function getHandle()
 	{
-		return $this->dbHandle;
+		return $this->handle;
 	}
 
 	/**

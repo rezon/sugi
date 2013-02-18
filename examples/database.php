@@ -36,7 +36,27 @@ $config = array(
 );
 
 echo "<h2>$driver</h2>";
-$db = new Database($config);
+
+// first method - creating driver first, and passing it to the Database
+// $dbd = new \Sugi\Database\Sqlite3($config[$driver]);
+// $db = new Database($dbd);
+
+// second method - invoking static factory method
+// $db = Database::factory($config);
+
+// third method - using factory method with Module
+// Module::set("Database", function() use ($config) {
+//  	return Database::factory($config);
+// });
+// $db = Module::get("Database");
+
+// forth method - Setting config params in Module. Factory will be auto invoked 
+// This is preferred method if Module::get is invoked in several files 
+// Module::set("Database", $config);
+// $db = Module::get("Database");
+
+// direct Module creation
+$db = Module::get("Database", $config);
 
 $db->hook("post_open", function ($action, $data) use ($db) {
 	global $driver;

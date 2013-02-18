@@ -1,7 +1,8 @@
 <?php namespace Sugi;
 /**
  * @package Sugi
- * @version 12.12.05
+ * @author  Plamen Popov <tzappa@gmail.com>
+ * @license http://opensource.org/licenses/mit-license.php (MIT License)
  */
 
 use \Sugi\Config;
@@ -13,25 +14,6 @@ class Module
 {
 
 	public static $registry = array();
-
-	/**
-	 * Module aliases
-	 * @var array
-	 */
-	public static $aliases = array();
-	
-	/**
-	 * Module closures
-	 * @var array
-	 */
-	public static $closures = array();
-
-	/**
-	 * Loaded modules
-	 * @var array
-	 */
-	protected static $modules = array();
-	
 
 	/**
 	 * Register a loader.
@@ -46,13 +28,15 @@ class Module
 		// 
 		if (is_string($param)) { 
 			// set an alias
-			static::$registry[$alias]['alias'] = $param;
+			static::$registry[$alias]["alias"] = $param;
 		} elseif (is_callable($param)) {
 			// set closure
-			static::$registry[$alias]['callback'] = $param;
+			static::$registry[$alias]["callback"] = $param;
+		} elseif (is_array($param)) {
+			static::$registry[$alias]["params"] = $param;
 		} else {
 			// set an object
-			static::$registry[$alias]['instance'] = $param;
+			static::$registry[$alias]["instance"] = $param;
 		}
 	}
 
@@ -62,15 +46,20 @@ class Module
 	 * @param string $alias
 	 * @return mixed
 	 */
-	public static function get($alias)
+	public static function get($alias, $arg = null)
 	{
+		if (!is_null($arg)) {
+			return static::factory($alias, $arg);
+		}
+
 		// If we have already loaded this module we return it right now
-		if (isset(static::$registry[$alias]['instance'])) {
-			return static::$registry[$alias]['instance'];
+		if (isset(static::$registry[$alias]["instance"])) {
+			return static::$registry[$alias]["instance"];
 		}
 		// instantiate module, add it for next reference and return it
-		$instance = static::factory($alias);
-		static::$registry[$alias]['instance'] = $instance;
+		$params = isset(static::$registry[$alias]["params"]) ? static::$registry[$alias]["params"] : null;
+		$instance = static::factory($alias, $params);
+		static::$registry[$alias]["instance"] = $instance;
 		return $instance;
 	}
 	
@@ -109,7 +98,7 @@ class Module
 
 		// Check for \Sugi\$alias
 		if (strpos($alias, '\\') === false) {
-			return static::factory("\Sugi\\$alias", $args);
+			return static::factory("\Sugi\\$alias", $arg);
 		}
 		throw new \Exception("Could not find $alias class");
 	}
@@ -140,25 +129,57 @@ class Module
 			$ref = new \ReflectionClass($alias);
 
 			// Check we can create an instance of the class
+			if ($ref->isInterface()) {
+				throw new \Exception("$alias is an interface");
+			}			
 			if ($ref->isAbstract()) {
 				throw new \Exception("Class $alias is abstract.");
 			}
-
 			if (!$ref->isInstantiable()) {
 				throw new \Exception("Class $alias is not instantiable.");
 			}
 
 			// Try to create it
 			$constructor = $ref->getConstructor();
-
 			if (is_null($constructor)) {
 				return new $alias;
 			}
 
-			return $ref->newInstanceArgs(array($args));
+			// TODO: check $params and $args match before checking for "factory" method
+			
+			if ($factory = $ref->getMethod("factory")) {
+				if (is_null($args)) {
+					return call_user_func(array($alias, "factory"));
+				}
+				return call_user_func_array(array($alias, "factory"), $args);
+			}
+
+			$params = $constructor->getParameters();
+			$deps = static::inject($params, $args);
+			
+			return $ref->newInstanceArgs($deps, $args);
+		} catch (\ReflectionException $e) {
+			// echo $e;
 		}
-		catch (\ReflectionException $e) {
-			//
+	}
+
+	protected static function inject($params, $args)
+	{
+		$deps = array();
+		foreach ($params as $param) {
+			$class = $param->getClass();
+			if (is_null($class)) {
+				if (isset($GLOBALS[$class])) {
+					$deps[] = $GLOBALS[$class];
+				}
+				else {
+					throw new \Exception("Could not inject $param");
+				}
+			}
+
+			$deps[] = static::factory($class->name, $args);
 		}
+
+		return $deps;
 	}
 }
