@@ -1,5 +1,13 @@
 <?php namespace Sugi;
 /** 
+ * @package Sugi
+ * @author  Plamen Popov <tzappa@gmail.com>
+ * @license http://opensource.org/licenses/mit-license.php (MIT License)
+ */
+
+use Sugi\File;
+
+/**
  * CSS packer and compressor
  * Packs and compresses several .css files in one .css file with unique name 
  * If .less file is given it will be processed with PHP less compiler
@@ -42,14 +50,6 @@
  * Note:
  * 		No error will be triggered if @imported file does not exists. This is not a bug,
  *   	since we might want to import files in a default manner
- *
- * @package Sugi
- * @version 20121006
- */
-use Sugi\File;
-
-/**
- * CSS packer class
  */
 class Csspacker
 {
@@ -63,12 +63,11 @@ class Csspacker
 	 * 
 	 * @param array $config - 'output_path' the directory where cached files will be created. This should be within your DOCUMENT ROOT and be visible from web. The server must have write permissions for this path.; 'input_path' - the directory where actual uncompressed files are. This can be anywhere in the server.
 	 */
-	public function __construct($config = array())
+	public function __construct(array $config = array())
 	{
 		if (isset($config['output_path'])) $this->_output_path = $config['output_path'];
 		if (isset($config['input_path'])) $this->_input_path = $config['input_path'];
-	}
-	
+	}	
 
 	/**
 	 * Add another css file(s)

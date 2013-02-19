@@ -6,6 +6,7 @@
  */
 
 use \Sugi\Config;
+use \Sugi\DI;
 
 /**
  * Module - registry of class, methods, objects with ability to instantiate them
@@ -76,20 +77,19 @@ class Module
 
 		// Load it
 		if (isset(static::$registry[$alias]['callback'])) {
-			return call_user_func_array(static::$registry[$alias]['callback'], array($args)); 
+			return call_user_func_array(static::$registry[$alias]['callback'], (array) $args); 
 		}
 		
-		// Check for configuration arguments
-		if (!is_null($args)) {
-			$conf = $args;
-		} else {
-			// Check for configuration file
-			$conf = static::findConfig($alias);
+		// Check for configuration arguments and configuration file
+		if (is_null($args)) {
+			$args = static::findConfig($alias);
 		}
 		
 		// Auto-create it
-		if ($instance = static::reflect($alias, $conf)) {
-			return $instance;
+		try {
+			return DI::reflect($alias, $args);
+		} catch (\ReflectionException $e) {
+			// echo $e;
 		}
 
 		if (isset(static::$registry[$alias]['alias'])) {
@@ -98,7 +98,7 @@ class Module
 
 		// Check for \Sugi\$alias
 		if (strpos($alias, '\\') === false) {
-			return static::factory("\Sugi\\$alias", $arg);
+			return DI::reflect("\Sugi\\$alias", $args);
 		}
 		throw new \Exception("Could not find $alias class");
 	}
@@ -110,76 +110,10 @@ class Module
 		$file = strtolower(array_pop($file));
 		$conf = Config::$file('', null);
 		if (!is_null($conf)) {
-			return $conf;
+			return array($conf);
 		}
 		if (isset(static::$registry[$alias]['alias'])) {
 			return static::findConfig(static::$registry[$alias]['alias']);
 		}
-	}
-
-	/**
-	 * Check we can create an instance of a given class
-	 *
-	 * @param string $alias - class name
-	 * @param array $args - arguments to be passed to the constructor
-	 */
-	protected static function reflect($alias, $args)
-	{
-		try {
-			$ref = new \ReflectionClass($alias);
-
-			// Check we can create an instance of the class
-			if ($ref->isInterface()) {
-				throw new \Exception("$alias is an interface");
-			}			
-			if ($ref->isAbstract()) {
-				throw new \Exception("Class $alias is abstract.");
-			}
-			if (!$ref->isInstantiable()) {
-				throw new \Exception("Class $alias is not instantiable.");
-			}
-
-			// Try to create it
-			$constructor = $ref->getConstructor();
-			if (is_null($constructor)) {
-				return new $alias;
-			}
-
-			// TODO: check $params and $args match before checking for "factory" method
-			
-			if ($factory = $ref->getMethod("factory")) {
-				if (is_null($args)) {
-					return call_user_func(array($alias, "factory"));
-				}
-				return call_user_func_array(array($alias, "factory"), $args);
-			}
-
-			$params = $constructor->getParameters();
-			$deps = static::inject($params, $args);
-			
-			return $ref->newInstanceArgs($deps, $args);
-		} catch (\ReflectionException $e) {
-			// echo $e;
-		}
-	}
-
-	protected static function inject($params, $args)
-	{
-		$deps = array();
-		foreach ($params as $param) {
-			$class = $param->getClass();
-			if (is_null($class)) {
-				if (isset($GLOBALS[$class])) {
-					$deps[] = $GLOBALS[$class];
-				}
-				else {
-					throw new \Exception("Could not inject $param");
-				}
-			}
-
-			$deps[] = static::factory($class->name, $args);
-		}
-
-		return $deps;
 	}
 }
