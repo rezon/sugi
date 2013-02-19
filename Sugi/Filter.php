@@ -198,7 +198,7 @@ class Filter
 	 * @param mixed $default - default value will be returned if validation fails
 	 * @return mixed
 	 */
-	public static function getStr($key, $minLength = 0, $maxLength = false, $default = false)
+	public static function strGet($key, $minLength = 0, $maxLength = false, $default = false)
 	{
 		return static::str(static::get($key), $minLength, $maxLength, $default);
 	}
@@ -212,7 +212,7 @@ class Filter
 	 * @param mixed $default - default value will be returned when validation fails
 	 * @return mixed
 	 */
-	public static function postStr($key, $minLength = 0, $maxLength = false, $default = false)
+	public static function strPost($key, $minLength = 0, $maxLength = false, $default = false)
 	{
 		return static::str(static::post($key), $minLength, $maxLength, $default);
 	}
@@ -226,7 +226,7 @@ class Filter
 	 * @param mixed $default - default value will be returned when validation fails
 	 * @return mixed
 	 */
-	static function cookieStr($key, $minLength = 0, $maxLength = false, $default = false)
+	static function strCookie($key, $minLength = 0, $maxLength = false, $default = false)
 	{
 		return static::str(static::cookie($key), $minLength, $maxLength, $default);
 	}
@@ -240,7 +240,7 @@ class Filter
 	 * @param mixed $default - default value will be returned when validation fails
 	 * @return mixed
 	 */
-	static function sessionStr($key, $minLength = 0, $maxLength = false, $default = false)
+	static function strSession($key, $minLength = 0, $maxLength = false, $default = false)
 	{
 		return static::str(static::session($key), $minLength, $maxLength, $default);
 	}
@@ -254,7 +254,7 @@ class Filter
 	 * @param mixed $default - default value will be returned when validation fails
 	 * @return mixed
 	 */
-	static function getPlain($key, $minLength = 0, $maxLength = false, $default = false)
+	static function plainGet($key, $minLength = 0, $maxLength = false, $default = false)
 	{
 		return static::plain(static::get($key), $minLength, $maxLength, $default);
 	}
@@ -268,7 +268,7 @@ class Filter
 	 * @param mixed $default - default value will be returned when validation fails
 	 * @return mixed
 	 */
-	static function postPlain($key, $minLength = 0, $maxLength = false, $default = false)
+	static function plainPost($key, $minLength = 0, $maxLength = false, $default = false)
 	{
 		return static::plain(static::post($key), $minLength, $maxLength, $default);
 	}
@@ -282,7 +282,7 @@ class Filter
 	 * @param mixed $default - default value will be returned when validation fails
 	 * @return mixed
 	 */
-	static function cookiePlain($key, $minLength = 0, $maxLength = false, $default = false)
+	static function plainCookie($key, $minLength = 0, $maxLength = false, $default = false)
 	{
 		return static::plain(static::cookie($key), $minLength, $maxLength, $default);
 	}
@@ -296,7 +296,7 @@ class Filter
 	 * @param mixed $default - default value will be returned when validation fails
 	 * @return mixed
 	 */
-	static function sessionPlain($key, $minLength = 0, $maxLength = false, $default = false)
+	static function plainSession($key, $minLength = 0, $maxLength = false, $default = false)
 	{
 		return static::plain(static::session($key), $minLength, $maxLength, $default);
 	}
@@ -311,7 +311,7 @@ class Filter
 	 *        or default value of failure
 	 * @return mixed
 	 */
-	static function getInt($key, $min_range = false, $max_range = false, $default = false)
+	static function intGet($key, $min_range = false, $max_range = false, $default = false)
 	{
 		return static::int(static::get($key), $min_range, $max_range, $default);
 	}
@@ -326,7 +326,7 @@ class Filter
 	 *        or default value of failure
 	 * @return mixed
 	 */
-	static function postInt($key, $min_range = false, $max_range = false, $default = false)
+	static function intPost($key, $min_range = false, $max_range = false, $default = false)
 	{
 		return static::int(static::post($key), $min_range, $max_range, $default);
 	}
@@ -341,7 +341,7 @@ class Filter
 	 *        or default value of failure
 	 * @return mixed
 	 */
-	static function cookieInt($key, $min_range = false, $max_range = false, $default = false)
+	static function intCookie($key, $min_range = false, $max_range = false, $default = false)
 	{
 		return static::int(static::cookie($key), $min_range, $max_range, $default);
 	}
@@ -356,14 +356,14 @@ class Filter
 	 *        or default value of failure
 	 * @return mixed
 	 */
-	static function sessionInt($key, $min_range = false, $max_range = false, $default = false)
+	static function intSession($key, $min_range = false, $max_range = false, $default = false)
 	{
 		return static::int(static::session($key), $min_range, $max_range, $default);
 	}
 
 
 	/**
-	 * @deprecated use getStr()
+	 * @deprecated use strGet()
 	 */
 	public static function get_str($key, $minLength = 0, $maxLength = false, $default = false)
 	{
@@ -371,7 +371,7 @@ class Filter
 	}
 	
 	/**
-	 * @deprecated use postStr()
+	 * @deprecated use strPost()
 	 */
 	static function post_str($key, $minLength = 0, $maxLength = false, $default = false)
 	{
@@ -379,7 +379,7 @@ class Filter
 	}
 	
 	/**
-	 * @deprecated use cookieStr()
+	 * @deprecated use strCookie()
 	 */
 	static function cookie_str($key, $minLength = 0, $maxLength = false, $default = false)
 	{
@@ -387,7 +387,7 @@ class Filter
 	}
 	
 	/**
-	 * @deprecated use getPlain()
+	 * @deprecated use plainGet()
 	 */
 	static function get_plain($key, $minLength = 0, $maxLength = false, $default = false)
 	{
@@ -395,7 +395,7 @@ class Filter
 	}
 	
 	/**
-	 * @deprecated use postPlain()
+	 * @deprecated use plainPost()
 	 */
 	static function post_plain($key, $minLength = 0, $maxLength = false, $default = false)
 	{
@@ -403,7 +403,7 @@ class Filter
 	}
 	
 	/**
-	 * @deprecated use cookiePlain
+	 * @deprecated use plainCookie
 	 */
 	static function cookie_plain($key, $minLength = 0, $maxLength = false, $default = false)
 	{
@@ -411,7 +411,7 @@ class Filter
 	}
 	
 	/**
-	 * @deprecated use getInt()
+	 * @deprecated use intGet()
 	 */
 	static function get_int($key, $min_range = false, $max_range = false, $default = false)
 	{
@@ -419,7 +419,7 @@ class Filter
 	}
 
 	/**
-	 * @deprecated use postInt()
+	 * @deprecated use intPost()
 	 */
 	static function post_int($key, $min_range = false, $max_range = false, $default = false)
 	{
@@ -427,7 +427,7 @@ class Filter
 	}
 	
 	/**
-	 * @deprecated use cookieInt()
+	 * @deprecated use intCookie()
 	 */
 	static function cookie_int($key, $min_range = false, $max_range = false, $default = false)
 	{
