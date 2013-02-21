@@ -1,10 +1,11 @@
 <?php
 /**
- * @package Sugi
+ * @package  Sugi
  * @category tests
- * @version 12.11.22
+ * @author   Plamen Popov <tzappa@gmail.com>
+ * @license  http://opensource.org/licenses/mit-license.php (MIT License)
  */
-error_reporting(-1);
+
 use Sugi\Files;
 
 class FilesTests extends PHPUnit_Framework_TestCase {

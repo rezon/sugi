@@ -1,10 +1,11 @@
 <?php
 /**
- * @package Sugi
+ * @package  Sugi
  * @category tests
- * @version 12.12.12
+ * @author   Plamen Popov <tzappa@gmail.com>
+ * @license  http://opensource.org/licenses/mit-license.php (MIT License)
  */
-error_reporting(-1);
+
 use Sugi\Config;
 use Sugi\File;
 
@@ -129,5 +130,4 @@ pets: [cat, dog]
 	{
 		$this->assertNull(Config::test99());
 	}
-
 }
