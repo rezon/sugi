@@ -1,7 +1,8 @@
 <?php namespace Sugi; 
 /**
  * @package Sugi
- * @version 12.12.14
+ * @author  Plamen Popov <tzappa@gmail.com>
+ * @license http://opensource.org/licenses/mit-license.php (MIT License)
  */
 
 /**
@@ -69,11 +70,25 @@ class Ste
 	protected $funcRegEx = '#{([_a-zA-Z][_a-zA-Z0-9]*)\(([^\)]*)\)}#sm';
 
 	/**
+	 * Regular Expression Pattern for removing html comments
+	 * @var string
+	 */
+	protected $commentsRegEx = '#<!--(.|\s)*?-->#';
+	
+	/**
 	 * Template extensions that are allowed. 
 	 * 
 	 * @var array
 	 */
-	protected $allowedExt = array('html', 'tpl', 'txt');
+	protected $allowedExt = array("html", "ste", "tpl", "txt");
+
+
+	/**
+	 * Configuration options
+	 * 
+	 * @var array
+	 */
+	protected $config = array();
 
 	/**
 	 * Loaded template
@@ -118,6 +133,25 @@ class Ste
 	protected $include_path;
 
 	/**
+	 * Constructor
+	 * 
+	 * @param array $config
+	 */
+	public function __construct(array $config = array())
+	{
+		// default configurations
+		$defaultConfig = array(
+			"remove_comments" => false,
+			"default_path"    => false,
+		);
+
+		// set custom configurations
+		foreach ($defaultConfig as $key => $value) {
+			$this->config[$key] = isset($config[$key]) ? $config[$key] : $value;
+		}
+	}
+
+	/**
 	 * Loads a template file
 	 * 
 	 * @param string filename
@@ -125,7 +159,7 @@ class Ste
 	 */
 	public function load($template_file)
 	{
-		$template = $this->_load($template_file);
+		$template = $this->loadFile($template_file);
 
 		return $this->template($template);
 	}
@@ -225,29 +259,35 @@ class Ste
 	 */
 	public function parse()
 	{
-		return $this->_parse($this->tpl);
+		$tpl = $this->parseBlock($this->tpl);
+		if ($this->config["remove_comments"]) {
+			$tpl = $this->removeHtmlComments($tpl);
+		}
+
+		return $tpl;
 	}
 
 
 
 
-	protected function _load($template_file)
+	protected function loadFile($template_file)
 	{
-		// check file exists and is readable
-		if (!File::readable($template_file)) {
-			throw new SteException("Could not read template file $template_file");
-		}
-
 		// check file extension
 		$ext = File::ext($template_file);
 		if (!in_array($ext, $this->allowedExt)) {
-			throw new SteException("File $template_file has extension that is not allowed template extension");
+			throw new Ste\Exception("File $template_file has extension that is not allowed template extension");
 		}
 
 		// try to load a file
 		$template = File::get($template_file, false);
+		if ($template === false and $this->config["default_path"] and strpos($template_file, DIRECTORY_SEPARATOR) !== 0) {
+			// adding default path to the template
+			$template_file = rtrim($this->config["default_path"], DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $template_file;
+			// try to load a file from default include path
+			$template = File::get($template_file, false);
+		}
 		if ($template === false) {
-			throw new SteException("Could not load template file $template_file");
+			throw new Ste\Exception("Could not load template file $template_file");
 		}
 
 		$this->include_path = realpath(dirname($template_file) . DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
@@ -255,23 +295,23 @@ class Ste
 		return $template;
 	}
 
-	protected function _parse($subject)
+	protected function parseBlock($subject)
 	{
 		// blocks
-		$subject = preg_replace_callback($this->blockRegEx, array(&$this, '_replaceBlockCallback'), $subject);
+		$subject = preg_replace_callback($this->blockRegEx, array(&$this, "replaceBlockCallback"), $subject);
 		// replace variables
-		$subject = preg_replace_callback($this->varRegEx, array(&$this, '_replaceVarCallback'), $subject);
+		$subject = preg_replace_callback($this->varRegEx, array(&$this, "replaceVarCallback"), $subject);
 		// replace arrays
-		$subject = preg_replace_callback($this->arrRegEx, array(&$this, '_replaceArrCallback'), $subject);
+		$subject = preg_replace_callback($this->arrRegEx, array(&$this, "replaceArrCallback"), $subject);
 		// invoke functions
-		$subject = preg_replace_callback($this->funcRegEx, array(&$this, '_replaceFuncCallback'), $subject);
+		$subject = preg_replace_callback($this->funcRegEx, array(&$this, "replaceFuncCallback"), $subject);
 		// check for dynamically included files
-		$subject = preg_replace_callback($this->includeRegEx, array(&$this, '_replaceIncludesCallback'), $subject);
+		$subject = preg_replace_callback($this->includeRegEx, array(&$this, "replaceIncludesCallback"), $subject);
 
 		return $subject;
 	}
 
-	protected function _replaceFuncCallback($matches)
+	protected function replaceFuncCallback($matches)
 	{
 		$callback = $matches[1];
 		if (!isset($this->functions[$callback])) {
@@ -283,17 +323,17 @@ class Ste
 		return call_user_func($this->functions[$callback]);
 	}
 
-	protected function _replaceIncludesCallback($matches)
+	protected function replaceIncludesCallback($matches)
 	{
-		return $this->_parse($this->_load($this->include_path.$matches[1]));
+		return $this->parseBlock($this->loadFile($this->include_path.$matches[1]));
 	}
 
-	protected function _replaceVarCallback($matches)
+	protected function replaceVarCallback($matches)
 	{
 		return isset($this->vars[$matches[1]]) ? $this->vars[$matches[1]] : false;
 	}
 
-	protected function _replaceArrCallback($matches)
+	protected function replaceArrCallback($matches)
 	{
 		$keys = explode('.', $matches[1]);
 		$vars = $this->vars;
@@ -306,7 +346,7 @@ class Ste
 		return $vars;
 	}
 
-	protected function _replaceBlockCallback($matches)
+	protected function replaceBlockCallback($matches)
 	{
 		static $inloop = false;
 
@@ -327,13 +367,13 @@ class Ste
 				return false;
 			}
 			// parse inside
-			return $this->_parse($matches[2]);
+			return $this->parseBlock($matches[2]);
 		}
 
 		if (!is_array($this->loops[$matches[1]])) {
 			if (!empty($this->loops[$matches[1]])) {
 				// parse inside
-				return $this->_parse($matches[2]);
+				return $this->parseBlock($matches[2]);
 			}
 
 			return false;
@@ -356,12 +396,12 @@ class Ste
 					}
 					$kk[] = $k;
 				}
-				$match['_count'] = count($this->loops[$matches[1]]);
-				$match['_num'] = ++$num;
-				$match['_parity'] = $num % 2 ? 'odd' : 'even';
+				$match["_count"] = count($this->loops[$matches[1]]);
+				$match["_num"] = ++$num;
+				$match["_parity"] = $num % 2 ? "odd" : "even";
 			}
 			$this->vars[$matches[1]] = $match;
-			$return .= $this->_parse($matches[2]);
+			$return .= $this->parseBlock($matches[2]);
 
 			// cleanup
 			foreach ($kk as $k) {
@@ -372,6 +412,14 @@ class Ste
 		}
 		return $return;
 	}
-}
 
-class SteException extends \Exception {}
+	/**
+	 * Removes unwanted HTML comments
+	 *
+	 * @param  string $subject
+	 * @return string
+	 */
+	protected function removeHtmlComments($subject) {
+		return preg_replace($this->commentsRegEx, "", $subject);
+	}	
+}
