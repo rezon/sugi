@@ -13,6 +13,15 @@ class Container implements \IteratorAggregate, \ArrayAccess, \Countable
 	protected $items = array();
 
 	/**
+	 * Constructor
+	 * @param array $items
+	 */
+	public function __construct(array $items = array())
+	{
+		$this->items = $items;
+	}
+
+	/**
 	 * Register an object with a given name
 	 * 
 	 * @param string $key

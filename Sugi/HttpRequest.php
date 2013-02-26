@@ -20,34 +20,36 @@ class HttpRequest
 	public $query;
 
 	/**
-	 * HTTP POST parameters container, like $_SERVER
+	 * HTTP POST parameters container, like $_POST
 	 * @var \Sugi\Container
 	 */
 	public $post;
+
+
+	/**
+	 * Cookies container, like $_COOKIE
+	 * @var \Sugi\Container
+	 */
+	public $cookie;
 
 	/**
 	 * it's protected for now
 	 * instantiate it with static methods real() and custom()
 	 */
-	protected function __construct()
+	protected function __construct(array $server = array(), array $query = array(), array $post = array(), array $cookie = array())
 	{
-		$this->server = new Container();
-		$this->query  = new Container();
-		$this->post   = new Container();
+		$this->server = new Container($server);
+		$this->query  = new Container($query);
+		$this->post   = new Container($post);
+		$this->cookie = new Container($cookie);
 	}
 
 	public static function real()
 	{
-		$request = new self();
-
-		$request->server->replace($_SERVER);
-		$request->query->replace($_GET);
-		$request->post->replace($_POST);
-
-		return $request;
+		return new self($_SERVER, $_GET, $_POST, $_COOKIE);
 	}
 
-	public static function custom($uri, $method = "GET", array $params = array())
+	public static function custom($uri, $method = "GET", array $params = array(), array $cookie = array())
 	{
 		$method = strtoupper($method);
 
@@ -67,7 +69,6 @@ class HttpRequest
 			// "HTTP_ACCEPT_CHARSET"   => "utf-8;q=1.0",
 			// "HTTP_ACCEPT_ENCODING" => "gzip, deflate"
 			// "HTTP_DNT" => 1, // Do Not Track
-			// "HTTP_COOKIE" => "", // cookie TODO: make this!
 			// "HTTP_CONNECTION" => "keep-alive",
 			// "HTTP_CACHE_CONTROL" => "max-age=0",
 			// "PATH" => "/usr/local/bin:/usr/bin:/bin",
@@ -147,12 +148,16 @@ class HttpRequest
 			$server["REQUEST_URI"] .= "?".$queryString;
 		}
 
-		$request = new self();
-		$request->server->replace($server);
-		$request->query->replace($query);
-		$request->post->replace(($method === "POST") ? $params : array());
+		// post
+		$post = ($method === "POST") ? $params : array();
 
-		return $request;
+		if ($cookie) {
+			// HTTP_COOKIE string look like this: "cs=alabalacookie; ci=1"
+			$server["HTTP_COOKIE"] = http_build_query($cookie, "", "; ");
+		}
+
+
+		return new self($server, $query, $post, $cookie);
 	}
 
 	/**
