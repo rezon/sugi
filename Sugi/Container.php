@@ -8,7 +8,7 @@
 /**
  * Sugi\Container 
  */
-class Container implements \ArrayAccess
+class Container implements \IteratorAggregate, \ArrayAccess, \Countable
 {
 	protected $items = array();
 
@@ -36,31 +36,77 @@ class Container implements \ArrayAccess
 	 */
 	public function get($key, $default = null)
 	{
-		return ($this->exists($key)) ? $this->items[$key] : $default;
+		return ($this->has($key)) ? $this->items[$key] : $default;
 	}
 
 	/**
-	 * Check an object has been added
+	 * Check an object exists
 	 * 
 	 * @param string $key
 	 * @return boolean
 	 */
-	public function exists($key)
+	public function has($key)
 	{
 		return array_key_exists($key, $this->items);
+	}
+
+	/**
+	 * @see has()
+	 */
+	public function exists($key)
+	{
+		return $this->has($key);
 	}
 
 	/**
 	 * Remove previously added item
 	 * @param string $key
 	 */
-	public function delete($key)
+	public function remove($key)
 	{
-		unset($this->items[$key]);
+		unset($this->items[$key]);	
 	}
 
 	/**
+	 * @see remove()
+	 */
+	public function delete($key)
+	{
+		$this->remove($key);
+	}
+
+	/**
+	 * Returns all saved items
+	 * @return array
+	 */
+	public function all()
+	{
+		return $this->items;
+	}
+
+	/**
+	 * Returns the parameter keys
+	 * @return array
+	 */
+	public function keys()
+	{
+		return array_keys($this->items);
+	}
+
+	/**
+	 * Add a set of items
+	 * @param array $items
+	 */
+	public function add(array $items = array())
+	{
+		$this->items = array_replace($this->items, $items);
+    }
+
+	/**
 	 * Returns item count
+	 * @implements \Countable
+	 * @see http://www.php.net/manual/en/class.countable.php
+	 * 
 	 * @return integer
 	 */
 	public function count()
@@ -68,12 +114,18 @@ class Container implements \ArrayAccess
 		return count($this->items);
 	}
 
-
-	/*
-	 * Implementing methods for interface ArrayAccess
+	/**
+	 * Replaces all item set with given items
+	 * @param array $items
 	 */
+	public function replace(array $items = array())
+	{
+		$this->items = $items;
+	}
+
 
 	/**
+	 * @implements \ArrayAccess
 	 * @see http://www.php.net/manual/en/arrayaccess.offsetset.php
 	 */
 	public function offsetSet($offset, $value)
@@ -82,26 +134,42 @@ class Container implements \ArrayAccess
 	}
 	
 	/**
+	 * @implements \ArrayAccess
 	 * @see http://www.php.net/manual/en/arrayaccess.offsetexists.php
 	 */
 	public function offsetExists($offset)
 	{
-		return $this->isRegistered($offset);
+		return $this->has($offset);
 	}
 
 	/**
+	 * @implements \ArrayAccess
 	 * @see http://www.php.net/manual/en/arrayaccess.offsetunset.php
 	 */
 	public function offsetUnset($offset)
 	{
-		$this->delete($offset);
+		$this->remove($offset);
 	}
 	
 	/**
+	 * @implements \ArrayAccess
 	 * @see http://www.php.net/manual/en/arrayaccess.offsetget.php
 	 */
 	public function offsetGet($offset)
 	{
 		return $this->get($offset, null);
+	}
+
+
+	/**
+	 * Returns an iterator for parameters
+	 * @implements \IteratorAggregate
+	 * @see http://www.php.net/manual/en/class.iteratoraggregate.php
+	 * 
+	 * @return \ArrayIterator
+	 */
+	public function getIterator()
+	{
+		return new \ArrayIterator($this->items);
 	}
 }
