@@ -174,4 +174,19 @@ class HttpRequestTest extends PHPUnit_Framework_TestCase
 		// POST foo
 		$this->assertEquals("bar", $req->post->get("foo"));
 	}
+
+	public function testCookies()
+	{
+		$req = HttpRequest::custom("", "GET", array(), array("cookiename" => "cookievalue", "foo" => "bar"));
+		// cookies array
+		$this->assertInternalType("array", $req->cookie->all());
+		// cookie
+		$this->assertEquals("cookievalue", $req->cookie->get("cookiename"));
+		// cookie2
+		$this->assertEquals("bar", $req->cookie->get("foo", "foobar"));
+		// notexisting cookie
+		$this->assertSame(null, $req->cookie->get("notexisting"));
+		// defualt value
+		$this->assertEquals("default", $req->cookie->get("notexistsing", "default"));
+	}
 }

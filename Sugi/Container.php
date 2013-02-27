@@ -29,11 +29,7 @@ class Container implements \IteratorAggregate, \ArrayAccess, \Countable
 	 */
 	public function set($key, $value)
 	{
-		if (is_null($key)) {
-			$this->items[] = $value;
-		} else {
-			$this->items[$key] = $value;
-		}
+		$this->items[$key] = $value;
 	}
 
 	/**
