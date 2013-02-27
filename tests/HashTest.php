@@ -8,7 +8,8 @@
 
 use Sugi\Hash;
 
-class HashTests extends PHPUnit_Framework_TestCase {
+class HashTests extends PHPUnit_Framework_TestCase
+{
 	
 	public function testMake()
 	{

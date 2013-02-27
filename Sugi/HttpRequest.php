@@ -108,6 +108,11 @@ class HttpRequest
 			}
 		}
 
+		// port
+		if (isset($parts["port"])) {
+			$server["SERVER_PORT"] = $parts["port"];
+		}
+
 		// user
 		if (isset($parts["user"])) {
 			$server["PHP_AUTH_USER"] = $parts["user"];
@@ -155,7 +160,6 @@ class HttpRequest
 			// HTTP_COOKIE string look like this: "cs=alabalacookie; ci=1"
 			$server["HTTP_COOKIE"] = http_build_query($cookie, "", "; ");
 		}
-
 
 		return new self($server, $query, $post, $cookie);
 	}
@@ -228,12 +232,21 @@ class HttpRequest
 	}
 
 	/**
+	 * Get PATH_INFO
+	 * @return string
+	 */
+	public function path()
+	{
+		return "/" . $this->uri();
+	}
+
+	/**
 	 * Returns request (protocol+host+uri)
 	 * @return string
 	 */
 	public function current()
 	{
-		return $this->base() . '/' . $this->uri();
+		return $this->base() . $this->path();
 	}
 
 	/**
@@ -242,21 +255,21 @@ class HttpRequest
 	 */
 	public function queue()
 	{
-		return http_build_query($this->query, "", "&");
+		return http_build_query($this->query->all(), "", "&");
 	}
 
 	/**
 	 * Returns request scheme://host/uri?queue
 	 * 
 	 * @return string
-	 * @todo: maybe shold place user/pass and/or get params
+	 * @todo: maybe shold place user/pass and port (if not default)
 	 */
-	public function full()
+	public function address()
 	{
 		if ($queue = $this->queue()) {
-			$queue .= "?";
+			$queue = "?" . $queue;
 		}
-		return $this->scheme()."://".$this->host()."/".$this->uri().$queue;
+		return $this->base().$this->path().$queue;
 	}
 
 	/**

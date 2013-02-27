@@ -8,7 +8,8 @@
 
 use Sugi\Files;
 
-class FilesTests extends PHPUnit_Framework_TestCase {
+class FilesTests extends PHPUnit_Framework_TestCase
+{
 
 	public static function setUpBeforeClass()
 	{

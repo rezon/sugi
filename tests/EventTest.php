@@ -10,7 +10,8 @@ use Sugi\Event as SugiEvent;
 use Sugi\Event\Event;
 use Sugi\Event\Dispatcher;
 
-class EvnetTests extends PHPUnit_Framework_TestCase {
+class EvnetTests extends PHPUnit_Framework_TestCase
+{
 	
 	public $eventsDispatched;
 	public $dispatcher;

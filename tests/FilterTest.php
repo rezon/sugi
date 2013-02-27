@@ -8,7 +8,8 @@
 
 use Sugi\Filter;
 
-class FilterTest extends PHPUnit_Framework_TestCase {
+class FilterTest extends PHPUnit_Framework_TestCase
+{
 
 	public function testIntegers()
 	{
