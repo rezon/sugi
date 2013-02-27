@@ -154,7 +154,7 @@ class HttpRequest
 		}
 
 		// post
-		$post = ($method === "POST") ? $params : array();
+		$post = ($method !== "GET") ? $params : array();
 
 		if ($cookie) {
 			// HTTP_COOKIE string look like this: "cs=alabalacookie; ci=1"

@@ -147,4 +147,31 @@ class HttpRequestTest extends PHPUnit_Framework_TestCase
 		// POST foo
 		$this->assertEquals("bar", $req->post->get("foo"));
 	}
+
+	public function testPostParamsWithCustomMethod()
+	{
+		$req = HttpRequest::custom("http://example.com/path/to/file.php?arg1=one&arg2=two", "DELETE", array("arg1" => "edno", "foo" => "bar"));
+		// default request method is GET
+		$this->assertEquals("DELETE", $req->server["REQUEST_METHOD"]);
+		// method()
+		$this->assertEquals("DELETE", $req->method());
+		// QUERY_STRING
+		$this->assertEquals("arg1=one&arg2=two", $req->server["QUERY_STRING"]);
+		// queue() arguments
+		$this->assertEquals("arg1=one&arg2=two", $req->queue());
+		// arguments as array
+		$this->assertInternalType("array", $req->post->all());
+		// GET arg1
+		$this->assertEquals("one", $req->query->get("arg1"));
+		// GET arg2
+		$this->assertEquals("two", $req->query->get("arg2"));
+		// GET foo
+		$this->assertSame(null, $req->query->get("foo"));
+		// POST arg1
+		$this->assertEquals("edno", $req->post->get("arg1"));
+		// POST arg2
+		$this->assertSame(null, $req->post->get("arg2"));
+		// POST foo
+		$this->assertEquals("bar", $req->post->get("foo"));
+	}
 }
