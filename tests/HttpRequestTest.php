@@ -68,6 +68,34 @@ class HttpRequestTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals("127.0.0.1", $req->ip());
 	}
 
+	public function testCustomPaths()
+	{
+		$req = HttpRequest::custom("http://example.com/path");
+		$this->assertEquals("/path", $req->path());
+		$req = HttpRequest::custom("http://example.com/path/");
+		$this->assertEquals("/path", $req->path());
+		$req = HttpRequest::custom("/path");
+		$this->assertEquals("/path", $req->path());
+		$req = HttpRequest::custom("/path/");
+		$this->assertEquals("/path", $req->path());
+		$req = HttpRequest::custom("path");
+		$this->assertEquals("/path", $req->path());
+		$req = HttpRequest::custom("/path/to");
+		$this->assertEquals("/path/to", $req->path());
+		$req = HttpRequest::custom("/path/to/");
+		$this->assertEquals("/path/to", $req->path());
+		$req = HttpRequest::custom("path/to");
+		$this->assertEquals("/path/to", $req->path());
+	}
+
+	public function testCustomPathFileStyle()
+	{
+		$req = HttpRequest::custom("http://example.com/path/index.html");
+		$this->assertEquals("/path/index.html", $req->path());
+		$req = HttpRequest::custom("http://example.com/path/index.html/");
+		$this->assertEquals("/path/index.html", $req->path());
+	}
+
 	public function testCustomHttpsCreation()
 	{
 		$req = HttpRequest::custom("https://example.com/path/to/file.php?arg1=one&arg2=two");

@@ -1,7 +1,17 @@
 <?php namespace Sugi;
-
+/**
+ * @package Sugi
+ * @author  Plamen Popov <tzappa@gmail.com>
+ * @license http://opensource.org/licenses/mit-license.php (MIT License)
+ */
 
 /**
+ * Route is a set of rules used for routing.
+ * Main rule is a path, but there is more:
+ *  - host (domains, subdomains)
+ *  - scheme (http or https)
+ *  - method (GET, POST, etc.)
+ *  - ...
  * This class is intended to replace Route class
  */
 class HttpRoute
@@ -12,11 +22,11 @@ class HttpRoute
 	protected $scheme = ""; // empty means all - http, https
 
 
-	public function __construct($path, $host = "", $method = "")
+	public function __construct($path)
 	{
 		$this->setPath($path);
-		$this->setHost($host);
-		$this->setMethod($method);
+		// $this->setHost($host);
+		// $this->setMethod($method);
 	}
 
 	/**
@@ -25,7 +35,7 @@ class HttpRoute
 	 */
 	public function setPath($path)
 	{
-		$path = "/" . ltrim($path, "/");
+		$path = "/" . trim($path, "/");
 		// if ($path != "/") {
 		// 	$parts = parse_url($path);
 		// 	if (!isset($parts["path"]) or $parts["path"] != $path) {

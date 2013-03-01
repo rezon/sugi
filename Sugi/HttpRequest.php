@@ -131,8 +131,10 @@ class HttpRequest
 
 		// path
 		if (isset($parts["path"])) {
-			$server["PATH_INFO"] = $parts["path"];
-			$server["REQUEST_URI"] = $parts["path"];
+			// path ALWAYS begin with a slash and has no trailing slash
+			$path = "/" . trim($parts["path"], "/");
+			$server["PATH_INFO"] = $path;
+			$server["REQUEST_URI"] = $path;
 		}
 
 		// query

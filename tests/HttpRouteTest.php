@@ -22,19 +22,19 @@ class HttpRouteTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals("/", $route->getPath());
 	}
 
-	public function testCreateWithMoreParams()
-	{
-		$route = new HttpRoute("/", "");
-		$this->assertEquals("/", $route->getPath());
-		$this->assertEquals("", $route->getHost());
-		$route = new HttpRoute("/", "example.com");
-		$this->assertEquals("/", $route->getPath());
-		$this->assertEquals("example.com", $route->getHost());
-		$route = new HttpRoute("/", "", "GET");
-		$this->assertEquals("GET", $route->getMethod());
-		$route = new HttpRoute("/", "", "GET|post");
-		$this->assertEquals("GET|POST", $route->getMethod());
-	}
+	// public function testCreateWithMoreParams()
+	// {
+	// 	$route = new HttpRoute("/", "");
+	// 	$this->assertEquals("/", $route->getPath());
+	// 	$this->assertEquals("", $route->getHost());
+	// 	$route = new HttpRoute("/", "example.com");
+	// 	$this->assertEquals("/", $route->getPath());
+	// 	$this->assertEquals("example.com", $route->getHost());
+	// 	$route = new HttpRoute("/", "", "GET");
+	// 	$this->assertEquals("GET", $route->getMethod());
+	// 	$route = new HttpRoute("/", "", "GET|post");
+	// 	$this->assertEquals("GET|POST", $route->getMethod());
+	// }
 
 	public function testPath()
 	{
