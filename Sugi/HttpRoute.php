@@ -161,7 +161,7 @@ class HttpRoute
 			return $vars;
 		}
 
-		if (preg_match($this->compile($this->host), $host, $matches)) {
+		if (preg_match($this->compile($this->host, "."), $host, $matches)) {
 			
 			// var_dump($matches);
 			// add matches in array to know variables in host name
@@ -186,11 +186,42 @@ class HttpRoute
 
 		return false;
 	}
+
+
+	protected function compile($pattern, $delimiter)
+	{
+		$regex = $pattern;
+		preg_match_all("#\{(\w+)\}#", $pattern, $matches, PREG_OFFSET_CAPTURE | PREG_SET_ORDER);
+		foreach ($matches as $match) {
+			$variable = $match[1][0];
+			$varPattern = $match[0][0]; // {variable}
+			$varPos = $match[0][1];
+			$capture = Filter::key($variable, $this->segments, "[^/.,;?<>]++");
+			$nextChar = (isset($pattern[$varPos + strlen($varPattern)])) ? $pattern[$varPos + strlen($varPattern)] : "";
+			// $prevChar = 
+
+			if (key_exists($variable, $this->getDefaults())) {
+				// Make variables that have default values optional
+				// Also make delimiter (if next char is a delimiter) to be also optional
+				if ($delimiter == $nextChar) {
+					$delim = preg_quote($delimiter, "#");
+					$regex = preg_replace("#".$varPattern.$delim."#", "((?P<".$variable.">".$capture.")".$delim.")?", $regex);
+				} else {
+					$regex = preg_replace("#".$varPattern."#", "((?P<".$variable.">".$capture."))?", $regex);
+				}
+				// var_dump("#^".$regex.'$#siuD');
+			} else {
+				$regex = preg_replace("#".$varPattern."#", "(?P<".$variable.">".$capture.")", $regex);
+			}
+		}
+		
+		return "#^".$regex.'$#siuD';
+	}
 	
 	/**
 	 * Compile regular expression for the route
 	 */
-	protected function compile($pattern)
+	protected function _compile($pattern)
 	{
 		// The URI should be considered literal except for keys and optional parts
 		// Escape everything preg_quote would escape except for: {}
@@ -203,7 +234,7 @@ class HttpRoute
 		return '#^'.$regex.'$#siuD';
 	}
 
-	protected function regex_key_prc($match)
+	protected function _regex_key_prc($match)
 	{
 		// Replace matches with segment rules or what {segment} accepts by default
 		return "(?P<{$match[1]}>" . Filter::key($match[1], $this->segments, "[^/.,;?<>]++") . ')';

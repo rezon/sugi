@@ -236,14 +236,59 @@ class HttpRouteMatcherTest extends PHPUnit_Framework_TestCase
 	public function testHostWithDefaultParam()
 	{
 		$route = new HttpRoute("/");
-		$route->setHost("{subdomain}.example.com", array("subdomain" => "www"));
+		$route->setHost("{subdomain}.example.com");
+		$route->setDefaults(array("subdomain" => "www"));
 		// ok
 		$this->assertTrue($route->match(HttpRequest::custom("http://www.example.com/")));
 		$this->assertTrue($route->match(HttpRequest::custom("http://test.example.com/")));
-		// TODO: this should work
-		// $this->assertTrue($route->match(HttpRequest::custom("http://example.com/")));
+		$this->assertTrue($route->match(HttpRequest::custom("http://example.com/")));
 		// fails
 		$this->assertFalse($route->match(HttpRequest::custom("http://www.sub.example.com/")));
 		$this->assertFalse($route->match(HttpRequest::custom("http://sub.www.example.com/")));
+	}
+
+	public function testHostTLDwithDefaultParam()
+	{
+		$route = new HttpRoute("/");
+		$route->setHost("example.{tld}");
+		$route->setDefaults(array("tld" => "com"));
+		// ok
+		$this->assertTrue($route->match(HttpRequest::custom("http://example.com/")));
+		$this->assertTrue($route->match(HttpRequest::custom("http://example.info/")));
+		// fails
+		$this->assertFalse($route->match(HttpRequest::custom("http://example/")));
+		// $this->assertFalse($route->match(HttpRequest::custom("http://example./")));
+	}
+
+	public function testHostSubSubDomains()
+	{
+		$route = new HttpRoute("/");
+		$route->setHost("{subdomain}.en.example.com");
+		$route->setDefaults(array("subdomain" => "www"));
+		// ok
+		$this->assertTrue($route->match(HttpRequest::custom("http://www.en.example.com/")));
+		$this->assertTrue($route->match(HttpRequest::custom("http://test.en.example.com/")));
+		// !!! Note - this and next "!!! Note" are giving same results! This should be avoided by a developers
+		$this->assertTrue($route->match(HttpRequest::custom("http://en.example.com/"))); 
+
+		$route = new HttpRoute("/");
+		$route->setHost("en.{subdomain}.example.com");
+		$route->setDefaults(array("subdomain" => "www"));
+		// ok
+		$this->assertTrue($route->match(HttpRequest::custom("http://en.www.example.com/")));
+		$this->assertTrue($route->match(HttpRequest::custom("http://en.test.example.com/")));
+		// !!! Note
+		$this->assertTrue($route->match(HttpRequest::custom("http://en.example.com/")));
+
+		// NOTE in this situation developer should set proper requirements for at least one of the variables
+		$route = new HttpRoute("/");
+		$route->setHost("{lang}.{subdomain}.example.com");
+		$route->setDefaults(array("subdomain" => "www", "lang" => "en"));
+		// ok
+		$this->assertTrue($route->match(HttpRequest::custom("http://en.www.example.com/")));
+		// !!! Note
+		$this->assertTrue($route->match(HttpRequest::custom("http://en.example.com/")));
+		$this->assertTrue($route->match(HttpRequest::custom("http://example.com/")));
+		$this->assertTrue($route->match(HttpRequest::custom("http://www.example.com/")));
 	}
 }
