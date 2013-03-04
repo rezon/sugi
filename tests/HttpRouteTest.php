@@ -22,25 +22,21 @@ class HttpRouteTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals("/", $route->getPath());
 	}
 
-	// public function testCreateWithMoreParams()
-	// {
-	// 	$route = new HttpRoute("/", "");
-	// 	$this->assertEquals("/", $route->getPath());
-	// 	$this->assertEquals("", $route->getHost());
-	// 	$route = new HttpRoute("/", "example.com");
-	// 	$this->assertEquals("/", $route->getPath());
-	// 	$this->assertEquals("example.com", $route->getHost());
-	// 	$route = new HttpRoute("/", "", "GET");
-	// 	$this->assertEquals("GET", $route->getMethod());
-	// 	$route = new HttpRoute("/", "", "GET|post");
-	// 	$this->assertEquals("GET|POST", $route->getMethod());
-	// }
+	public function testSetMethodsReturnSelf()
+	{
+		$route = new HttpRoute("/");
+		$this->assertInstanceOf("\Sugi\HttpRoute", $route->setPath("/"));
+		$this->assertInstanceOf("\Sugi\HttpRoute", $route->setHost("example.com"));
+		$this->assertInstanceOf("\Sugi\HttpRoute", $route->setDefaults(array()));
+		$this->assertInstanceOf("\Sugi\HttpRoute", $route->setMethod("get"));
+		$this->assertInstanceOf("\Sugi\HttpRoute", $route->setScheme("http"));
+	}
 
 	public function testPath()
 	{
 		$route = new HttpRoute("/home");
 		$this->assertEquals("/home", $route->getPath());
-		// TODO:
+		// TODO: this should throw an exception
 		// $route = new HttpRoute("/home?page=2");
 		// $this->assertEquals("/home", $route->getPath());
 		// $route = new HttpRoute("/?page=2");
@@ -49,11 +45,28 @@ class HttpRouteTest extends PHPUnit_Framework_TestCase
 		// $this->assertEquals("/", $route->getPath());
 	}
 
+	public function testSegmentsInPath()
+	{
+		$route = new HttpRoute("admin/{controller}/{method}/{id}");
+	}
+
 	public function testSetPath()
 	{
 		$route = new HttpRoute("/");
 		$route->setPath("/home");
 		$this->assertEquals("/home", $route->getPath());
+	}
+
+	public function testDefaults()
+	{
+		$route = new HttpRoute("/");
+		$route->setDefaults(array("constructor" => "main"));
+		$this->assertEquals(array("constructor" => "main"), $route->getDefaults());
+		$route->setDefaults(array("constructor" => "main", "action" => "index"));
+		$this->assertEquals(array("constructor" => "main", "action" => "index"), $route->getDefaults());
+
+		$route = new HttpRoute("/", array("constructor" => "main"));
+		$this->assertEquals(array("constructor" => "main"), $route->getDefaults());
 	}
 
 	public function testHost()
@@ -64,7 +77,7 @@ class HttpRouteTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals("example.com", $route->getHost());
 		$route->setHost(null);
 		$this->assertEquals("", $route->getHost());
-		// TODO
+		// TODO: this should throw an exception
 		// $route->setHost("http://example.com/users/list?page=1");
 		// $this->assertEquals("example.com", $route->getHost());
 		$route->setHost("sub.example.com");

@@ -66,10 +66,10 @@ class HttpRouteMatcherTest extends PHPUnit_Framework_TestCase
 		$route = new HttpRoute("http://example.com?foo=bar");
 		$this->assertFalse($route->match($request));
 
-		// TODO
-		// $route = new HttpRoute("/?foo=bar"); // this is OK, since (?foo=bar) is not a path
+		// TODO ???
+		// $route = new HttpRoute("/?foo=bar");
 		// $this->assertTrue($route->match($request));
-		// $route = new HttpRoute("/?foo=baz"); // this is OK, since ?foo=baz
+		// $route = new HttpRoute("/?foo=baz");
 		// $this->assertTrue($route->match($request));
 	}
 
@@ -166,20 +166,84 @@ class HttpRouteMatcherTest extends PHPUnit_Framework_TestCase
 
 	public function testHostWithSubdomain()
 	{
-		$request = HttpRequest::custom("http://example.com");
+		$request = HttpRequest::custom("http://www.example.com/");
 		$route = new HttpRoute("/");
-		// any subdomain
-		$route->setHost(".example.com");
-		$this->assertTrue($route->match($request));
+		// ok
+		$this->assertTrue($route->match($request)); // no required host set
 
-		$request = HttpRequest::custom("http://sub.example.com");
-		// any subdomain
-		$route->setHost(".example.com");
+		$route->setHost("www.example.com");
 		$this->assertTrue($route->match($request));
-		$route->setHost("sub.example.com");
+		
+		$route->setHost("{subdomain}.example.com");
 		$this->assertTrue($route->match($request));
-		// fail
-		$route->setHost("sub2.example.com");
+		
+		// fail		
+		$route->setHost("example.com");
 		$this->assertFalse($route->match($request));
+		
+		$route->setHost("www2.example.com");
+		$this->assertFalse($route->match($request));
+	}
+
+	public function testHostWithIndex()
+	{
+		$route = new HttpRoute("/");
+		$route->setHost("www{serverid}.example.com");
+		// ok
+		$this->assertTrue($route->match(HttpRequest::custom("http://www2.example.com/")));
+		$this->assertTrue($route->match(HttpRequest::custom("http://wwwtwo.example.com/")));
+		// not good
+		$this->assertFalse($route->match(HttpRequest::custom("http://www.example.com/")));
+		$this->assertFalse($route->match(HttpRequest::custom("http://example.com/")));
+		$this->assertFalse($route->match(HttpRequest::custom("http://foo.www2.example.com/")));
+	}
+
+	public function testTLD()
+	{
+		$request = HttpRequest::custom("http://example.com/");
+		$route = new HttpRoute("/");
+		// ok
+		$route->setHost("example.{tld}");
+		$this->assertTrue($route->match($request));
+		
+		$route->setHost("example.com");
+		$this->assertTrue($route->match($request));
+		
+		// fail		
+		$route->setHost("example.eu");
+		$this->assertFalse($route->match($request));
+		
+		$route->setHost("www.example.com");
+		$this->assertFalse($route->match($request));
+	}
+
+	public function testSubAndTLD()
+	{
+		$request = HttpRequest::custom("http://www.example.com/");
+		$route = new HttpRoute("/");
+		// ok
+		$route->setHost("{subdomain}.example.{tld}");
+		$this->assertTrue($route->match($request));
+		
+		// fail		
+		$route->setHost("example.com");
+		$this->assertFalse($route->match($request));
+		
+		$route->setHost("www.example.eu");
+		$this->assertFalse($route->match($request));
+	}
+
+	public function testHostWithDefaultParam()
+	{
+		$route = new HttpRoute("/");
+		$route->setHost("{subdomain}.example.com", array("subdomain" => "www"));
+		// ok
+		$this->assertTrue($route->match(HttpRequest::custom("http://www.example.com/")));
+		$this->assertTrue($route->match(HttpRequest::custom("http://test.example.com/")));
+		// TODO: this should work
+		// $this->assertTrue($route->match(HttpRequest::custom("http://example.com/")));
+		// fails
+		$this->assertFalse($route->match(HttpRequest::custom("http://www.sub.example.com/")));
+		$this->assertFalse($route->match(HttpRequest::custom("http://sub.www.example.com/")));
 	}
 }
