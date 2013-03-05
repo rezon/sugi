@@ -23,6 +23,8 @@ class HttpRoute
 	protected $defaults = array();
 	protected $requisites = array();
 
+	public $variables = array();
+
 	/**
 	 * Constructor
 	 * 
@@ -78,6 +80,16 @@ class HttpRoute
 	public function getDefaults()
 	{
 		return $this->defaults;
+	}
+
+	public function getDefault($key)
+	{
+		return isset($this->defaults[$key]) ? $this->defaults[$key] : null;
+	}
+
+	public function hasDefault($key)
+	{
+		return key_exists($key, $this->defaults);
 	}
 
 	/**
@@ -159,7 +171,8 @@ class HttpRoute
 	 */
 	public function match(HttpRequest $request = null)
 	{
-		$result = array();
+		// setting default values as a variables
+		$this->variables = $this->defaults;
 
 		if (is_null($request)) {
 			$request = HttpRequest::real();
@@ -173,13 +186,11 @@ class HttpRoute
 			return false;
 		}
 
-		$hostVars = $this->matchHost($request->host());
-		if ($hostVars === false) {
+		if ($this->matchHost($request->host()) === false) {
 			return false;
 		}
 
-		$pathVars = $this->matchPath($request->path());
-		if ($pathVars === false) {
+		if ($this->matchPath($request->path()) === false) {
 			return false;
 		}
 
@@ -198,22 +209,18 @@ class HttpRoute
 
 	protected function matchHost($host)
 	{
-		$vars = array();
-
 		if (!$this->host) {
-			return $vars;
+			return true;
 		}
 
-		if (preg_match($this->compile($this->host, "."), $host, $matches)) {
-			
-			// var_dump($matches);
+		if (preg_match($this->compile($this->host, "host"), $host, $matches)) {
 			// add matches in array to know variables in host name
 			foreach ($matches as $var => $value) {
-				if (!is_int($var)) {
-					$vars[$var] = $value;
+				if (!is_int($var) and $value) {
+					$this->variables[$var] = $value;
 				}
 			}
-			return $vars;
+			return true;
 		}
 
 		return false;
@@ -221,65 +228,76 @@ class HttpRoute
 
 	protected function matchPath($path)
 	{
-		$vars = array();
+		if (!$this->path) {
+			return true;
+		}
 
-		if ($this->path == $path) {
-			return $vars;
+		if (preg_match($this->compile($this->path, "path"), $path, $matches)) {
+			// add matches in array to know variables in path name
+			foreach ($matches as $var => $value) {
+				if (!is_int($var) and $value) {
+					$this->variables[$var] = $value;
+				}
+			}
+			return true;
 		}
 
 		return false;
 	}
 
-	protected function compile($pattern, $delimiter)
+	/**
+	 * Create regular expression for the host or for the path
+	 * 
+	 * @param  string $pattern
+	 * @param  string $style - "host" or "path"
+	 * @return string
+	 */
+	protected function compile($pattern, $style)
 	{
 		$regex = $pattern;
+		// $regex = preg_replace('#[.\\+?[^\\]$()<>=!]#', '\\\\$0', $regex);
+
+		if ($style === "host") {
+			$delimiter = ".";
+			$defaultRequisites = "[^.,;?<>]++";
+		} elseif ($style === "path") {
+			$delimiter = "/";
+			$defaultRequisites = "[^/,;?<>]++";
+		} else {
+			throw new \Exception("Unknown style $style");
+		}
+
 		preg_match_all("#\{(\w+)\}#", $pattern, $matches, PREG_OFFSET_CAPTURE | PREG_SET_ORDER);
 		foreach ($matches as $match) {
 			$variable = $match[1][0];
 			$varPattern = $match[0][0]; // {variable}
 			$varPos = $match[0][1];
-			$capture = Filter::key($variable, $this->requisites, "[^/.,;?<>]++");
+			$capture = Filter::key($variable, $this->requisites, $defaultRequisites);
 			$nextChar = (isset($pattern[$varPos + strlen($varPattern)])) ? $pattern[$varPos + strlen($varPattern)] : "";
 			$prevChar = ($varPos > 0) ? $pattern[$varPos - 1] : "";
 
-			if (key_exists($variable, $this->getDefaults())) {
+			if ($this->hasDefault($variable)) {
 				// Make variables that have default values optional
 				// Also make delimiter (if next char is a delimiter) to be also optional
-				if ($delimiter == $nextChar and ($prevChar == "" or $prevChar == $delimiter)) {
-					$delim = preg_quote($delimiter, "#");
-					$regex = preg_replace("#".$varPattern.$delim."#", "((?P<".$variable.">".$capture.")".$delim.")?", $regex);
+				if ($style == "host" and $nextChar == $delimiter and ($prevChar == "" or $prevChar == $delimiter)) {
+					$regex = preg_replace("#".$varPattern.$delimiter."#", "((?P<".$variable.">".$capture.")".$delimiter.")?", $regex);
+				} elseif ($style == "path" and (($prevChar == $delimiter and $nextChar == $delimiter) or ($prevChar == $delimiter and $nextChar == "" and $varPos > 1))) {
+					$regex = preg_replace("#".$delimiter.$varPattern."#", "(".$delimiter."(?P<".$variable.">".$capture."))?", $regex);
 				} else {
 					$regex = preg_replace("#".$varPattern."#", "((?P<".$variable.">".$capture."))?", $regex);
 				}
-				// var_dump("#^".$regex.'$#siuD');
 			} else {
 				$regex = preg_replace("#".$varPattern."#", "(?P<".$variable.">".$capture.")", $regex);
 			}
+
+			$this->variables[$variable] = $this->getDefault($variable);
+			// var_dump("#^".$regex.'$#siuD');
 		}
 		
+		if ($style == "host") {
+			$regex = str_replace(".", "\.", $regex);
+		}
+
 		return "#^".$regex.'$#siuD';
 	}
-	
-	/**
-	 * Compile regular expression for the route
-	 */
-	protected function _compile($pattern)
-	{
-		// The URI should be considered literal except for keys and optional parts
-		// Escape everything preg_quote would escape except for: {}
-		$regex = preg_replace('#[.\\+?[^\\]$()<>=!]#', '\\\\$0', $pattern);
-		
-		// Transform segments and segment patterns
-		// $this is not available in Closures before PHP 5.4, so we'll use function instead of Closure
-		$regex = preg_replace_callback('#{([a-zA-Z0-9_]++)}#uD', array($this, 'regex_key_prc'), $regex); 
-
-		return '#^'.$regex.'$#siuD';
-	}
-
-	protected function _regex_key_prc($match)
-	{
-		// Replace matches with segment rules or what {segment} accepts by default
-		return "(?P<{$match[1]}>" . Filter::key($match[1], $this->segments, "[^/.,;?<>]++") . ')';
-	}
-
 }

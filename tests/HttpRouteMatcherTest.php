@@ -131,6 +131,133 @@ class HttpRouteMatcherTest extends PHPUnit_Framework_TestCase
 		$this->assertFalse($route->match($request));
 	}
 
+
+	public function testPathVariables()
+	{
+		$route = new HttpRoute("/path/to/{file}");
+		// ok
+		$this->assertTrue($route->match(HttpRequest::custom("/path/to/file")));
+		$this->assertTrue($route->match(HttpRequest::custom("/path/to/file/")));
+		$this->assertTrue($route->match(HttpRequest::custom("/path/to/fi-le")));
+		$this->assertTrue($route->match(HttpRequest::custom("/path/to/fi_le")));
+		$this->assertTrue($route->match(HttpRequest::custom("/path/to/file.html")));
+		$this->assertTrue($route->match(HttpRequest::custom("/path/to/something.php?get=param")));
+		$this->assertTrue($route->match(HttpRequest::custom("http://example.com/path/to/file")));
+		$this->assertTrue($route->match(HttpRequest::custom("http://example.com/path/to/file.html")));
+		$this->assertTrue($route->match(HttpRequest::custom("http://example.com/path/to/something.php?get=param")));
+		// false
+		$this->assertFalse($route->match(HttpRequest::custom("/path/to")));
+		$this->assertFalse($route->match(HttpRequest::custom("/path/to/")));
+		$this->assertFalse($route->match(HttpRequest::custom("/path//file")));
+		$this->assertFalse($route->match(HttpRequest::custom("/wrong/to/file")));
+		$this->assertFalse($route->match(HttpRequest::custom("/wrong/path/to/file")));
+		$this->assertFalse($route->match(HttpRequest::custom("/wrong/path/to/file/")));
+		$this->assertFalse($route->match(HttpRequest::custom("/path/to/file.html/foo")));
+		$this->assertFalse($route->match(HttpRequest::custom("/path/to/file/foo")));
+	}
+
+	public function testPathVariablesWithDefault()
+	{
+		$route = new HttpRoute("/path/to/{file}", array("file" => "index"));
+		// ok
+		$this->assertTrue($route->match(HttpRequest::custom("/path/to/")));
+		$this->assertTrue($route->match(HttpRequest::custom("/path/to")));
+		$this->assertTrue($route->match(HttpRequest::custom("/path/to/file")));
+		$this->assertTrue($route->match(HttpRequest::custom("/path/to/index")));
+		$this->assertTrue($route->match(HttpRequest::custom("/path/to/index.php")));
+
+		$route = new HttpRoute("/path/to/{file}", array("file" => ""));
+		// ok
+		$this->assertTrue($route->match(HttpRequest::custom("/path/to/")));
+		$this->assertTrue($route->match(HttpRequest::custom("/path/to")));
+		$this->assertTrue($route->match(HttpRequest::custom("/path/to/file")));
+		$this->assertTrue($route->match(HttpRequest::custom("/path/to/index")));
+		$this->assertTrue($route->match(HttpRequest::custom("/path/to/index.php")));
+	}
+
+	public function testPathVariablesAndDot()
+	{
+		$route = new HttpRoute("/path/to/file.{ext}", array("ext" => ""));
+		// ok
+		$this->assertTrue($route->match(HttpRequest::custom("/path/to/file.php")));
+		$this->assertTrue($route->match(HttpRequest::custom("/path/to/file."))); // ???
+		// fails
+		$this->assertFalse($route->match(HttpRequest::custom("/path/to/file"))); // ???
+	}
+
+	public function testPathVariablesWithRequirements()
+	{
+		$route = new HttpRoute("/{lang}/index.php", array(), array("lang" => "en|bg"));
+		// ok
+		$this->assertTrue($route->match(HttpRequest::custom("/en/index.php")));
+		$this->assertTrue($route->match(HttpRequest::custom("/bg/index.php")));
+		// fails
+		$this->assertFalse($route->match(HttpRequest::custom("/ru/index.php")));
+		$this->assertFalse($route->match(HttpRequest::custom("/index.php")));
+
+		// same as above with default
+		$route = new HttpRoute("/{lang}/index.php", array("lang" => "en"), array("lang" => "en|bg"));
+		// ok
+		$this->assertTrue($route->match(HttpRequest::custom("/en/index.php")));
+		$this->assertTrue($route->match(HttpRequest::custom("/bg/index.php")));
+		$this->assertTrue($route->match(HttpRequest::custom("/index.php")));
+		// fails
+		$this->assertFalse($route->match(HttpRequest::custom("/ru/index.php")));
+
+		// more simple
+		$route = new HttpRoute("/{lang}", array(), array("lang" => "en|bg"));
+		// ok
+		$this->assertTrue($route->match(HttpRequest::custom("/en")));
+		$this->assertTrue($route->match(HttpRequest::custom("/bg/")));
+		// fails
+		$this->assertFalse($route->match(HttpRequest::custom("/ru")));
+		$this->assertFalse($route->match(HttpRequest::custom("/ru/index")));
+		$this->assertFalse($route->match(HttpRequest::custom("/")));
+		$this->assertFalse($route->match(HttpRequest::custom("")));
+
+		// with default
+		$route = new HttpRoute("/{lang}", array("lang" => "en"), array("lang" => "en|bg"));
+		// ok
+		$this->assertTrue($route->match(HttpRequest::custom("/en")));
+		$this->assertTrue($route->match(HttpRequest::custom("/bg/")));
+		$this->assertTrue($route->match(HttpRequest::custom("/")));
+		$this->assertTrue($route->match(HttpRequest::custom("")));
+		// fails
+		$this->assertFalse($route->match(HttpRequest::custom("/ru")));
+		$this->assertFalse($route->match(HttpRequest::custom("/ru/index")));
+	}
+
+	public function testMVC()
+	{
+		// this is real world example
+		$route = new HttpRoute("/{lang}/{controller}/{action}/{id}",
+			array("lang" => "en", "controller" => "home", "action" => "index", "id" => "", "myvar" => "myvalue"),
+			array("lang" => "bg|en", "id" => "\d*"));
+		// ok
+		$this->assertTrue($route->match(HttpRequest::custom("")));
+		$this->assertTrue($route->match(HttpRequest::custom("/")));
+		$this->assertTrue($route->match(HttpRequest::custom("/en")));
+		$this->assertTrue($route->match(HttpRequest::custom("/en/")));
+		$this->assertTrue($route->match(HttpRequest::custom("/bg")));
+		$this->assertTrue($route->match(HttpRequest::custom("/bg/")));
+		$this->assertTrue($route->match(HttpRequest::custom("/bg/home")));
+		$this->assertTrue($route->match(HttpRequest::custom("/bg/index")));
+		$this->assertTrue($route->match(HttpRequest::custom("/bg/index.php")));
+		$this->assertTrue($route->match(HttpRequest::custom("/bg/index.php")));
+		$this->assertTrue($route->match(HttpRequest::custom("/index")));
+		$this->assertTrue($route->match(HttpRequest::custom("/index.php")));
+		$this->assertTrue($route->match(HttpRequest::custom("/home/index")));
+		$this->assertTrue($route->match(HttpRequest::custom("/bg/home/index")));
+		$this->assertTrue($route->match(HttpRequest::custom("/bg/user/edit/3")));
+		// note that lang parameter here is actually taking place in controller variable
+		$this->assertTrue($route->match(HttpRequest::custom("/ru")));
+		// var_dump($route->variables); // {'lang' => "en", 'controller' => "ru", ...}
+
+		// fails
+		$this->assertFalse($route->match(HttpRequest::custom("/bg/user/edit/3a")));
+		$this->assertFalse($route->match(HttpRequest::custom("/user/edit/3a")));
+	}
+
 	public function testHost()
 	{
 		$request = HttpRequest::custom("http://example.com");
@@ -243,6 +370,7 @@ class HttpRouteMatcherTest extends PHPUnit_Framework_TestCase
 		$this->assertTrue($route->match(HttpRequest::custom("http://test.example.com/")));
 		$this->assertTrue($route->match(HttpRequest::custom("http://example.com/")));
 		// fails
+		$this->assertFalse($route->match(HttpRequest::custom("http://wwwwexample.com/")));
 		$this->assertFalse($route->match(HttpRequest::custom("http://www.sub.example.com/")));
 		$this->assertFalse($route->match(HttpRequest::custom("http://sub.www.example.com/")));
 	}
@@ -254,10 +382,13 @@ class HttpRouteMatcherTest extends PHPUnit_Framework_TestCase
 		$route->setDefaults(array("tld" => "com"));
 		// ok
 		$this->assertTrue($route->match(HttpRequest::custom("http://example.com/")));
+		$this->assertTrue($route->match(HttpRequest::custom("http://example.com/")));
 		$this->assertTrue($route->match(HttpRequest::custom("http://example.info/")));
 		// fails
 		$this->assertFalse($route->match(HttpRequest::custom("http://example/")));
 		$this->assertFalse($route->match(HttpRequest::custom("http://example./")));
+		$this->assertFalse($route->match(HttpRequest::custom("http://example2/")));
+		$this->assertFalse($route->match(HttpRequest::custom("http://example2com/")));
 	}
 
 	public function testHostSubSubDomains()
