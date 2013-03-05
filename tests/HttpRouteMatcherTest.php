@@ -230,6 +230,21 @@ class HttpRouteMatcherTest extends PHPUnit_Framework_TestCase
 	public function testMVC()
 	{
 		// this is real world example
+		$route = new HttpRoute("/{controller}/{action}/{param}",
+			array("controller" => "home", "action" => "index", "param" => ""),
+			array());
+		// ok
+		$this->assertTrue($route->match(HttpRequest::custom("")));
+		$this->assertTrue($route->match(HttpRequest::custom("/")));
+		$this->assertTrue($route->match(HttpRequest::custom("/home")));
+		$this->assertTrue($route->match(HttpRequest::custom("/home/")));
+		$this->assertTrue($route->match(HttpRequest::custom("/home/index")));
+		$this->assertTrue($route->match(HttpRequest::custom("/user/edit/3")));
+	}
+
+	public function testMVCwithLanguage()
+	{
+		// this is real world example
 		$route = new HttpRoute("/{lang}/{controller}/{action}/{id}",
 			array("lang" => "en", "controller" => "home", "action" => "index", "id" => "", "myvar" => "myvalue"),
 			array("lang" => "bg|en", "id" => "\d*"));

@@ -87,6 +87,13 @@ class HttpRoute
 		return isset($this->defaults[$key]) ? $this->defaults[$key] : null;
 	}
 
+	public function addDefault($key, $value)
+	{
+		$this->defaults[$key] = $value;
+
+		return $this;
+	}
+
 	public function hasDefault($key)
 	{
 		return key_exists($key, $this->defaults);
@@ -111,6 +118,23 @@ class HttpRoute
 	public function getRequisites()
 	{
 		return $this->requisites;
+	}
+
+	public function getRequisite($key)
+	{
+		return isset($this->requisites[$key]) ? $this->requisites[$key] : null;
+	}
+
+	public function addRequisite($key, $value)
+	{
+		$this->requisites[$key] = $value;
+
+		return $this;
+	}
+
+	public function hasRequisite($key)
+	{
+		return key_exists($key, $this->requisites);
 	}
 
 	public function setHost($host)
@@ -232,7 +256,8 @@ class HttpRoute
 			return true;
 		}
 
-		if (preg_match($this->compile($this->path, "path"), $path, $matches)) {
+		$regEx = $this->compile($this->path, "path");
+		if (preg_match($regEx, $path, $matches)) {
 			// add matches in array to know variables in path name
 			foreach ($matches as $var => $value) {
 				if (!is_int($var) and $value) {
@@ -259,10 +284,10 @@ class HttpRoute
 
 		if ($style === "host") {
 			$delimiter = ".";
-			$defaultRequisites = "[^.,;?<>]++";
+			$defaultRequisites = "[^.,;?<>]+";
 		} elseif ($style === "path") {
 			$delimiter = "/";
-			$defaultRequisites = "[^/,;?<>]++";
+			$defaultRequisites = "[^/,;?<>]+";
 		} else {
 			throw new \Exception("Unknown style $style");
 		}
@@ -291,11 +316,12 @@ class HttpRoute
 			}
 
 			$this->variables[$variable] = $this->getDefault($variable);
-			// var_dump("#^".$regex.'$#siuD');
 		}
 		
 		if ($style == "host") {
 			$regex = str_replace(".", "\.", $regex);
+		} else {
+			$regex = "/?".$regex;
 		}
 
 		return "#^".$regex.'$#siuD';

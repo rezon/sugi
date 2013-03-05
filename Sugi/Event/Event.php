@@ -35,6 +35,11 @@ class Event
 		return $this->params;
 	}
 
+	public function getParam($name)
+	{
+		return isset($this->params[$name]) ? $this->params[$name] : null;
+	}
+
 	public function setDispatcher(Dispatcher $d)
 	{
 		$this->dispatcher = $d;
