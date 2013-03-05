@@ -21,16 +21,26 @@ class HttpRoute
 	protected $method = ""; // empty means all - GET, HEADER, POST, PUT, DELETE, ...
 	protected $scheme = ""; // empty means all - http, https
 	protected $defaults = array();
-	protected $segments = array();
+	protected $requisites = array();
 
-	public function __construct($path, array $defaults = array())
+	/**
+	 * Constructor
+	 * 
+	 * @param string $path - the path pattern, usually with variables like "/{controller}/{action}/{id}"
+	 * @param array  $defaults - default values for variables in the path or for the host
+	 *                         array("id" => "", "action" => "index")
+	 * @param array  $requisites - regular expression to match variables like array("id" => "\d+")
+	 */
+	public function __construct($path, array $defaults = array(), array $requisites = array())
 	{
 		$this->setPath($path);
 		$this->setDefaults($defaults);
+		$this->setRequisites($requisites);
 	}
 
 	/**
 	 * Set expected path
+	 * 
 	 * @param string $path
 	 * @return HttpRoute
 	 */
@@ -42,11 +52,22 @@ class HttpRoute
 		return $this;
 	}
 
+	/**
+	 * Returns expected path (pattern)
+	 * @return array
+	 */
 	public function getPath()
 	{
 		return $this->path;
 	}
 
+	/**
+	 * Sets default values for variables in host or path (pattern)
+	 * and thus making them optional
+	 * 
+	 * @param array $defaults
+	 * @return HttpRoute
+	 */
 	public function setDefaults(array $defaults)
 	{
 		$this->defaults = $defaults;
@@ -57,6 +78,27 @@ class HttpRoute
 	public function getDefaults()
 	{
 		return $this->defaults;
+	}
+
+	/**
+	 * Sets requisites (regular expressions) for variables in host and path
+	 * <code>
+	 * array("lang" => "en|bg");
+	 * </code>
+	 * 
+	 * @param array $requisites
+	 * @return HttpRoute
+	 */
+	public function setRequisites(array $requisites)
+	{
+		$this->requisites = $requisites;
+
+		return $this;
+	}
+
+	public function getRequisites()
+	{
+		return $this->requisites;
 	}
 
 	public function setHost($host)
@@ -73,6 +115,7 @@ class HttpRoute
 
 	/**
 	 * Set request methods for which the Route should work.
+	 * 
 	 * @param string $method - empty matches any method
 	 * @return HttpRoute
 	 */
@@ -187,7 +230,6 @@ class HttpRoute
 		return false;
 	}
 
-
 	protected function compile($pattern, $delimiter)
 	{
 		$regex = $pattern;
@@ -196,14 +238,14 @@ class HttpRoute
 			$variable = $match[1][0];
 			$varPattern = $match[0][0]; // {variable}
 			$varPos = $match[0][1];
-			$capture = Filter::key($variable, $this->segments, "[^/.,;?<>]++");
+			$capture = Filter::key($variable, $this->requisites, "[^/.,;?<>]++");
 			$nextChar = (isset($pattern[$varPos + strlen($varPattern)])) ? $pattern[$varPos + strlen($varPattern)] : "";
-			// $prevChar = 
+			$prevChar = ($varPos > 0) ? $pattern[$varPos - 1] : "";
 
 			if (key_exists($variable, $this->getDefaults())) {
 				// Make variables that have default values optional
 				// Also make delimiter (if next char is a delimiter) to be also optional
-				if ($delimiter == $nextChar) {
+				if ($delimiter == $nextChar and ($prevChar == "" or $prevChar == $delimiter)) {
 					$delim = preg_quote($delimiter, "#");
 					$regex = preg_replace("#".$varPattern.$delim."#", "((?P<".$variable.">".$capture.")".$delim.")?", $regex);
 				} else {

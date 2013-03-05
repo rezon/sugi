@@ -68,6 +68,17 @@ class HttpRequestTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals("127.0.0.1", $req->ip());
 	}
 
+	public function testHosts()
+	{
+		$req = HttpRequest::custom("http://example");
+		$this->assertEquals("example", $req->host());
+		// this probably should throw an exception
+		$req = HttpRequest::custom("http://example.");
+		$this->assertEquals("example", $req->host());
+		$req = HttpRequest::custom("http://.example.");
+		$this->assertEquals("example", $req->host());
+	}
+
 	public function testCustomPaths()
 	{
 		$req = HttpRequest::custom("http://example.com/path");

@@ -126,7 +126,8 @@ class HttpRequest
 		// host
 		if (isset($parts["host"])) {
 			// $server["SERVER_NAME"] = $parts["host"];
-			$server["HTTP_HOST"]   = $parts["host"];
+			// Not sure we should trim, or simply throw an exception
+			$server["HTTP_HOST"] = trim($parts["host"], ".");
 		}
 
 		// path

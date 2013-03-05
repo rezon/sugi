@@ -257,7 +257,7 @@ class HttpRouteMatcherTest extends PHPUnit_Framework_TestCase
 		$this->assertTrue($route->match(HttpRequest::custom("http://example.info/")));
 		// fails
 		$this->assertFalse($route->match(HttpRequest::custom("http://example/")));
-		// $this->assertFalse($route->match(HttpRequest::custom("http://example./")));
+		$this->assertFalse($route->match(HttpRequest::custom("http://example./")));
 	}
 
 	public function testHostSubSubDomains()
@@ -290,5 +290,57 @@ class HttpRouteMatcherTest extends PHPUnit_Framework_TestCase
 		$this->assertTrue($route->match(HttpRequest::custom("http://en.example.com/")));
 		$this->assertTrue($route->match(HttpRequest::custom("http://example.com/")));
 		$this->assertTrue($route->match(HttpRequest::custom("http://www.example.com/")));
+	}
+
+	public function testHostSubSubDefaultAndEmtpyDefault()
+	{
+		$route = new HttpRoute("/");
+		$route->setHost("www{id}.example.com");
+		$route->setDefaults(array("id" => "1"));
+
+		// ok
+		$this->assertTrue($route->match(HttpRequest::custom("http://www1.example.com/")));
+		$this->assertTrue($route->match(HttpRequest::custom("http://www22.example.com/")));
+		$this->assertTrue($route->match(HttpRequest::custom("http://wwww.example.com/")));
+		$this->assertTrue($route->match(HttpRequest::custom("http://www.example.com/")));
+		// fail
+		$this->assertFalse($route->match(HttpRequest::custom("http://ww.example.com/")));
+		$this->assertFalse($route->match(HttpRequest::custom("http://wwwexample.com/")));
+		$this->assertFalse($route->match(HttpRequest::custom("http://example.com/")));
+
+		// empty default
+		$route->setDefaults(array("id" => ""));
+		// ok
+		$this->assertTrue($route->match(HttpRequest::custom("http://www1.example.com/")));
+		$this->assertTrue($route->match(HttpRequest::custom("http://www22.example.com/")));
+		$this->assertTrue($route->match(HttpRequest::custom("http://wwww.example.com/")));
+		$this->assertTrue($route->match(HttpRequest::custom("http://www.example.com/")));
+		// fail
+		$this->assertFalse($route->match(HttpRequest::custom("http://ww.example.com/")));
+		$this->assertFalse($route->match(HttpRequest::custom("http://wwwexample.com/")));
+		$this->assertFalse($route->match(HttpRequest::custom("http://example.com/")));
+	}
+
+	public function testHostVariablesWithRequisites()
+	{
+		$route = new HttpRoute("/");
+		$route->setHost("{lang}.example.com");
+		$route->setRequisites(array("lang" => "en|bg"));
+		// ok
+		$this->assertTrue($route->match(HttpRequest::custom("http://en.example.com/")));
+		$this->assertTrue($route->match(HttpRequest::custom("http://bg.example.com/")));
+		// fail
+		$this->assertFalse($route->match(HttpRequest::custom("http://example.com/")));
+		$this->assertFalse($route->match(HttpRequest::custom("http://.example.com/")));
+		$this->assertFalse($route->match(HttpRequest::custom("http://ru.example.com/")));
+		$this->assertFalse($route->match(HttpRequest::custom("http://ru.example.com/")));
+		$this->assertFalse($route->match(HttpRequest::custom("http://www.en.example.com/")));
+		$this->assertFalse($route->match(HttpRequest::custom("http://english.example.com/")));
+		// with default value
+		$route->setDefaults(array("lang" => "en"));
+		// ok
+		$this->assertTrue($route->match(HttpRequest::custom("http://example.com/")));
+		// fails
+		$this->assertFalse($route->match(HttpRequest::custom("http://ru.example.com/")));
 	}
 }
