@@ -1,11 +1,13 @@
-<?php namespace Sugi;
+<?php namespace Sugi\HTTP;
 /**
  * @package Sugi
  * @author  Plamen Popov <tzappa@gmail.com>
  * @license http://opensource.org/licenses/mit-license.php (MIT License)
  */
 
-class HttpRequest
+use \Sugi\Container;
+
+class Request
 {
 	/**
 	 * HTTP SERVER parameter container, like $_SERVER
@@ -25,7 +27,6 @@ class HttpRequest
 	 */
 	public $post;
 
-
 	/**
 	 * Cookies container, like $_COOKIE
 	 * @var \Sugi\Container
@@ -44,11 +45,24 @@ class HttpRequest
 		$this->cookie = new Container($cookie);
 	}
 
+	/**
+	 * Creates Request instance with real HTTP request data
+	 * @return Sugi\HTTP\Request
+	 */
 	public static function real()
 	{
 		return new self($_SERVER, $_GET, $_POST, $_COOKIE);
 	}
 
+	/**
+	 * Creates Request instance with user defined data. Used for unit testing.
+	 * 
+	 * @param  string $uri
+	 * @param  string $method
+	 * @param  array  $params - custom parameters that will be injected in the request in POST, GET, etc. data
+	 * @param  array  $cookie - 
+	 * @return Sugi\HTTP\Request
+	 */
 	public static function custom($uri, $method = "GET", array $params = array(), array $cookie = array())
 	{
 		$method = strtoupper($method);

@@ -6,72 +6,72 @@
  * @license  http://opensource.org/licenses/mit-license.php (MIT License)
  */
 
-use Sugi\HttpRoute;
+use Sugi\HTTP\Route;
 
-class HttpRouteTest extends PHPUnit_Framework_TestCase
+class RouteTest extends PHPUnit_Framework_TestCase
 {
 	public function testSetCreateWithPath()
 	{
-		$route = new HttpRoute("/");
+		$route = new Route("/");
 		$this->assertEquals("/", $route->getPath());
-		$route = new HttpRoute("");
+		$route = new Route("");
 		$this->assertEquals("/", $route->getPath());
-		$route = new HttpRoute(null);
+		$route = new Route(null);
 		$this->assertEquals("/", $route->getPath());
-		$route = new HttpRoute(false);
+		$route = new Route(false);
 		$this->assertEquals("/", $route->getPath());
 	}
 
 	public function testSetMethodsReturnSelf()
 	{
-		$route = new HttpRoute("/");
-		$this->assertInstanceOf("\Sugi\HttpRoute", $route->setPath("/"));
-		$this->assertInstanceOf("\Sugi\HttpRoute", $route->setHost("example.com"));
-		$this->assertInstanceOf("\Sugi\HttpRoute", $route->setDefaults(array()));
-		$this->assertInstanceOf("\Sugi\HttpRoute", $route->setMethod("get"));
-		$this->assertInstanceOf("\Sugi\HttpRoute", $route->setScheme("http"));
+		$route = new Route("/");
+		$this->assertInstanceOf("\Sugi\HTTP\Route", $route->setPath("/"));
+		$this->assertInstanceOf("\Sugi\HTTP\Route", $route->setHost("example.com"));
+		$this->assertInstanceOf("\Sugi\HTTP\Route", $route->setDefaults(array()));
+		$this->assertInstanceOf("\Sugi\HTTP\Route", $route->setMethod("get"));
+		$this->assertInstanceOf("\Sugi\HTTP\Route", $route->setScheme("http"));
 	}
 
 	public function testPath()
 	{
-		$route = new HttpRoute("/home");
+		$route = new Route("/home");
 		$this->assertEquals("/home", $route->getPath());
 		// TODO: this should throw an exception
-		// $route = new HttpRoute("/home?page=2");
+		// $route = new Route("/home?page=2");
 		// $this->assertEquals("/home", $route->getPath());
-		// $route = new HttpRoute("/?page=2");
+		// $route = new Route("/?page=2");
 		// $this->assertEquals("/", $route->getPath());
-		// $route = new HttpRoute("?page=2");
+		// $route = new Route("?page=2");
 		// $this->assertEquals("/", $route->getPath());
 	}
 
 	public function testSegmentsInPath()
 	{
-		$route = new HttpRoute("admin/{controller}/{method}/{id}");
+		$route = new Route("admin/{controller}/{method}/{id}");
 	}
 
 	public function testSetPath()
 	{
-		$route = new HttpRoute("/");
+		$route = new Route("/");
 		$route->setPath("/home");
 		$this->assertEquals("/home", $route->getPath());
 	}
 
 	public function testDefaults()
 	{
-		$route = new HttpRoute("/");
+		$route = new Route("/");
 		$route->setDefaults(array("constructor" => "main"));
 		$this->assertEquals(array("constructor" => "main"), $route->getDefaults());
 		$route->setDefaults(array("constructor" => "main", "action" => "index"));
 		$this->assertEquals(array("constructor" => "main", "action" => "index"), $route->getDefaults());
 
-		$route = new HttpRoute("/", array("constructor" => "main"));
+		$route = new Route("/", array("constructor" => "main"));
 		$this->assertEquals(array("constructor" => "main"), $route->getDefaults());
 	}
 
 	public function testHost()
 	{
-		$route = new HttpRoute("/");
+		$route = new Route("/");
 		$this->assertEquals("", $route->getHost());
 		$route->setHost("example.com");
 		$this->assertEquals("example.com", $route->getHost());
@@ -86,7 +86,7 @@ class HttpRouteTest extends PHPUnit_Framework_TestCase
 
 	public function testScheme()
 	{
-		$route = new HttpRoute("/");
+		$route = new Route("/");
 		$this->assertEquals("", $route->getScheme());
 		$route->setScheme("http");
 		$this->assertEquals("http", $route->getScheme());
@@ -100,7 +100,7 @@ class HttpRouteTest extends PHPUnit_Framework_TestCase
 
 	public function testMethod()
 	{
-		$route = new HttpRoute("/");
+		$route = new Route("/");
 		$this->assertEquals("", $route->getMethod());
 		$route->setMethod("GET");
 		$this->assertEquals("GET", $route->getMethod());

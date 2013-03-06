@@ -5,6 +5,11 @@
  * @license http://opensource.org/licenses/mit-license.php (MIT License)
  */
 
+use \Sugi\HTTP\Route;
+use \Sugi\HTTP\Request;
+use \Sugi\Container;
+use \Sugi\Event;
+
 /**
  *
  */
@@ -22,13 +27,13 @@ class Router
 			throw new \Exception("Already have route $name");
 		}
 
-		$route = new HttpRoute($pattern, $defaults, $requisites);
+		$route = new Route($pattern, $defaults, $requisites);
 		static::$routes[$name] = array("name" => $name, "route" => $route, "closure" => $closure);
 
 		return $route;
 	}
 
-	public static function proccess(HttpRequest $request = null)
+	public static function proccess(Request $request = null)
 	{
 		foreach (static::$routes as $name => $route) {
 			if ($route["route"]->match($request)) {

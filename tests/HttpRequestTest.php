@@ -6,13 +6,14 @@
  * @license  http://opensource.org/licenses/mit-license.php (MIT License)
  */
 
-use Sugi\HttpRequest;
+use Sugi\HTTP\Request;
+use Sugi\Container;
 
-class HttpRequestTest extends PHPUnit_Framework_TestCase
+class RequestTest extends PHPUnit_Framework_TestCase
 {
 	public function testCustomCreation()
 	{
-		$req = HttpRequest::custom("http://example.com/path/to/file.php?arg1=one&arg2=two");
+		$req = Request::custom("http://example.com/path/to/file.php?arg1=one&arg2=two");
 		// test $server, $query, $post and $cookies are Sugi\Container
 		$this->assertInstanceOf("Sugi\Container", $req->server);
 		$this->assertInstanceOf("Sugi\Container", $req->query);
@@ -70,46 +71,46 @@ class HttpRequestTest extends PHPUnit_Framework_TestCase
 
 	public function testHosts()
 	{
-		$req = HttpRequest::custom("http://example");
+		$req = Request::custom("http://example");
 		$this->assertEquals("example", $req->host());
 		// this probably should throw an exception
-		$req = HttpRequest::custom("http://example.");
+		$req = Request::custom("http://example.");
 		$this->assertEquals("example", $req->host());
-		$req = HttpRequest::custom("http://.example.");
+		$req = Request::custom("http://.example.");
 		$this->assertEquals("example", $req->host());
 	}
 
 	public function testCustomPaths()
 	{
-		$req = HttpRequest::custom("http://example.com/path");
+		$req = Request::custom("http://example.com/path");
 		$this->assertEquals("/path", $req->path());
-		$req = HttpRequest::custom("http://example.com/path/");
+		$req = Request::custom("http://example.com/path/");
 		$this->assertEquals("/path", $req->path());
-		$req = HttpRequest::custom("/path");
+		$req = Request::custom("/path");
 		$this->assertEquals("/path", $req->path());
-		$req = HttpRequest::custom("/path/");
+		$req = Request::custom("/path/");
 		$this->assertEquals("/path", $req->path());
-		$req = HttpRequest::custom("path");
+		$req = Request::custom("path");
 		$this->assertEquals("/path", $req->path());
-		$req = HttpRequest::custom("/path/to");
+		$req = Request::custom("/path/to");
 		$this->assertEquals("/path/to", $req->path());
-		$req = HttpRequest::custom("/path/to/");
+		$req = Request::custom("/path/to/");
 		$this->assertEquals("/path/to", $req->path());
-		$req = HttpRequest::custom("path/to");
+		$req = Request::custom("path/to");
 		$this->assertEquals("/path/to", $req->path());
 	}
 
 	public function testCustomPathFileStyle()
 	{
-		$req = HttpRequest::custom("http://example.com/path/index.html");
+		$req = Request::custom("http://example.com/path/index.html");
 		$this->assertEquals("/path/index.html", $req->path());
-		$req = HttpRequest::custom("http://example.com/path/index.html/");
+		$req = Request::custom("http://example.com/path/index.html/");
 		$this->assertEquals("/path/index.html", $req->path());
 	}
 
 	public function testCustomHttpsCreation()
 	{
-		$req = HttpRequest::custom("https://example.com/path/to/file.php?arg1=one&arg2=two");
+		$req = Request::custom("https://example.com/path/to/file.php?arg1=one&arg2=two");
 		// scheme
 		$this->assertEquals("https", $req->scheme());
 		// port
@@ -122,7 +123,7 @@ class HttpRequestTest extends PHPUnit_Framework_TestCase
 
 	public function testCustomPortUserPass()
 	{
-		$req = HttpRequest::custom("http://user1:pass1@example.com:8080/path/to/file.php?arg1=one&arg2=two");
+		$req = Request::custom("http://user1:pass1@example.com:8080/path/to/file.php?arg1=one&arg2=two");
 		// scheme()
 		$this->assertEquals("http", $req->scheme());
 		// SERVER_PORT
@@ -145,7 +146,7 @@ class HttpRequestTest extends PHPUnit_Framework_TestCase
 
 	public function testMoreGetParams()
 	{
-		$req = HttpRequest::custom("http://example.com/path/to/file.php?arg1=one&arg2=two", "get", array("arg1" => "edno", "foo" => "bar"));
+		$req = Request::custom("http://example.com/path/to/file.php?arg1=one&arg2=two", "get", array("arg1" => "edno", "foo" => "bar"));
 		// default request method is GET
 		$this->assertEquals("GET", $req->server["REQUEST_METHOD"]);
 		// method()
@@ -162,7 +163,7 @@ class HttpRequestTest extends PHPUnit_Framework_TestCase
 
 	public function testPostParams()
 	{
-		$req = HttpRequest::custom("http://example.com/path/to/file.php?arg1=one&arg2=two", "post", array("arg1" => "edno", "foo" => "bar"));
+		$req = Request::custom("http://example.com/path/to/file.php?arg1=one&arg2=two", "post", array("arg1" => "edno", "foo" => "bar"));
 		// default request method is GET
 		$this->assertEquals("POST", $req->server["REQUEST_METHOD"]);
 		// method()
@@ -189,7 +190,7 @@ class HttpRequestTest extends PHPUnit_Framework_TestCase
 
 	public function testPostParamsWithCustomMethod()
 	{
-		$req = HttpRequest::custom("http://example.com/path/to/file.php?arg1=one&arg2=two", "DELETE", array("arg1" => "edno", "foo" => "bar"));
+		$req = Request::custom("http://example.com/path/to/file.php?arg1=one&arg2=two", "DELETE", array("arg1" => "edno", "foo" => "bar"));
 		// default request method is GET
 		$this->assertEquals("DELETE", $req->server["REQUEST_METHOD"]);
 		// method()
@@ -216,7 +217,7 @@ class HttpRequestTest extends PHPUnit_Framework_TestCase
 
 	public function testCookies()
 	{
-		$req = HttpRequest::custom("", "GET", array(), array("cookiename" => "cookievalue", "foo" => "bar"));
+		$req = Request::custom("", "GET", array(), array("cookiename" => "cookievalue", "foo" => "bar"));
 		// cookies array
 		$this->assertInternalType("array", $req->cookie->all());
 		// cookie

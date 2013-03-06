@@ -1,4 +1,4 @@
-<?php namespace  Sugi\Event;
+<?php namespace Sugi\Event;
 /**
  * @package Sugi
  * @author  Plamen Popov <tzappa@gmail.com>

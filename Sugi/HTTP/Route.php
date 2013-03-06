@@ -1,9 +1,11 @@
-<?php namespace Sugi;
+<?php namespace Sugi\HTTP;
 /**
  * @package Sugi
  * @author  Plamen Popov <tzappa@gmail.com>
  * @license http://opensource.org/licenses/mit-license.php (MIT License)
  */
+
+use \Sugi\Filter;
 
 /**
  * Route is a set of rules used for routing.
@@ -14,7 +16,7 @@
  *  - ...
  * This class is intended to replace Route class
  */
-class HttpRoute
+class Route
 {
 	protected $path = "/";
 	protected $host = ""; // empty means all
@@ -44,7 +46,7 @@ class HttpRoute
 	 * Set expected path
 	 * 
 	 * @param string $path
-	 * @return HttpRoute
+	 * @return Sugi\HTTP\Route
 	 */
 	public function setPath($path)
 	{
@@ -68,7 +70,7 @@ class HttpRoute
 	 * and thus making them optional
 	 * 
 	 * @param array $defaults
-	 * @return HttpRoute
+	 * @return Sugi\HTTP\Route
 	 */
 	public function setDefaults(array $defaults)
 	{
@@ -106,7 +108,7 @@ class HttpRoute
 	 * </code>
 	 * 
 	 * @param array $requisites
-	 * @return HttpRoute
+	 * @return Sugi\HTTP\Route
 	 */
 	public function setRequisites(array $requisites)
 	{
@@ -137,6 +139,12 @@ class HttpRoute
 		return key_exists($key, $this->requisites);
 	}
 
+	/**
+	 * Sets expected host (pattern)
+	 * 
+	 * @param string $host
+	 * @return Sugi\HTTP\Route
+	 */
 	public function setHost($host)
 	{
 		$this->host = $host;
@@ -153,7 +161,7 @@ class HttpRoute
 	 * Set request methods for which the Route should work.
 	 * 
 	 * @param string $method - empty matches any method
-	 * @return HttpRoute
+	 * @return Sugi\HTTP\Route
 	 */
 	public function setMethod($method)
 	{
@@ -174,7 +182,7 @@ class HttpRoute
 	/**
 	 * Expected HTTP scheme: "http" or "https"
 	 * @param string|null $scheme - null means all
-	 * @return HttpRoute
+	 * @return Sugi\HTTP\Route
 	 */
 	public function setScheme($scheme)
 	{
@@ -190,16 +198,16 @@ class HttpRoute
 
 	/**
 	 * Match defined route rules against the request
-	 * @param HttpRequest $request
+	 * @param Sugi\HTTP\Request $request
 	 * @return boolean - true if the request match defined route
 	 */
-	public function match(HttpRequest $request = null)
+	public function match(Request $request = null)
 	{
 		// setting default values as a variables
 		$this->variables = $this->defaults;
 
 		if (is_null($request)) {
-			$request = HttpRequest::real();
+			$request = Request::real();
 		}
 
 		if ($this->matchScheme($request->scheme()) === false) {
