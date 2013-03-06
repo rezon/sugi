@@ -5,6 +5,8 @@
  * @license http://opensource.org/licenses/mit-license.php (MIT License)
  */
 
+use \Sugi\Event\Dispatcher;
+
 /**
  * Facades Sugi\Event\Dispatcher and Sugi\Event\Event for lazy people like me
  *
@@ -19,7 +21,7 @@ class Event
 	public static function listen($eventName, $callback)
 	{
 		if (is_null(static::$dispatcher)) {
-			static::$dispatcher = new Event\Dispatcher();
+			static::$dispatcher = new Dispatcher();
 		}
 		
 		static::$dispatcher->listen($eventName, $callback);
@@ -28,12 +30,22 @@ class Event
 	public static function fire($eventName, array $params = array())
 	{
 		if (is_null(static::$dispatcher)) {
-			static::$dispatcher = new Event\Dispatcher();
+			static::$dispatcher = new Dispatcher();
 		}
 
 		$event = new Event\Event($eventName, $params);
 		$event->setDispatcher(static::$dispatcher);
 
 		static::$dispatcher->fire($event);
+	}
+
+	public static function hasListeners($eventName)
+	{
+		if (is_null(static::$dispatcher)) {
+			return false;
+		}
+
+		$listeners = static::$dispatcher->getListeners($eventName);
+		return !empty($listeners);
 	}
 }

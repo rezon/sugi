@@ -2,6 +2,7 @@
 /**
  * @package Sugi
  * @version 12.12.18
+ * @deprecated use \Sugi\HTTP\Request
  */
 
 /**
