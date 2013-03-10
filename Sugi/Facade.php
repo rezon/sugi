@@ -1,21 +1,20 @@
 <?php namespace Sugi;
 /**
  * @package Sugi
- * @version 12.11.22
+ * @author  Plamen Popov <tzappa@gmail.com>
+ * @license http://opensource.org/licenses/mit-license.php (MIT License)
  */
 
 /**
  * Facade class.
- * Extending this class will give you access to object's methods with static calls
+ * Extending this class gives us access to object methods with static calls
  */
 abstract class Facade 
 {
 	/**
 	* Get instance of facaded class
 	*/
-	protected static function _getInstance() {
-		throw new \Exception("Implement _getInstance method in facaded class.");
-	}
+	abstract protected static function _getInstance();
 
 	/**
 	* Handle dynamic static calls to the object
