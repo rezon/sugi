@@ -21,7 +21,7 @@ class Cache extends Facade
 		return static::$instance;
 	}
 
-	public function configure(array $config = array())
+	protected function configure(array $config = array())
 	{
 		if (empty($config["store"])) {
 			throw new \Exception("Cache store must be set");

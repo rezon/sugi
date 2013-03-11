@@ -1,4 +1,4 @@
-<?php namespace Sugi/Cache;
+<?php namespace Sugi\Cache;
 /**
  * @package Sugi
  * @author  Plamen Popov <tzappa@gmail.com>
@@ -90,13 +90,41 @@ class Store
 	// 	return $this->driver->add($key, $value, $ttl);
 	// }
 
-	// public function inc($key, $offset = 1, $initialValue = 0, $ttl = 0)
-	// {
+	/**
+	 * Increment numeric item's value
+	 * 
+	 * @param  string $key
+	 * @param  integer $offset
+	 * @param  integer $initialValue
+	 * @param  integer $ttl
+	 * @return integer or FALSE on failure
+	 */
+	public function inc($key, $offset = 1, $initialValue = 0, $ttl = 0)
+	{
+		if (method_exists($this->driver, "inc")) {
+			return $this->driver->inc($key, 1, $initialValue, $ttl);
+		}
 
-	// }
+		$oldValue = $this->driver->get($key);
+		if (is_null($oldValue)) {
+			$newValue = $initialValue;
+		} else {
+			$newValue = $oldValue + $offset;
+		}
+		$res = $this->driver->set($key, $newValue, $ttl);
 
-	// public function dec($key, $offset = 1, $initialValue = 0, $ttl = 0)
-	// {
+		return is_null($res) ? false : $newValue;
+	}
 
-	// }
+	/**
+	 * Decrements numeric item's value
+	 */
+	public function dec($key, $offset = 1, $initialValue = 0, $ttl = 0)
+	{
+		if (method_exists($this->driver, "dec")) {
+			return $this->driver->dec($key, $offst, $initialValue, $ttl);
+		}
+
+		return $this->inc($key, -$offset, $initialValue, $ttl);
+	}
 }

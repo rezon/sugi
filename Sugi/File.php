@@ -12,7 +12,7 @@ class File extends Facade
 {
 	protected static $instance;
 
-	protected static function _getInstance()
+	static function _getInstance()
 	{
 		if (!static::$instance) {
 			static::$instance = new Files();

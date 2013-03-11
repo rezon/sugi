@@ -18,6 +18,7 @@ use \Sugi\Filter;
 class Router
 {
 	protected static $routes = null;
+	protected static $removeIndexPhp = true;
 	
 	/**
 	 * Registers a Route
@@ -49,6 +50,10 @@ class Router
 	public static function proccess(Request $request = null)
 	{
 		static::init();
+
+		if (is_null($request)) {
+			$request = Request::real();
+		}
 
 		foreach (static::$routes as $name => $route) {
 			if ($route["route"]->match($request)) {

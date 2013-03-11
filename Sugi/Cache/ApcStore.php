@@ -33,4 +33,16 @@ class ApcStore implements StoreInterface
 	{
 		return apc_clear_cache("user");
 	}
+
+	// public function inc($key, $offset = 1, $defaultValue = 0, $ttl = 0)
+	// {
+	// 	$inc = apc_inc($key, $offset, $success);
+	// 	// thre was no key
+	// 	if ($inc === false) {
+	// 		// we need custom initial value to be set
+	// 		return ($this->set($key, $defaultValue, $ttl)) ? $defaultValue : false;
+	// 	}
+
+	// 	return $inc;
+	// }
 }
