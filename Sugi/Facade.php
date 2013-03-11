@@ -12,17 +12,20 @@
 abstract class Facade 
 {
 	/**
-	* Get instance of facaded class
-	*/
-	abstract protected static function _getInstance();
+	 * Get instance of facaded class
+	 */
+	protected static function _getInstance() {
+		throw new \Exception("Implement _getInstance method in facaded class.");
+	}
+
 
 	/**
-	* Handle dynamic static calls to the object
-	*
-	* @param string $method
-	* @param array $parameters
-	* @return mixed
-	*/
+	 * Handle dynamic static calls to the object
+	 *
+	 * @param string $method
+	 * @param array $parameters
+	 * @return mixed
+	 */
 	public static function __callStatic($method, $parameters)
 	{
 		$instance = static::_getInstance();
