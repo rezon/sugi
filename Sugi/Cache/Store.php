@@ -14,7 +14,7 @@ class Store
 	 *
 	 * @param array $config Cache configuration
 	 */
-	public function __construct(DriverInterface $driver)
+	public function __construct(StoreInterface $driver)
 	{
 		$this->driver = $driver;
 	}
@@ -101,15 +101,18 @@ class Store
 	 */
 	public function inc($key, $offset = 1, $initialValue = 0, $ttl = 0)
 	{
-		if (method_exists($this->driver, "inc")) {
-			return $this->driver->inc($key, 1, $initialValue, $ttl);
-		}
+		// if (method_exists($this->driver, "inc")) {
+		// 	return $this->driver->inc($key, 1, $initialValue, $ttl);
+		// }
 
 		$oldValue = $this->driver->get($key);
 		if (is_null($oldValue)) {
 			$newValue = $initialValue;
-		} else {
+		} elseif (is_numeric($oldValue)) {
 			$newValue = $oldValue + $offset;
+		} else {
+			// TODO: what to return here?
+			return false;
 		}
 		$res = $this->driver->set($key, $newValue, $ttl);
 
@@ -121,9 +124,9 @@ class Store
 	 */
 	public function dec($key, $offset = 1, $initialValue = 0, $ttl = 0)
 	{
-		if (method_exists($this->driver, "dec")) {
-			return $this->driver->dec($key, $offst, $initialValue, $ttl);
-		}
+		// if (method_exists($this->driver, "dec")) {
+		// 	return $this->driver->dec($key, $offst, $initialValue, $ttl);
+		// }
 
 		return $this->inc($key, -$offset, $initialValue, $ttl);
 	}
