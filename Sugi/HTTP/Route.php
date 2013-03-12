@@ -24,8 +24,7 @@ class Route
 	protected $scheme = ""; // empty means all - http, https
 	protected $defaults = array();
 	protected $requisites = array();
-
-	public $variables = array();
+	protected $variables = array();
 
 	/**
 	 * Constructor
@@ -40,6 +39,16 @@ class Route
 		$this->setPath($path);
 		$this->setDefaults($defaults);
 		$this->setRequisites($requisites);
+	}
+
+	/**
+	 * Returns variable $var
+	 * @param  string $var
+	 * @return string
+	 */
+	public function get($var)
+	{
+		return isset($this->variables[$var]) ? $this->variables[$var] : null;
 	}
 
 	/**

@@ -62,7 +62,8 @@ class Router
 				} elseif (Event::hasListeners("sugi.route")) {
 					Event::fire("sugi.route", $route);
 				} else {
-					App::execute("Controller_{$route->variables['controller']}", "action_{$route->variables['action']}", array($route->variables['param'])) and exit;
+					$r = $route["route"];
+					App::execute("Controller_{$r->get('controller')}", "action_{$r->get('action')}", array($r->get('param'))) and exit;
 				}
 			}
 		}
