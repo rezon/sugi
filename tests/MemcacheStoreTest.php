@@ -14,14 +14,12 @@ class MemcacheStoreTest extends PHPUnit_Framework_TestCase
 
 	public static function setUpBeforeClass()
 	{
-		try {
-			static::$store = Store::factory(array());
-		} catch (\Exception $e) {}
+		static::$store = Store::factory(array());
 	}
 
 	public function setUp()
 	{
-		if (!static::$store) {
+		if (!static::$store->isRunning()) {
 			$this->markTestSkipped("Could not connect to memecached");
 		}
 		static::$store->delete("phpunittestkey");
@@ -69,9 +67,16 @@ class MemcacheStoreTest extends PHPUnit_Framework_TestCase
 	{
 		static::$store->set("phpunittestkey", "phpunittestvalue", 1);
 		$this->assertSame(true, static::$store->has("phpunittestkey"));
-		// this is working fine here, but on APC is not working correctly, so I'll skip it
-		// sleep(1);
-		// $this->assertSame(false, static::$store->has("phpunittestkey"));
+		sleep(1);
+		$this->assertSame(false, static::$store->has("phpunittestkey"));
+	}
+
+	public function testTTLNotExpire()
+	{
+		static::$store->set("phpunittestkey", "phpunittestvalue", 2);
+		$this->assertSame(true, static::$store->has("phpunittestkey"));
+		sleep(1);
+		$this->assertSame(true, static::$store->has("phpunittestkey"));
 	}
 
 	public function testHas()

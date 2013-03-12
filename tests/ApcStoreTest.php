@@ -65,15 +65,22 @@ class ApcStoreTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals(null, $store->get("phpunittestkey"));
 	}
 
+	public function testTTLNotExpire()
+	{
+		$store = new Store();
+		$store->set("phpunittestkey", "phpunittestvalue", 2);
+		$this->assertSame(true, $store->has("phpunittestkey"));
+		sleep(1);
+		$this->assertSame(true, $store->has("phpunittestkey"));
+	}
+
 	public function testTTL()
 	{
 		$store = new Store();
 		$store->set("phpunittestkey", "phpunittestvalue", 1);
 		$this->assertSame(true, $store->has("phpunittestkey"));
-		// This cannot be checked, since for some optimization reasons in APC it does not invalidate
-		// data on same request. @see  https://bugs.php.net/bug.php?id=58084
-		// sleep(2);
-		// $this->assertSame(false, $store->has("phpunittestkey"));
+		sleep(1);
+		$this->assertSame(false, $store->has("phpunittestkey"));
 	}
 
 	public function testHas()

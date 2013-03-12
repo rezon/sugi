@@ -39,20 +39,26 @@ class MemcacheStore implements StoreInterface
 			$memcached->addServers($config);
 		}
 
-		// at least one server should be running
-		$servers = $memcached->getVersion();
-		foreach ($servers as $server) {
-			if ($server != "255.255.255") {
-				return new MemcacheStore($memcached);
-			}
-		}
-
-		throw new \Exception("Could not create memcached");
+		// The code using a store should work no matter if the store is running or not
+		// Check is the memcache store is working with isRunning() method
+		return new MemcacheStore($memcached);
 	}
 
 	public function __construct(\Memcached $memcached)
 	{
 		$this->memcached = $memcached;
+	}
+
+	public function isRunning()
+	{
+		// at least one server should be running
+		$servers = $this->memcached->getVersion();
+		foreach ($servers as $server) {
+			if ($server != "255.255.255") {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	function set($key, $value, $ttl = 0)

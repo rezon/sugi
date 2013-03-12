@@ -75,6 +75,57 @@ class Store
 		$this->driver->flush();
 	}
 
+	/**
+	 * Increment numeric item's value.
+	 * If there is no such key it will create a key with initialValue + $offset.
+	 * If the stored value is non numeric - false will be returned.
+	 * 
+	 * @param  string $key
+	 * @param  integer $offset
+	 * @param  integer $initialValue
+	 * @param  integer $ttl
+	 * @return integer or FALSE on failure
+	 */
+	public function inc($key, $offset = 1, $initialValue = 0, $ttl = 0)
+	{
+		if (method_exists($this->driver, "inc")) {
+			return $this->driver->inc($key, 1, $initialValue, $ttl);
+		}
+
+		$oldValue = $this->driver->get($key);
+		if (is_null($oldValue)) {
+			$newValue = $initialValue + $offset;
+		} elseif (is_numeric($oldValue)) {
+			$newValue = $oldValue + $offset;
+		} else {
+			return false;
+		}
+		$res = $this->driver->set($key, $newValue, $ttl);
+
+		return is_null($res) ? false : $newValue;
+	}
+
+	/**
+	 * Decrements numeric item's value.
+	 */
+	public function dec($key, $offset = 1, $initialValue = 0, $ttl = 0)
+	{
+		if (method_exists($this->driver, "dec")) {
+			return $this->driver->dec($key, $offst, $initialValue, $ttl);
+		}
+
+		$oldValue = $this->driver->get($key);
+		if (is_null($oldValue)) {
+			$newValue = $initialValue - $offset;
+		} elseif (is_numeric($oldValue)) {
+			$newValue = $oldValue - $offset;
+		} else {
+			return false;
+		}
+		$res = $this->driver->set($key, $newValue, $ttl);
+
+		return is_null($res) ? false : $newValue;
+	}
 
 	/**
 	 * Creates a new variable in the data store under new key
@@ -89,45 +140,4 @@ class Store
 	// {
 	// 	return $this->driver->add($key, $value, $ttl);
 	// }
-
-	/**
-	 * Increment numeric item's value
-	 * 
-	 * @param  string $key
-	 * @param  integer $offset
-	 * @param  integer $initialValue
-	 * @param  integer $ttl
-	 * @return integer or FALSE on failure
-	 */
-	public function inc($key, $offset = 1, $initialValue = 0, $ttl = 0)
-	{
-		// if (method_exists($this->driver, "inc")) {
-		// 	return $this->driver->inc($key, 1, $initialValue, $ttl);
-		// }
-
-		$oldValue = $this->driver->get($key);
-		if (is_null($oldValue)) {
-			$newValue = $initialValue;
-		} elseif (is_numeric($oldValue)) {
-			$newValue = $oldValue + $offset;
-		} else {
-			// TODO: what to return here?
-			return false;
-		}
-		$res = $this->driver->set($key, $newValue, $ttl);
-
-		return is_null($res) ? false : $newValue;
-	}
-
-	/**
-	 * Decrements numeric item's value
-	 */
-	public function dec($key, $offset = 1, $initialValue = 0, $ttl = 0)
-	{
-		// if (method_exists($this->driver, "dec")) {
-		// 	return $this->driver->dec($key, $offst, $initialValue, $ttl);
-		// }
-
-		return $this->inc($key, -$offset, $initialValue, $ttl);
-	}
 }
