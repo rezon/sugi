@@ -12,7 +12,8 @@
         }
     ],
     "require": {
-        "php": ">=5.3"
+        "php": ">=5.3",
+	"sugiphp/cache": "dev-master"
     },
     "require-dev": {
         "leafo/lessphp": "dev-master",
