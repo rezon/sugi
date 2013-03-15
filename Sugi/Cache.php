@@ -7,6 +7,7 @@
 
 use SugiPHP\Cache\Cache as SugiPhpCache;
 use SugiPHP\Cache\MemcachedStore;
+use SugiPHP\Cache\MemcacheStore;
 use SugiPHP\Cache\ApcStore;
 use SugiPHP\Cache\FileStore;
 
@@ -33,18 +34,23 @@ class Cache extends Facade
 		}
 		
 		$store = $config["store"];
-		$storeConfig = isset($config[$store]) ? $config[$store] : array();
-
-		if ($store == "memcached") {
-			$storeInterface = MemcachedStore::factory($storeConfig);
-		} elseif ($store == "apc") {
-			$storeInterface = new ApcStore($storeConfig);
-		} elseif ($store == "file") {
-			$storeInterface = new FileStore($storeConfig["path"]);
-		} elseif (is_string($store)) {
-			$storeInterface = DI::reflect($store, $storeConfig);
-		} else {
+		// if we've passed custom Store instance
+		if (!is_string($store)) {
 			$storeInterface = $store;
+		} else {
+			$storeConfig = isset($config[$store]) ? $config[$store] : array();
+
+			if ($store == "memcached") {
+				$storeInterface = MemcachedStore::factory($storeConfig);
+			} elseif ($store == "memcache") {
+				$storeInterface = MemcacheStore::factory($storeConfig);
+			} elseif ($store == "apc") {
+				$storeInterface = new ApcStore($storeConfig);
+			} elseif ($store == "file") {
+				$storeInterface = new FileStore($storeConfig["path"]);
+			} else {
+				$storeInterface = DI::reflect($store, $storeConfig);
+			}
 		}
 
 		// creating new SugiPHP\Cache instance
