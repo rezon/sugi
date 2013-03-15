@@ -8,6 +8,7 @@
 use SugiPHP\Cache\Cache as SugiPhpCache;
 use SugiPHP\Cache\MemcachedStore;
 use SugiPHP\Cache\ApcStore;
+use SugiPHP\Cache\FileStore;
 
 class Cache extends Facade
 {
@@ -37,6 +38,8 @@ class Cache extends Facade
 			$storeInterface = MemcachedStore::factory($config);
 		} elseif ($store == "apc") {
 			$storeInterface = new ApcStore($config);
+		} elseif ($store == "file") {
+			$storeInterface = new FileStore($config["path"]);
 		} elseif (is_string($store)) {
 			$storeInterface = DI::reflect($store, $config);
 		} else {
