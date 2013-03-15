@@ -31,21 +31,31 @@ class Cache extends Facade
 		if (empty($config["store"])) {
 			throw new \Exception("Cache store must be set");
 		}
+		
 		$store = $config["store"];
-		$config = isset($config[$store]) ? $config[$store] : array();
+		$storeConfig = isset($config[$store]) ? $config[$store] : array();
 
 		if ($store == "memcached") {
-			$storeInterface = MemcachedStore::factory($config);
+			$storeInterface = MemcachedStore::factory($storeConfig);
 		} elseif ($store == "apc") {
-			$storeInterface = new ApcStore($config);
+			$storeInterface = new ApcStore($storeConfig);
 		} elseif ($store == "file") {
-			$storeInterface = new FileStore($config["path"]);
+			$storeInterface = new FileStore($storeConfig["path"]);
 		} elseif (is_string($store)) {
-			$storeInterface = DI::reflect($store, $config);
+			$storeInterface = DI::reflect($store, $storeConfig);
 		} else {
 			$storeInterface = $store;
 		}
 
-		static::$instance = new SugiPhpCache($storeInterface);
+		// creating new SugiPHP\Cache instance
+		$instance = new SugiPhpCache($storeInterface);
+
+		// check we want keys prefix
+		if (!empty($config["prefix"])) {
+			$instance->setPrefix($config["prefix"]);
+		}
+
+		// save it
+		static::$instance = $instance;
 	} 
 }
