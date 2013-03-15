@@ -37,6 +37,8 @@ class Cache extends Facade
 			$storeInterface = MemcachedStore::factory($config);
 		} elseif ($store == "apc") {
 			$storeInterface = new ApcStore($config);
+		} elseif (is_string($store)) {
+			$storeInterface = DI::reflect($store, $config);
 		} else {
 			$storeInterface = $store;
 		}
