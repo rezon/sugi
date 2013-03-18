@@ -10,6 +10,7 @@ use SugiPHP\Cache\MemcachedStore;
 use SugiPHP\Cache\MemcacheStore;
 use SugiPHP\Cache\ApcStore;
 use SugiPHP\Cache\FileStore;
+use SugiPHP\Cache\NullStore;
 
 class Cache extends Facade
 {
@@ -27,13 +28,14 @@ class Cache extends Facade
 		return static::$instance;
 	}
 
-	public static function configure(array $config = array())
+	public static function configure(array $config = null)
 	{
-		if (empty($config["store"])) {
-			throw new \Exception("Cache store must be set");
+		if (empty($config) or empty($config["store"])) {
+			$store = "null";
+		} else {
+			$store = $config["store"];
 		}
-		
-		$store = $config["store"];
+
 		// if we've passed custom Store instance
 		if (!is_string($store)) {
 			$storeInterface = $store;
@@ -48,6 +50,8 @@ class Cache extends Facade
 				$storeInterface = new ApcStore($storeConfig);
 			} elseif ($store == "file") {
 				$storeInterface = new FileStore($storeConfig["path"]);
+			} elseif ($store == "null") {
+				$storeInterface = new NullStore();
 			} else {
 				$storeInterface = DI::reflect($store, $storeConfig);
 			}
