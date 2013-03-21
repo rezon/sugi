@@ -294,37 +294,37 @@ class Form
 		return $this->addControl(new Form\Hidden($name, $value))->form($this);
 	}
 
-	public function addCheckbox($name, $label, $value = true)
+	public function addCheckbox($name, $label = false, $value = true)
 	{
 		return $this->addControl(new Form\Checkbox($name, $label, $value))->form($this);
 	}
 
-	public function addCheckboxList($name, $label, $values = array())
+	public function addCheckboxList($name, $label = false, $values = array())
 	{
 		return $this->addControl(new Form\CheckboxList($name, $label, $values))->form($this);
 	}
 
-	public function addSelect($name, $label, $values = array())
+	public function addSelect($name, $label = false, $values = array())
 	{
 		return $this->addControl(new Form\Select($name, $label, $values))->form($this);
 	}
 
-	public function addMultipleSelect($name, $label, $values = array())
+	public function addMultipleSelect($name, $label = false, $values = array())
 	{
 		return $this->addControl(new Form\MultipleSelect($name, $label, $values))->form($this);
 	}
 
-	public function addRadio($name, $label, $values = array())
+	public function addRadio($name, $label = false, $values = array())
 	{
 		return $this->addControl(new Form\Radio($name, $label, $values))->form($this);
 	}
 
-	public function addTextarea($name, $label, $values = array())
+	public function addTextarea($name, $label = false, $values = array())
 	{
 		return $this->addControl(new Form\Textarea($name, $label))->form($this);
 	}
 
-	public function addUpload($name, $label)
+	public function addUpload($name, $label = false)
 	{
 		$this->setAttribute("enctype","multipart/form-data");
 		return $this->addControl(new Form\Upload($name, $label))->form($this);
