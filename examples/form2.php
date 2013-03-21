@@ -3,7 +3,12 @@
 use Sugi\Form;
 use Sugi\Ste;
 
+
 include "common.php";
+
+error_reporting(E_ALL);
+ini_set('display_errors',1);
+
 
 $form = new Form();
 $form->addCheckbox("terms", "1" , 1)->rule("required", "Please agree with term of use");
@@ -15,11 +20,32 @@ $form->addSelect("test_select", "color" , array(
 	3 => "Blue",
 ))->rule("required", "Please choose a color");
 
+$countries = array(
+	"" => "-- Choose country --",
+	"europe" => array(
+		1 => "France",
+		2 => "Bulgaria",
+	),
+	"asia" => array(
+		3 => "China",
+		4 => "Japan",
+		5 => array("label" => "India", "class" => "test" , "id" => "test" )	,
+));
+
+$select = $form->addSelect("test_select2", "country" , $countries)->value(2)->rule("required", "Please choose a country");
+
+//$select->getOption(3)->setSelected();
+$select->value(3);
+$select->getOption(3)->attribute('class','test');
+
+$form->addMultipleSelect("test_mselect2", "mcountry" , $countries)->value(array(1,3))->rule("required", "Please choose a country");
+
+
 $form->addMultipleSelect("test_mselect", "mcolor" , array(
 	1 => "Braun",
 	2 => "Red",
 	3 => "Blue",
-));
+))->value(array(2));
 
 $form->addRadio("test_radio", "hair" , array(
 	1 => "Braun",
@@ -54,7 +80,7 @@ $tpl->load('ste/form.html');
 
 $tpl->set('form', $form->toArray());
 $tpl->set('data', var_export($form->data(),true));
-$tpl->set('form_code', htmlspecialchars($form));
+//$tpl->set('form_code', htmlspecialchars($form));
 
 if ($form->submitted()) {
 	$data = $form->data();

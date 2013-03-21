@@ -24,9 +24,13 @@ class MultipleSelect extends BaseControl implements IControl
 	{
 		$this->attributes['name'] = $name;
 		$this->label = $label;
-		$this->values = $values;
+		$this->values = new SelectOptions($values);
 	}
 	
+	public function getOption($value) {
+		return $this->values->getOption($value);
+	}
+
 	protected function getValue()
 	{
 		return is_null($this->value) ? array() : $this->value;
@@ -49,7 +53,7 @@ class MultipleSelect extends BaseControl implements IControl
 		}
 
 		if (!$this->getAttribute("size")) {
-			$this->setAttribute("size", count($this->values));
+			$this->setAttribute("size", $this->values->size());
 		}
 
 		$classAdded = false;
@@ -69,12 +73,13 @@ class MultipleSelect extends BaseControl implements IControl
 		$select .= "name=\"{$this->getName()}[]\"";
 		$select .= ">\n";
 
-		foreach ($this->values as $key => $value) {
-			$selected = (in_array($key, $this->getValue())) ? "selected='selected'" : '' ;
-			$select .= "		<option value=\"{$key}\" {$selected}>{$value}</option>\n";
+		foreach ($this->value as $key => $value) {
+			$this->values->getOption($value)->setSelected();
 		}
-
+				
+		$select .= $this->values;
 		$select .= "	</select>";
+
 
 		$error = $this->error ? "<span class=\"error\">{$this->error}</span>" : "";
 		

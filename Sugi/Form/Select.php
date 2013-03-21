@@ -5,9 +5,10 @@
  */
 
 use Sugi\Filter;
+use Sugi\Form\SelectOptions;
 
 /**
- * \Sugi\Form\Input
+ * \Sugi\Form\Select
  */
 class Select extends BaseControl implements IControl
 { 
@@ -24,9 +25,14 @@ class Select extends BaseControl implements IControl
 	{
 		$this->attributes['name'] = $name;
 		$this->label = $label;
-		$this->values = $values;
+		$this->values = new SelectOptions($values);
 	}
 	
+	public function getOption($value) {
+		return $this->values->getOption($value);
+	}
+
+
 	public function readHttpData($data)
 	{
 		$this->setValue(Filter::key($this->getName(), $data));
@@ -57,11 +63,8 @@ class Select extends BaseControl implements IControl
 		}
 		$select .= ">\n";
 
-		foreach ($this->values as $key => $value) {
-			$selected = ($key == $this->getValue()) ? "selected='selected'" : '' ;
-			$select .= "		<option value=\"{$key}\" {$selected}>{$value}</option>\n";
-		}
-
+		$this->values->getOption($this->getValue())->setSelected();
+		$select .= $this->values;
 		$select .= "	</select>";
 
 		$error = $this->error ? "<span class=\"error\">{$this->error}</span>" : "";
