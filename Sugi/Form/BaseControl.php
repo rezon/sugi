@@ -138,7 +138,7 @@ class BaseControl
 		return false;
 	}
 
-	public function rule($type, $error = null, $condition = null) {
+	public function rule($type, $error = null) {
 
 		if (empty($error)) {
 			switch ($type) {
@@ -149,11 +149,13 @@ class BaseControl
 			}				
 		}
 
+		$args = array_slice(func_get_args(),2);
+
 		if (!empty($type)) {
 			$this->rules[] = array(
 				'type'  => $type,
 				'error' => $error,
-				'condition' => $condition
+				'condition' => $args
 			);
 			if ($type == 'required') $this->required = $error;
 		}
@@ -167,7 +169,7 @@ class BaseControl
 		$errors = array();
 		foreach ($this->rules as $rule) {
 			$func = "_validate_".$rule['type'];
-			if (is_callable(array($this,$func)) && !$this->$func($rule['condition'])) {
+			if (is_callable(array($this,$func)) && !call_user_func_array(array($this,$func), $rule['condition'])) {
 				$errors[] = $rule['error'];
 			}
 		}
@@ -179,9 +181,8 @@ class BaseControl
 	 * validate required
 	 */
 
-	protected function _validate_required($condition) {
+	protected function _validate_required() {
 		$val = $this->value();
-		var_dump($this->getName(),$val);
 		return !empty($val);
 	}
 
@@ -221,5 +222,50 @@ class BaseControl
 	protected function _validate_url() {
 		return (false !== Filter::url($this->value(), false));
 	}
+
+
+	/*
+	 * validate min length 
+	 */
+	protected function _validate_min_length($minLength = false) {
+		return (!empty($minLength) AND (mb_strlen($this->value(), "UTF-8") >= $minLength));
+	}
+
+	/*
+	 * validate max length
+	 */
+	protected function _validate_max_length($maxLength = false) {
+		return (!empty($maxLength) AND (mb_strlen($this->value(), "UTF-8") <= $maxLength));
+	}
+
+	/*
+	 * validate length
+	 */
+	protected function _validate_length($min = false, $max = false)	{
+	  return (mb_strlen($this->value(), "UTF-8")  >= $min AND mb_strlen($this->value(), "UTF-8") <= $max);
+	}
+
+	/*
+	 * validate min 
+	 */
+	protected function _validate_min($min = false) {
+		return (!empty($min) AND ((float)$this->value() >= $min));
+	}
+
+	/*
+	 * validate max
+	 */
+	protected function _validate_max($max = false) {
+		return (!empty($max) AND ((float)$this->value() <= $max));
+	}
+
+	
+	/*
+	 * validate range
+	 */
+	protected function _validate_range($min = false, $max = false)	{
+	  return ((float)$this->value() >= $min AND (float)$this->value() <= $max);
+	}
+
 
 }

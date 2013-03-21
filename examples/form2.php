@@ -59,10 +59,27 @@ $form->addCheckboxList("test_checkboxList", "hair" , array(
 	3 => "Blue",
 ))->value(array(3))->rule("required","Please choose a color");
 
-$form->addTextarea("test_area", "Description")->value("asasa");
-$form->addText("fname", "First Name:")->rule('regexp' , 'Името трябва да съдържа поне една голяма буква',  '/[A-Z]/');
+
+
+$form->addText("test_age", "Age")
+	->rule('min', 'minimum 5', 5)
+	->rule('max', 'maximum 2000', 2000);
+
+$form->addText("test_age2", "Age range")
+	->rule('range', 'between 5 and 20', 5, 20);
+
+$form->addTextarea("test_area", "Description")
+	->rule('min_length', 'minimum 5 symbols', 5)
+	->rule('max_length', 'maximum 2000 symbols', 2000);
+
+$form->addTextarea("test_area2", "Descr. range")
+	->rule('length', 'between 5 and 20', 5, 20);
+
+$form->addText("fname", "First Name:")
+	->rule('regexp' , 'Името трябва да съдържа поне една голяма буква',  '/[A-Z]/');
 
 $form->addText("email", "Email:")
+//	->rule('required','required')
 	->rule('email' , 'should be valid email')
 	->rule('callback' , 'should be \'email@domain.com\'', 'callmeback');
 
@@ -89,7 +106,6 @@ if ($form->submitted()) {
 		$tpl->hide('form');
 	}
 } 
-
 
 header('Content-Type: text/html; charset=utf-8');
 echo $tpl->parse();
