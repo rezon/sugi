@@ -51,7 +51,7 @@ class CheckboxList extends BaseControl implements IControl
 		foreach ($this->values as $key => $val) {
 			$selected = (!is_null($this->getValue()) && in_array($key,$this->getValue())) ? "checked='checked'" : '' ;
 
-			$input .= "<input";
+			$input .= "<label><input";
 			foreach ($this->attributes as $attr => $value) {
 				if ($attr != 'value' && $attr != 'name') {
 					if ($this->error and ($attr == 'class')) {
@@ -68,7 +68,7 @@ class CheckboxList extends BaseControl implements IControl
 
 			$input .= " value =\"{$key}\"";
 			$input .= " name =\"{$this->getName()}[]\"";
-			$input .= " {$selected} />{$val}\n";
+			$input .= " {$selected} />{$val}</label>\n";
 
 		}
 		

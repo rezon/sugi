@@ -53,7 +53,7 @@ class Radio extends BaseControl implements IControl
 		foreach ($this->values as $key => $val) {
 			$selected = ($key == $this->getValue()) ? "checked='checked'" : '' ;
 
-			$input .= "<input";
+			$input .= "<label><input";
 			foreach ($this->attributes as $attr => $value) {
 				if ($attr != 'value') {
 					if ($this->error and ($attr == 'class')) {
@@ -69,7 +69,7 @@ class Radio extends BaseControl implements IControl
 			}
 
 			$input .= " value =\"{$key}\"";
-			$input .= " {$selected} />{$val}\n";
+			$input .= " {$selected} />{$val}</label>\n";
 
 		}
 		

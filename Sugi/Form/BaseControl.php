@@ -259,7 +259,6 @@ class BaseControl
 		return (!empty($max) AND ((float)$this->value() <= $max));
 	}
 
-	
 	/*
 	 * validate range
 	 */
