@@ -11,6 +11,7 @@ use SugiPHP\Config\Config as SugiPHPConfig;
 use SugiPHP\Config\FileLocator;
 use SugiPHP\Config\NativeLoader;
 use SugiPHP\Config\JsonLoader;
+use Sugi\Config\NeonLoader;
 
 
 /**
@@ -21,6 +22,7 @@ class FileConfig extends Facade
 	protected static $instance;
 	protected static $nativeLoader;
 	protected static $jsonLoader;
+	protected static $neonLoader;
 	protected static $fileLocator;
 
 	/**
@@ -40,6 +42,7 @@ class FileConfig extends Facade
 		static::$fileLocator = new FileLocator($path);
 		static::$nativeLoader = new NativeLoader(static::$fileLocator);
 		static::$jsonLoader = new JsonLoader(static::$fileLocator);
-		static::$instance = new SugiPHPConfig(array(static::$nativeLoader, static::$jsonLoader));
+		static::$neonLoader = new NeonLoader(static::$fileLocator);
+		static::$instance = new SugiPHPConfig(array(static::$nativeLoader, static::$jsonLoader, static::$neonLoader));
 	}
 }
