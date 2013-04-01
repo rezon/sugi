@@ -74,14 +74,6 @@ class Upload extends Text
 		
 	}
 
-
-
-	public function error()
-	{
-		return $this->error;
-
-	}
-
 	public function __toString()
 	{
 		if ($this->label) {
