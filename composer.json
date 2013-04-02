@@ -13,7 +13,8 @@
         "php": ">=5.3",
         "sugiphp/cache": "dev-master",
         "sugiphp/config": "dev-master",
-        "sugiphp/events": "dev-master"
+        "sugiphp/events": "dev-master",
+        "sugiphp/database": "dev-master"
     },
     "require-dev": {
         "leafo/lessphp": "dev-master",
