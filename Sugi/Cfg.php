@@ -17,7 +17,7 @@ use Sugi\Config\NeonLoader;
 /**
  * This class is temporary and will replace Sugi\Config
  */
-class FileConfig extends Facade
+class Cfg extends Facade
 {
 	protected static $instance;
 	protected static $nativeLoader;
