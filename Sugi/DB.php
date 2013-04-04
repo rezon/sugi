@@ -11,40 +11,75 @@ use \SugiPHP\Database\Database;
 use \SugiPHP\Database\MySqlDriver as mysql;
 use \SugiPHP\Database\PgSqlDriver as pgsql;
 use \SugiPHP\Database\SQLiteDriver as sqlite;
+use \SugiPHP\Database\Exception as DBException;
 use \Sugi\FileConfig as Cfg;
 
 /**
- * Database class - database abstraction class.
+ * Database facade
  */
-class DB extends Facade
+class DB
 {
-	protected static $instance;
+	/**
+	 * @var boolean
+	 */
+	public static $registerEvents = false;
 
 	/**
-	 * @inheritdoc
+	 * Instance of \SugiPHP\Database\Database
+	 * 
+	 * @var \SugiPHP\Database\Database
 	 */
-	protected static function _getInstance()
-	{
-		if (!static::$instance) {
-			static::configure(Cfg::get("database"));
-		}
+	protected static $db;
 
-		return static::$instance;
+	/**
+	 * Handles dynamic static calls to the object.
+	 *
+	 * @param  string $method
+	 * @param  array $parameters
+	 * @return mixed
+	 */
+	public static function __callStatic($method, $parameters)
+	{
+		$instance = static::getInstance();
+
+		return call_user_func_array(array($instance, $method), $parameters);
 	}
 
-	/**
-	 * Used for Dependency Injections
-	 */
-	public static function configure(array $config)
+	protected static function getInstance()
 	{
-		if (empty($config["type"])) {
-			throw new \SugiPHP\Database\Exception("Required database type parameter is missing", "internal_error");
+		if (!static::$db) {
+			static::$db = static::factory(Cfg::get("database"));
+			static::$registerEvents = Cfg::get("database.registerEvents", false);
+			
+			if (static::$registerEvents) {
+				static::$db->hook("pre_open", function ($h) {
+					Event::fire("sugi.database.pre_open");
+				});
+				static::$db->hook("post_open", function ($h) {
+					Event::fire("sugi.database.post_open");
+				});
+				static::$db->hook("pre_query", function ($h, $query) {
+					Event::fire("sugi.database.pre_query", array("query" => $query));
+				});
+				static::$db->hook("post_query", function ($h, $query) {
+					Event::fire("sugi.database.post_query", array("query" => $query));
+				});
+			}
 		}
-		$type = $config["type"];
-		unset($config["type"]);
 
-		if (isset($config[$type]) and is_array($config[$type])) {
-			$config = $config[$type];
+		return static::$db;
+	}
+
+	public static function factory($params)
+	{
+		if (empty($params["type"])) {
+			throw new DBException("Required database type parameter is missing", "internal_error");
+		}
+		$type = $params["type"];
+		unset($params["type"]);
+
+		if (isset($params[$type]) and is_array($params[$type])) {
+			$params = $params[$type];
 		}
 
 		// if we've passed custom Store instance
@@ -53,18 +88,16 @@ class DB extends Facade
 		} else {
 			$type = strtolower($type);
 			if (($type == "mysql") or ($type == "mysqli")) {
-				$driver = new mysql($config);
+				$driver = new mysql($params);
 			} elseif ($type == "pgsql") {
-				$driver = new pgsql($config);
+				$driver = new pgsql($params);
 			} elseif (($type == "sqlite") or ($type == "sqlite3")) {
-				$driver = new sqlite($config);
+				$driver = new sqlite($params);
 			} else {
-				$driver = DI::reflect($type, $config);
+				$driver = DI::reflect($type, $params);
 			}
 		}
 
-		static::$instance = new Database($driver);
-
-		return static::$instance;
+		return new Database($driver);
 	}
 }
