@@ -21,7 +21,7 @@ class Database
 	/**
 	 * @var boolean
 	 */
-	public static $registerEvents = false;
+	public static $registerEvents = true;
 
 	/**
 	 * Instance of \SugiPHP\Database\Database
@@ -44,11 +44,11 @@ class Database
 		return call_user_func_array(array($instance, $method), $parameters);
 	}
 
-	protected static function getInstance()
+	public static function getInstance()
 	{
 		if (!static::$db) {
-			static::$db = static::factory(Config::get("database"));
-			static::$registerEvents = Config::get("database.registerEvents", false);
+			static::$db = static::factory(Config::file("database"));
+			static::$registerEvents = Config::get("database.registerEvents", true);
 			
 			if (static::$registerEvents) {
 				static::$db->hook("pre_open", function ($h) {
