@@ -1,410 +1,102 @@
-<?php namespace Sugi;
+<?php
 /**
  * @package Sugi
  * @author  Plamen Popov <tzappa@gmail.com>
  * @license http://opensource.org/licenses/mit-license.php (MIT License)
  */
 
+namespace Sugi;
+
+use \SugiPHP\Database\Database as DB;
+use \SugiPHP\Database\Exception as DBException;
+use \SugiPHP\Database\MySqlDriver as mysql;
+use \SugiPHP\Database\PgSqlDriver as pgsql;
+use \SugiPHP\Database\SQLiteDriver as sqlite;
+
 /**
- * Database class - database abstraction class.
- * 
- * Hookable methods: open, close, query
- * Hooks can be triggered before (pre_{method_name}) and 
- * after (post_{method_name}) each hookable methods.
+ * Database facade
  */
 class Database
 {
 	/**
-	 * Database driver instance
-	 * @var string
+	 * @var boolean
 	 */
-	protected $driver;
+	public static $registerEvents = false;
 
 	/**
-	 * Handle to DB connection
-	 * @var resource
-	 */
-	protected $handle;
-
-	/**
-	 * Hooks
-	 * @var array of events
-	 */
-	protected $hooks = array();
-
-	/**
-	 * Class constructor
-	 */
-	public function __construct(Database\DriverInterface $driver)
-	{
-		$this->driver = $driver;
-	}
-
-	/**
-	 * Used for Dependency Injections
-	 */
-	public static function factory(array $config)
-	{
-		if (empty($config["type"])) {
-			throw new Database\Exception("Required database type parameter is missing", "internal_error");
-		}
-		$type = $config["type"];
-		unset($config["type"]);
-
-		if (isset($config[$type]) and is_array($config[$type])) {
-			$config = $config[$type];
-		}
-
-		$type = ucfirst(strtolower($type));
-		// support for old type mysqli
-		if ($type == "Mysqli") $type = "Mysql";
-
-		$className = "\Sugi\Database\\$type";
-		try {
-			$driver = new $className($config);
-		} catch (\Exception $e) {
-			throw new Database\Exception("Could not instantiate $className", "internal_error");
-		}
-
-		return new Database($driver);
-	}
-
-	/**
-	 * Class destructor
-	 */
-	public function __destruct()
-	{
-		$this->close();
-	}
-
-	/**
-	 * Calling methods that are only part of the database driver
-	 */
-	public function __call($method, $args)
-	{
-		if (method_exists($this->driver, $method)) {
-			return call_user_func_array(array($this->driver, $method), $args);
-		}
-		throw new Database\Exception("Method $method does not exist", "internal_error");		
-	}
-
-	/**
-	 * Opens connection to the database
+	 * Instance of \SugiPHP\Database\Database
 	 * 
-	 * @return mixed - database connection object
+	 * @var \SugiPHP\Database\Database
 	 */
-	public function open()
-	{
-		if ($this->handle) {
-			return $this->handle;
-		}
-
-		$this->triggerAction("pre", "open");
-		$this->handle = $this->driver->open();
-		$this->triggerAction("post", "open");
-
-		return $this->handle;
-	}
+	protected static $db;
 
 	/**
-	 * Closes connection to the database
-	 */
-	public function close()
-	{
-		if ($this->handle) {
-			$this->driver->close();
-			$this->triggerAction("pre", "close");
-			$this->handle = null;
-			$this->triggerAction("post", "close");
-		}
-	}
-
-	/**
-	 * Escapes a string
-	 * 
-	 * @param string $item
-	 * @return string
-	 */
-	public function escape($item)
-	{
-		// For delayed opens
-		$this->open();
-
-		return $this->driver->escape($item);
-	}
-
-	/**
-	 * Executes query.
-	 * Query could be any valid SQL statement.
-	 * 
-	 * @param string $sql
-	 * @throws Database\Exception If the query fails
-	 * @return mixed
-	 */
-	public function query($sql)
-	{
-		// For delayed opens
-		$this->open();
-
-		$this->triggerAction("pre", "query", $sql);
-		if ($res = $this->driver->query($sql)) {
-			$this->triggerAction("post", "query", $sql);
-			return $res;
-		}
-			
-		throw new Database\Exception($this->driver->error(), "sql_error");
-	}
-
-	/**
-	 * Fetches one row
-	 * 
-	 * @param handle $res result returned from query()
-	 * @return array
-	 */
-	public function fetch($res)
-	{
-		try {
-			$res = $this->driver->fetch($res);
-		} catch (\Exception $e) {
-			throw new Database\Exception($e->getMessage(), "resource_error");
-		}
-
-		return $res;
-	}
-
-	/**
-	 * Fetches all rows
-	 * 
-	 * @param handle $res result returned from query()
-	 * @return array
-	 */
-	public function fetchAll($res)
-	{
-		$return = array();
-		while ($row = $this->fetch($res)) {
-			$return[] = $row;
-		}
-		return $return;
-	}
-
-	/**
-	 * Alias of fetchAll
-	 * @deprecated use fetchAll()
-	 */
-	public function fetch_all($res)
-	{
-		return $this->fetchAll($res);
-	}
-
-	/**
-	 * Fetches all rows
-	 * 
-	 * @param string $sql SQL statement
-	 * @return array
-	 */
-	public function all($sql)
-	{
-		return $this->fetchAll($this->query($sql));
-	}
-
-	/**
-	 * Fetches single row
-	 * 
-	 * @param string $sql SQL statement
-	 * @return array|null
-	 */
-	public function single($sql)
-	{
-		if ($res = $this->query($sql)) {
-			return $this->fetch($res);
-		}
-
-		return null;
-	}
-
-	/**
-	 * Returns first field of the first row
-	 * 
-	 * @param string $sql - SQL statment
-	 * @return string|null
-	 */
-	public function singleField($sql)
-	{
-		if ($row = $this->single($sql)) {
-			return array_shift($row);
-		}
-
-		return null;
-	}
-
-	/**
-	 * Alias of single_field()
-	 * @deprecated use singleField()
-	 */
-	public function single_field($sql)
-	{
-		return $this->singleField($sql);
-	}
-
-	/**
-	 * Returns rows affected by the query
-	 * 
-	 * @param handle $res handle returned by query()
-	 * @return integer
-	 */
-	public function affected($res = null)
-	{
-		return $this->driver->affected($res);
-	}
-
-	/**
-	 * Returns last ID returned after successful INSERT statement
-	 * 
-	 * @return mixed
-	 */
-	public function lastId()
-	{
-		return $this->driver->lastId();
-	}
-
-	/**
-	 * Alias of lastId()
-	 * @deprecated use lastId()
-	 */
-	public function last_id()
-	{
-		return $this->lastId();
-	}
-
-	/**
-	 * Frees result
-	 * 
-	 * @param handle $res handle returned by query()
-	 */
-	public function free($res)
-	{
-		if (!$res) {
-			throw new Database\Exception("Could not free invalid resource.", "resource_error");
-		}
-		$this->driver->free($res);
-	}
-
-	/**
-	 * Returns handle to a connection established with open()
-	 * 
-	 * @return handle
-	 */
-	public function getHandle()
-	{
-		return $this->handle;
-	}
-
-	/**
-	 * Hook a callback function/method to some hookable events.
-	 * Hooks could be 'pre_' and 'post_'.
+	 * Handles dynamic static calls to the object.
 	 *
-	 * <code>
-	 * 	// to hook an event before executing a query
-	 *  Database::hook('pre_query', array($object, 'method_name'));
-	 *  // to hook an event after executing a query
-	 *  Database::hook('post_query', 'function_name')
-	 * </code>
-	 * 
-	 * @param string $event - pre or post method name
-	 * @param mixed $callback - callable function or method name
+	 * @param  string $method
+	 * @param  array $parameters
+	 * @return mixed
 	 */
-	public function hook($event, $callback)
+	public static function __callStatic($method, $parameters)
 	{
-		if (is_array($callback)) $inx = get_class($callback[0]).'::'.$callback[1];
-		elseif (gettype($callback) == 'object') $inx = uniqid();
-		else $inx = $callback;
-				
-		$this->hooks[$event][$inx] = $callback;
+		$instance = static::getInstance();
+
+		return call_user_func_array(array($instance, $method), $parameters);
 	}
 
-	
-	/**
-	 * Unhook.
-	 * If callback is not given all callbacks are unhooked from this event.
-	 * If event is not given all callbacks are unhooked.
-	 * 
-	 * <code>
-	 * 	Database::unhook('pre_query', array($this, 'before_query')); // This will unhook method $this->before_query before query
-	 * 	Database::unhook('post_query'); // This will unhook all callbacks which are executed after query
-	 *  Database::unhook(); // This will unhook all callbacks
-	 *  Database::unhook(false, 'test'); // This will unhook callback function test from any (pre and post) events
-	 * </code>
-	 * 
-	 * @param string $event
-	 * @param mixed $callback - callback function to unhook.
-	 */
-	public function unhook($event = null, $callback = null)
+	protected static function getInstance()
 	{
-		if (is_array($callback)) $inx = get_class($callback[0]).'::'.$callback[1];
-		else $inx = $callback;
-						
-		if (is_null($event) AND is_null($callback)) {
-			$this->hooks = array();
-		}
-		elseif (is_null($callback)) {
-			$this->hooks[$event] = array();
-		}
-		elseif (is_null($event)) {
-			foreach ($this->hooks as $key => $value) {
-				unset($this->hooks[$key][$inx]);
+		if (!static::$db) {
+			static::$db = static::factory(Config::get("database"));
+			static::$registerEvents = Config::get("database.registerEvents", false);
+			
+			if (static::$registerEvents) {
+				static::$db->hook("pre_open", function ($h) {
+					Event::fire("sugi.database.pre_open");
+				});
+				static::$db->hook("post_open", function ($h) {
+					Event::fire("sugi.database.post_open");
+				});
+				static::$db->hook("pre_query", function ($h, $query) {
+					Event::fire("sugi.database.pre_query", array("query" => $query));
+				});
+				static::$db->hook("post_query", function ($h, $query) {
+					Event::fire("sugi.database.post_query", array("query" => $query));
+				});
 			}
 		}
-		else {
-			unset($this->hooks[$event][$inx]);
-		}
+
+		return static::$db;
 	}
 
-	/**
-	 * Escapes each element in the array
-	 * 
-	 * @param array
-	 * @return array
-	 */
-	public function escapeAll(array $values)
+	public static function factory($params)
 	{
-		$return = array();
-		foreach ($values as $key => $value) {
-			if (is_null($value)) $value = 'null';
-			elseif (is_numeric($value)) ;
-			elseif (is_bool($value)) $value = $value ? 'TRUE' : 'FALSE';
-			else $value = "'" . $this->escape($value) . "'";
-			$return[$key] = $value;
+		if (empty($params["type"])) {
+			throw new DBException("Required database type parameter is missing", "internal_error");
 		}
-		return $return;
-	}
+		$type = $params["type"];
+		unset($params["type"]);
 
-	/**
-	 * Escapes all parameters and binds them in the SQL
-	 * 
-	 * @param string $sql
-	 * @param array $params Associative array, where the key is replaced in the SQL with the value  
-	 * @return string
-	 */
-	public function bindParams($sql, array $params)
-	{
-		$params = $this->escapeAll($params);
-		if (preg_match_all('#:([a-zA-Z0-9_]+)#', $sql, $matches)) {
-			foreach ($matches[1] as $match) {
-				$value = isset($params[$match]) ? $params[$match] : 'null';
-				$sql = str_replace(":$match", $value, $sql);
+		if (isset($params[$type]) and is_array($params[$type])) {
+			$params = $params[$type];
+		}
+
+		// if we've passed custom Store instance
+		if (!is_string($type)) {
+			$driver = $type;
+		} else {
+			$type = strtolower($type);
+			if (($type == "mysql") or ($type == "mysqli")) {
+				$driver = new mysql($params);
+			} elseif ($type == "pgsql") {
+				$driver = new pgsql($params);
+			} elseif (($type == "sqlite") or ($type == "sqlite3")) {
+				$driver = new sqlite($params);
+			} else {
+				$driver = DI::reflect($type, $params);
 			}
 		}
-		return $sql;
-	}
 
-	protected function triggerAction($type, $action, $data = null)
-	{
-		$hook = "{$type}_{$action}";
-		// check for hooks
-		if (!empty($this->hooks[$hook])) {
-			foreach ($this->hooks[$hook] as $callback) {
-				$callback($action, $data);
-			}
-		}
+		return new DB($driver);
 	}
 }
