@@ -214,7 +214,7 @@ class Ste
 	 * @param string $var
 	 * @return boolean
 	 */
-	public function is_set($var)
+	public function hasVar($var)
 	{
 		return isset($this->vars[$var]);
 	}
