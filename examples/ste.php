@@ -43,4 +43,7 @@ $tpl->hide('hidden');
 $tpl->set('inc', 'one.html'); // dynamic file inclusion
 $tpl->set('bravo', 'Hurray!');
 
+var_dump($tpl->is_set('bravo'));
+var_dump($tpl->is_set('brava'));
+
 echo $tpl->parse();

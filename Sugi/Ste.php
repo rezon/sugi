@@ -209,6 +209,18 @@ class Ste
 	}
 
 	/**
+	 *  returns if parameter is set or not
+	 * 
+	 * @param string $var
+	 * @return boolean
+	 */
+	public function hasVar($var)
+	{
+		return isset($this->vars[$var]);
+	}
+
+
+	/**
 	 * Loops a block (copies) several times replacing all nested variables with $values
 	 * 
 	 * @param  string $blockname name of the block
