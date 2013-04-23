@@ -1,7 +1,9 @@
-<?php namespace Sugi;
+<?php
 /**
  * @package Sugi
  */
+
+namespace Sugi;
 
 include "common.php";
 setcookie('cs', 'alabalacookie');

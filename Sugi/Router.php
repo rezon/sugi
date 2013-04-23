@@ -1,9 +1,11 @@
-<?php namespace Sugi;
+<?php
 /**
  * @package Sugi
  * @author  Plamen Popov <tzappa@gmail.com>
  * @license http://opensource.org/licenses/mit-license.php (MIT License)
  */
+
+namespace Sugi;
 
 use \Sugi\HTTP\Route;
 use \Sugi\HTTP\Request;
@@ -74,7 +76,7 @@ class Router
 		if (is_null(static::$routes)) {
 			static::$routes = new Container();
 
-			if ($config = Config::file("routes")) {
+			if ($config = Config::get("routes")) {
 				foreach ($config as $key => $route) {
 					static::add($key, $route["path"], Filter::key("defaults", $route, array()), Filter::key("requisites", $route, array()));
 				}

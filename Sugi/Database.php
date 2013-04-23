@@ -47,7 +47,7 @@ class Database
 	public static function getInstance()
 	{
 		if (!static::$db) {
-			static::$db = static::factory(Config::file("database"));
+			static::$db = static::factory(Config::get("database"));
 			static::$registerEvents = Config::get("database.registerEvents", true);
 			
 			if (static::$registerEvents) {

@@ -1,10 +1,13 @@
-<?php namespace Sugi;
+<?php
 /**
  * @package Sugi
- * @author Plamen Popov <tzappa@gmail.com>
+ * @author  Plamen Popov <tzappa@gmail.com>
  */
 
+namespace Sugi;
+
 include "../vendor/autoload.php";
+
 App::configure();
 
 // custom assertion handler function

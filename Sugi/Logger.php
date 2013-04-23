@@ -1,4 +1,12 @@
-<?php namespace Sugi;
+<?php
+/**
+ * @package Sugi
+ * @author  Plamen Popov <tzappa@gmail.com>
+ * @license http://opensource.org/licenses/mit-license.php (MIT License)
+ */
+
+namespace Sugi;
+
 /**
  * Logger class
  *
@@ -12,11 +20,7 @@
  * only one limitation - level name can have only alphanumeric characters and underscores.
  * Defaul log level is all and this is true even if you did not explicitly mension it in the filter.
  * To modify it you should add 'none' in the begining of the filter.
- *
- * @package Sugi
- * @version 13.02.05
  */
-
 abstract class Logger 
 {
 	/**
@@ -85,7 +89,7 @@ abstract class Logger
 	public static function log($message, $level)
 	{
 		if (!static::$configured) {
-			static::configure(Config::file("logger"));
+			static::configure(Config::get("logger"));
 		}
 		// for each registered logger
 		foreach (static::$_loggers as $log) {

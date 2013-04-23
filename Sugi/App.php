@@ -1,8 +1,11 @@
-<?php namespace Sugi;
+<?php
 /**
  * @package Sugi
- * @author Plamen Popov <tzappa@gmail.com>
+ * @author  Plamen Popov <tzappa@gmail.com>
+ * @license http://opensource.org/licenses/mit-license.php (MIT License)
  */
+
+namespace Sugi;
 
 defined("APPLICATION_START") or define("APPLICATION_START", microtime(true));
 
@@ -28,9 +31,9 @@ class App
 		// checking for configuration
 		if (is_null($config)) {
 			// checking config has been configured. If not - guess the configuration path
-			Config::has("_path") or Config::set("_path", realpath(BASEPATH."app".DS."config").DS);
+			Config::$path == "" and Config::$path = realpath(BASEPATH."app".DS."config").DS;
 			// loading configuration
-			$config = Config::file("app");
+			$config = Config::get("app");
 		}
 
 		/**

@@ -1,9 +1,11 @@
-<?php namespace Sugi;
+<?php
 /**
  * @package Sugi
  * @author  Plamen Popov <tzappa@gmail.com>
  * @license http://opensource.org/licenses/mit-license.php (MIT License)
  */
+
+namespace Sugi;
 
 use SugiPHP\Cache\Cache as SugiPhpCache;
 use SugiPHP\Cache\MemcachedStore;
@@ -22,7 +24,7 @@ class Cache extends Facade
 	protected static function _getInstance()
 	{
 		if (!static::$instance) {
-			static::configure(Config::file("cache"));
+			static::configure(Config::get("cache"));
 		}
 
 		return static::$instance;
