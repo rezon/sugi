@@ -1,12 +1,11 @@
-<?php namespace Sugi;
+<?php
 /**
  * @package Sugi
  * @author  Plamen Popov <tzappa@gmail.com>
  * @license http://opensource.org/licenses/mit-license.php (MIT License)
  */
 
-use \Sugi\Config;
-use \Sugi\DI;
+namespace Sugi;
 
 /**
  * Module - registry of class, methods, objects with ability to instantiate them
@@ -108,7 +107,7 @@ class Module
 	{
 		$file = explode("\\", $alias);
 		$file = strtolower(array_pop($file));
-		$conf = Config::$file('', null);
+		$conf = Config::get($file);
 		if (!is_null($conf)) {
 			return array($conf);
 		}
