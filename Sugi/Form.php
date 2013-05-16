@@ -311,6 +311,11 @@ class Form
 		return Filter::key($name, $this->controls);
 	}
 
+	public function getControls()
+	{
+		return $this->controls;
+	}
+
 	public function addControl(Form\Icontrol $control)
 	{
 		$this->controls[$control->getName()] = $control;
