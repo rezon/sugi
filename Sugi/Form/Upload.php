@@ -76,34 +76,27 @@ class Upload extends Text
 
 	public function __toString()
 	{
-		if ($this->label) {
-			if (!$this->getAttribute("id")) $this->setAttribute("id", $this->form->name() ? $this->form->name() . "_" . $this->getName() : $this->getName());
-			$class = ($this->required) ? ' class="required"' : '';
-			$label = "\t<label for=\"".$this->getAttribute("id")."\"{$class}>{$this->label}</label>\n";
-		}
-		else {
-			$label = "";
-		}
-
+		$label = $this->getLabel();
+		
 		$classAdded = false;
-		$input = "<input";
+		$control = "<input";
 		foreach ($this->attributes as $attr => $value) {
 			if ($attr != "value") {
 				if ($this->error and ($attr == 'class')) {
-					$value .= " error";
+					$value .= " ".$this->form->errorClass();
 					$classAdded = true;
 				}
-				$input .= " {$attr}=\"{$value}\"";
+				$control .= " {$attr}=\"{$value}\"";
 			}
 		}
 		if ($this->error and !$classAdded) {
-			$input .= ' class="error"';
+			$control .= " class=\"{$this->form->errorClass()}\"";
 		}
-		$input .= " />";
+		$control .= " />";
 
-		$error = $this->error ? "<span class=\"error\">{$this->error}</span>" : "";
-		
-		return "{$label}\t{$input}{$error}<br />\n";
+		$error = $this->error ? $this->error : "";
+
+		return $this->renderControl(compact('label','control','error'));
 	}
 
 }

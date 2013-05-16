@@ -43,46 +43,39 @@ class MultipleSelect extends BaseControl implements IControl
 
 	public function __toString()
 	{
-		if ($this->label) {
-			if (!$this->getAttribute("id")) $this->setAttribute("id", $this->form->name() ? $this->form->name() . "_" . $this->getName() : $this->getName());
-			$class = ($this->required) ? ' class="required"' : '';
-			$label = "\t<label for=\"".$this->getAttribute("id")."\"{$class}>{$this->label}</label>\n";
-		}
-		else {
-			$label = "";
-		}
+		$label = $this->getLabel();
 
 		if (!$this->getAttribute("size")) {
 			$this->setAttribute("size", $this->values->size());
 		}
 
 		$classAdded = false;
-		$select = "<select multiple=\"multiple\"";
+		$control = "<select multiple=\"multiple\"";
 		foreach ($this->attributes as $attr => $value) {
 			if ($attr != 'name') {
 				if ($this->error and ($attr == 'class')) {
-					$value .= " error";
+					$value .= " ".$this->form->errorClass();
 					$classAdded = true;
 				}
-				$select .= " {$attr}=\"{$value}\"";
+				$control .= " {$attr}=\"{$value}\"";
 			}
 		}
 		if ($this->error and !$classAdded) {
-			$select .= ' class="error"';
+			$control .= " class=\"{$this->form->errorClass()}\"";
 		}
-		$select .= "name=\"{$this->getName()}[]\"";
-		$select .= ">\n";
+		$control .= "name=\"{$this->getName()}[]\"";
+		$control .= ">\n";
 
 		foreach ($this->value as $key => $value) {
 			$this->values->getOption($value)->setSelected();
 		}
 				
-		$select .= $this->values;
-		$select .= "	</select>";
+		$control .= $this->values;
+		$control .= "	</select>";
 
 
-		$error = $this->error ? "<span class=\"error\">{$this->error}</span>" : "";
+		$error = $this->error ? $this->error : "";
 		
-		return "{$label}\t{$select}{$error}<br />\n";
+		return $this->renderControl(compact('label','control','error'));
 	}
 }

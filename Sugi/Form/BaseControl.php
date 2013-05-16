@@ -15,6 +15,7 @@ class BaseControl
 
 	protected $form;
 	protected $attributes = array();
+	protected $labelAttributes = array();
 	protected $label;
 	protected $required;
 	protected $error = false;
@@ -74,6 +75,17 @@ class BaseControl
 	}
 
 	/**
+	 * Sets/gets label's attribute
+	 */
+	public function labelAttribute($name, $value = null)
+	{
+		if (is_null($value)) return Filter::key($name, $this->labelAttributes);
+		$this->labelAttributes[$name] = $value;
+		return $this;
+	}
+
+
+	/**
 	 * Sets/gets control's parent form
 	 */
 	public function form($form = null)
@@ -82,6 +94,16 @@ class BaseControl
 		$this->form = $form;
 		return $this;
 	}
+
+
+	public function renderControl($params) {
+		$params['error_class'] = $this->form->errorClass();
+		if (isset($params['error']) && !empty($params['error'])) {
+			$params['error'] = preg_replace('/\{(error|error_class)\}/e',"\$params['\\1']", $this->form->formErrorTemplate());
+		}
+		return preg_replace('/\{(\w+)\}/e',"\$params['\\1']", $this->form->controlTemplate());
+	} 
+
 
 	/**
 	 * Sets control value
@@ -266,5 +288,29 @@ class BaseControl
 	  return ((float)$this->value() >= $min AND (float)$this->value() <= $max);
 	}
 
+	/*
+	 * get label string
+	 */
+
+	protected function getLabel() {
+		if ($this->label) {
+			if (!$this->getAttribute("id")) $this->setAttribute("id", $this->form->name() ? $this->form->name() . "_" . $this->getName() : $this->getName());
+			
+			$attrs = "";
+			unset($this->labelAttributes['for']);
+			foreach ($this->labelAttributes as $attr => $value) {
+				if ($attr == 'class' && $this->required) {
+					$value .= " required";
+				}
+				$attrs .= " {$attr}=\"{$value}\"";
+			}
+
+			$label = "\t<label for=\"".$this->getAttribute("id")."\"{$attrs}>{$this->label}</label>\n";
+		}
+		else {
+			$label = "";
+		}
+		return $label;
+	}
 
 }

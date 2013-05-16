@@ -10,8 +10,16 @@ error_reporting(E_ALL);
 ini_set('display_errors',1);
 
 
-$form = new Form();
-$form->addCheckbox("terms", "1" , 1)->rule("required", "Please agree with term of use");
+$form = new Form('test_form', array(
+	// 'error_class' => 'form_error',
+	// 'control_tpl' => "{label}<div class=\"control\">\n{control}\n{error}\n</div>\n",
+	// 'form_error_tpl' => "{label}<div class=\"control\">\n{control}\n{error}\n</div>\n",
+));
+$form
+	//->errorClass("form_error")
+	//->formErrorTemplate("<div class='{error_class}'>{error}</div>")
+	//->controlTemplate("{label}<div class=\"control\">\n{control}\n{error}\n</div>\n")
+	->addCheckbox("terms", "1" , 1)->rule("required", "Please agree with term of use");
 
 $form->addSelect("test_select", "color" , array(
 	"" => "-- Choose color --",
@@ -35,7 +43,7 @@ $countries = array(
 $select = $form->addSelect("test_select2", "country" , $countries)->value(2)->rule("required", "Please choose a country");
 
 //$select->getOption(3)->setSelected();
-$select->value(3);
+$select->value(3)->labelAttribute('class','labelTest');
 $select->getOption(3)->attribute('class','test');
 
 $form->addMultipleSelect("test_mselect2", "mcountry" , $countries)->value(array(1,3))->rule("required", "Please choose a country");
@@ -97,7 +105,7 @@ $tpl->load('ste/form.html');
 
 $tpl->set('form', $form->toArray());
 $tpl->set('data', var_export($form->data(),true));
-//$tpl->set('form_code', htmlspecialchars($form));
+$tpl->set('form_code', htmlspecialchars($form));
 
 if ($form->submitted()) {
 	$data = $form->data();
