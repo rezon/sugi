@@ -19,7 +19,7 @@ $form
 	//->errorClass("form_error")
 	//->formErrorTemplate("<div class='{error_class}'>{error}</div>")
 	//->controlTemplate("{label}<div class=\"control\">\n{control}\n{error}\n</div>\n")
-	->addCheckbox("terms", "1" , 1)->rule("required", "Please agree with term of use");
+	->addCheckbox("terms", "saas1" , "kur")->value("kur")->rule("required", "Please agree with term of use");
 
 $form->addSelect("test_select", "color" , array(
 	"" => "-- Choose color --",
