@@ -1,8 +1,10 @@
-<?php namespace Sugi;
+<?php
 /**
  * @package Sugi
- * @version 12.11.23 
  */
+
+namespace Sugi;
+
 use Sugi\Logger;
 use Sugi\Filter;
 
@@ -282,18 +284,21 @@ class Cron
 	public static function error_handler($errno, $errstr, $errfile, $errline)
 	{
 		$errortype = array(
-			E_ERROR           => 'Error',
-			E_WARNING         => 'Warning',
-			E_PARSE           => 'Parse Error',
-			E_NOTICE          => 'Notice',
-			E_CORE_ERROR      => 'Core Error',
-			E_CORE_WARNING    => 'Core Warning',
-			E_COMPILE_ERROR   => 'Compile Error',
-			E_COMPILE_WARNING => 'Compile Warning',
-			E_USER_ERROR      => 'User Error',
-			E_USER_WARNING    => 'User Warning',
-			E_USER_NOTICE     => 'User Notice',
-			E_STRICT          => 'Runtime Notice'
+			E_ERROR             => "Error",
+			E_WARNING           => "Warning",
+			E_PARSE             => "Parse Error",
+			E_NOTICE            => "Notice",
+			E_CORE_ERROR        => "Core Error",
+			E_CORE_WARNING      => "Core Warning",
+			E_COMPILE_ERROR     => "Compile Error",
+			E_COMPILE_WARNING   => "Compile Warning",
+			E_USER_ERROR        => "User Error",
+			E_USER_WARNING      => "User Warning",
+			E_USER_NOTICE       => "User Notice",
+			E_STRICT            => "Runtime Notice",
+			E_RECOVERABLE_ERROR => "Catchable fatal error",
+			E_DEPRECATED        => "Deprecated Notice",
+			E_USER_DEPRECATED   => "User Dreprecated Notice",
 		);
 
 		$current_job = static::$current_job;
