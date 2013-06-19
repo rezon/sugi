@@ -15,12 +15,17 @@ class Form
 	protected $submitted;
 	protected $errors;
 
+
+	protected $errorClass = 'error';
+	protected $formErrorTemplate = "<span class=\"error\">{error}</span>";
+	protected $controlTemplate = "{label}\t{control}{error}\n";
+
 	/**
 	 * Form Constuctor
 	 * 
 	 * @param string $name
 	 */
-	public function __construct($name = '')
+	public function __construct($name = '', $options = array())
 	{
 		// This is also used for child controls (prefix for ID's)
 		if ($name) $this->attributes["name"] = $name;
@@ -28,7 +33,45 @@ class Form
 		$this->attributes["action"] = "";
 		// Set default method attribute (form request method)
 		$this->attributes["method"] = "POST";
+
+		if (isset($options['error_class']) && !(empty($options['error_class'])) ) {
+			$this->errorClass($options['error_class']);
+		}
+
+		if (isset($options['form_error_tpl']) && !(empty($options['form_error_tpl'])) ) {
+			$this->formErrorTemplate($options['form_error_tpl']);
+		}
+
+		if (isset($options['control_tpl']) && !(empty($options['control_tpl'])) ) {
+			$this->controlTemplate($options['control_tpl']);
+		}
 	}
+
+
+	public function errorClass($class = null) {
+		if (!is_null($class)) {
+			$this->errorClass = $class;
+			return $this;
+		}
+		return $this->errorClass;
+	}
+
+	public function formErrorTemplate($tpl = null) {
+		if (!is_null($tpl)) {
+			$this->formErrorTemplate = $tpl;
+			return $this;
+		}
+		return $this->formErrorTemplate;
+	}
+
+	public function controlTemplate($tpl = null) {
+		if (!is_null($tpl)) {
+			$this->controlTemplate = $tpl;
+			return $this;
+		}
+		return $this->controlTemplate;
+	}
+
 
 	/**
 	 * Sets form name
@@ -266,6 +309,11 @@ class Form
 	public function getControl($name)
 	{
 		return Filter::key($name, $this->controls);
+	}
+
+	public function getControls()
+	{
+		return $this->controls;
 	}
 
 	public function addControl(Form\Icontrol $control)

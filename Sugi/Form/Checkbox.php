@@ -35,6 +35,11 @@ class Checkbox extends Text
 		return false;
 	}
 
+	public function setValue($value) {
+		if ($value == $this->getAttribute("value"))	$this->setAttribute('checked','checked');
+		parent::setValue($value);
+	}
+
 	public function getValue() {
 		return ($this->getAttribute("checked") == 'checked') ? $this->val : null;
 	}
@@ -45,6 +50,13 @@ class Checkbox extends Text
 		if (!is_null($data)) {
 			$this->setAttribute('checked','checked');
 		}
+	}
+
+
+	public function __toString()
+	{
+		if (!is_null($this->getValue())) $this->setAttribute('checked','checked');
+		return parent::__toString();
 	}
 
 }
