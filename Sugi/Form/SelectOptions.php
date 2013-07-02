@@ -35,11 +35,11 @@ class SelectOptions {
 		foreach ($this->options as $option) {
 			if (get_class($option) == 'Sugi\Form\SelectOptionGroup') {
 				foreach ($option->options as $opt) {
-					if ($opt->getValue() == $value)
+					if ($opt->getValue() === $value)
 						return $opt;	
 				}
 			} else {
-				if ($option->getValue() == $value)
+				if ($option->getValue() === $value)
 					return $option;	
 			}
 		}
