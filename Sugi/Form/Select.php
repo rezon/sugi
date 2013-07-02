@@ -56,7 +56,9 @@ class Select extends BaseControl implements IControl
 		}
 		$control .= ">\n";
 
-		$this->values->getOption($this->getValue())->setSelected();
+		$opt = $this->values->getOption($this->getValue());
+		if (!is_null($opt))	$opt->setSelected();
+
 		$control .= $this->values;
 		$control .= "	</select>";
 
