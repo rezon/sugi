@@ -132,7 +132,7 @@ class Captcha
 		}
 		else {
 			header("Content-type: image/jpeg");
-			imagejpeg($image, "", 80);
+			imagejpeg($image, null, 80);
 		}
 		imagedestroy($image);
 
