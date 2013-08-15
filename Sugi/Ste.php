@@ -143,6 +143,7 @@ class Ste
 		$defaultConfig = array(
 			"remove_comments" => false,
 			"default_path"    => false,
+			"allowed_extensions" => $this->allowedExt
 		);
 
 		// set custom configurations
@@ -285,18 +286,18 @@ class Ste
 	protected function loadFile($template_file)
 	{
 		// check file extension
-		$ext = File::ext($template_file);
-		if (!in_array($ext, $this->allowedExt)) {
+		$ext = pathinfo($template_file, PATHINFO_EXTENSION);
+		if (!in_array($ext, $this->config["allowed_extensions"])) {
 			throw new Ste\Exception("File $template_file has extension that is not allowed template extension");
 		}
 
 		// try to load a file
-		$template = File::get($template_file, false);
+		$template = $this->getTemplate($template_file);
 		if ($template === false and $this->config["default_path"] and strpos($template_file, DIRECTORY_SEPARATOR) !== 0) {
 			// adding default path to the template
 			$template_file = rtrim($this->config["default_path"], DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $template_file;
 			// try to load a file from default include path
-			$template = File::get($template_file, false);
+			$template = $this->getTemplate($template_file);
 		}
 		if ($template === false) {
 			throw new Ste\Exception("Could not load template file $template_file");
@@ -434,4 +435,19 @@ class Ste
 	protected function removeHtmlComments($subject) {
 		return preg_replace($this->commentsRegEx, "", $subject);
 	}	
+
+
+	/**
+	 * Trying to get the contents of the template file.
+	 * The file should exists and should be readable. If not false will be returned.
+	 *
+	 * @param string $filename
+	 * @param string $default
+	 * @return string
+	 */
+	protected function getTemplate($filename)
+	{
+		return (is_file($filename) && is_readable($filename)) ? file_get_contents($filename) : false;
+	}
+
 }
