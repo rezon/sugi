@@ -10,7 +10,7 @@
  */
 class SelectOptions {
 
-	protected $options;
+	protected $options = array();
 
 	public function __construct($optArray = array()) {
 		foreach ($optArray as $key => $opt) {
