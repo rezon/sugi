@@ -99,9 +99,14 @@ class BaseControl
 	public function renderControl($params) {
 		$params['error_class'] = $this->form->errorClass();
 		if (isset($params['error']) && !empty($params['error'])) {
-			$params['error'] = preg_replace('/\{(error|error_class)\}/e',"\$params['\\1']", $this->form->formErrorTemplate());
+			$params['error'] = preg_replace_callback(
+				'/\{(error|error_class)\}/',function ($m) use ($params) {return $params[$m[1]];}, 
+				$this->form->formErrorTemplate()
+			);
 		}
-		return preg_replace('/\{(\w+)\}/e',"\$params['\\1']", $this->form->controlTemplate());
+		return preg_replace_callback('/\{(\w+)\}/',
+			function ($m) use ($params) {return $params[$m[1]];}, 
+			$this->form->controlTemplate());
 	} 
 
 
