@@ -27,6 +27,10 @@ class Form
 	 */
 	public function __construct($name = '', $options = array())
 	{
+
+
+		trigger_error("Sugi\Form is deprecated, use SugiPHP\Form instead.",defined("E_USER_DEPRECATED") ? E_USER_DEPRECATED : E_USER_NOTICE) ;
+
 		// This is also used for child controls (prefix for ID's)
 		if ($name) $this->attributes["name"] = $name;
 		// Sets default action attribute (form request URI)
