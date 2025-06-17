@@ -11,6 +11,7 @@
     ],
     "require": {
         "php": ">=5.3",
+        "monolog/monolog": "^1.12.0 || ^2.0 || ^3.0",
         "sugiphp/cache": "dev-master",
         "sugiphp/config": "dev-master",
         "sugiphp/events": "dev-master",
